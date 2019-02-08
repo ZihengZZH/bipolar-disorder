@@ -1,0 +1,20 @@
+{
+    "data_path": {
+        "label_metadata": "/media/zzh/Ziheng-700G/Dataset/BD dataset/",
+        "LLDs_audio_MFCC": "/media/zzh/Ziheng-700G/Dataset/BD dataset/LLDs_audio_opensmile/LLDs_audio_opensmile_MFCCs/",
+        "LLDs_audio_eGeMAPS": "/media/zzh/Ziheng-700G/Dataset/BD dataset/LLDs_audio_opensmile/LLDs_audio_eGeMAPS/"
+    },
+    "audio_features": {
+        "LLDs": {
+            "MFCC": {
+
+            },
+            "eGeMAPS": {
+                
+            }
+        }
+    },
+    "video_features": {
+
+    }
+}
