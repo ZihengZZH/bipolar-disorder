@@ -5,6 +5,13 @@ This document records the literature of the project, and it focuses on other pap
 ## category
 
 
+### The Turkish Audio-Visual Bipolar Disorder Corpus
+#### Ciftci2018
+
+This paper introduces a new audio-visual Bipolar Disorder (BD) corpus for the affective computing and psychiatric communities. 
+
+![](../images/pipeline_baseline.png)
+
 ### Bipolar Disorder Recognition with Histogram Features of Arousal and Body Gestures 
 #### Yang2018
 

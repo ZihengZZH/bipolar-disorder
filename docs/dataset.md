@@ -16,7 +16,13 @@ After reviewing some clips in the recordings, some feelings are listed as below:
 
 ## details about the dataset
 
-The BD corpus used for the AVEC 2018 BDS includes *audiovisual recordings* of structured interviews performed by 46 Turkish speaking subjects. Participants of the BD corpus were asked to complete seven tasks, e.g. explaining the reason to participate the activity, describing happy and sad memories, counting up to thirty, and explaining two emotion eliciting pictures. During hospitalisation, in every follow up day (0th, 3rd, 7th, 14th, 28th day) and after discharge on the 3rd month, the presence of depressive and manic features were evaluated using YMRS. The dataset can be summarized with following data:
+The BD corpus used for the AVEC 2018 BDS includes *audiovisual recordings* of structured interviews performed by **46** Turkish speaking subjects (**49** healthy controls). Participants of the BD corpus were asked to complete seven tasks, e.g. explaining the reason to participate the activity, describing happy and sad memories, counting up to thirty, and explaining two emotion eliciting pictures (as below). 
+
+| van Gogh's *Depression* | Dengel's *Home Sweet Home* |
+| :---------------------: | :------------------------: |
+| <img src="../images/depression.jpg" height=250> | <img src="../images/sweet_home.jpg" height=250> |
+
+During hospitalisation, in every follow up day (0th, 3rd, 7th, 14th, 28th day) and after discharge on the 3rd month, the presence of depressive and manic features were evaluated using YMRS. The dataset can be summarized with following data:
 
 * audio (.wav), video recording (.mp4) of each subject
 * labels (level of mania and YMRS) and metadata (age, gender)
