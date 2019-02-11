@@ -8,6 +8,15 @@ The core aim of the efforts on the corpus is to find **biological markers/predic
 
 ## recordings in the dataset
 
+
+| diagnosis     | # videos | average time (s)   | standard deviation |
+| --            | --       | --                 | --                 |
+| healthy       | 120      | 138.9              | 68.4               |
+| remission     | 62       | 151.9              | 65.4               |
+| hypomania     | 82       | 221.1              | 171.4              |
+| mania         | 88       | 276.4              | 246.3              |
+
+
 After reviewing some clips in the recordings, some feelings are listed as below:
 1. In some video clips, the audio quality is quite poor partly because of the low quality recoding device (the background noise is loud)
 2. On the other hand, the video/image quality is relatively good
@@ -108,11 +117,18 @@ More specifically, the tree structure of the BD corpus:
 ```
 
 ## labels_metadata (only train & dev)
-In this csv file, each instance has been labelled with SubjectID, Age, Gender, Total_YMRS, and ManiaLevel. Note that each subjects produces 3, 4, 5, or 6 instances and labels for test data are not given.
+In this csv file, each instance has been labelled with SubjectID, Age, Gender, Total_YMRS, and ManiaLevel. Note that each subjects produces 3, 4, 5, or 6 instances and **labels for test data are not given**.
 
-| # subjects | # female | # male | age range  | median age |
-| --         | --       | --     | --         | --         |
-| 34         | 11       | 23     | 18 ~ 53    | 36         |
+According to the AVEC 2018 summary, after downloading the data, participants could directly start their own experiments with the train and development sets. Participants' results needed to be sent as a single packed file per Sub-challenge to the organisers by email and scores were returned within 24 hours during typical working days. Each participant had up to **five** submission attempts per Sub-challenge. 
+
+Instead of collecting statistic information from the label metadata (let alone it is inadequate), the demographic and clinical characteristics are listed as below:
+
+|       | female        | male          | all           | healthy control   | $t/x^2$   | $p$  |
+| :--   | :--:          | :--:          | :--:          | :--:              | :--:      | :--: |
+| AGE   | 40.2 ± 8.8    | 35.02 ± 10.6  | 36.7 ± 10.3   | 37.3 ± 10.9       | 0.36      | 0.72 |
+| ED    | 12.6 ± 2.9    | 9.5 ± 3.3     | 10.5 ± 3.5    | 11.2 ± 3.7        | 0.89      | 0.11 |
+| TE    | 7.13 ± 7.7    | 7.67 ± 5.7    | 6.26 ± 6.4    | -                 | 0.71      | 0.48 |
+| TID   | 15.9 ± 9.9    | 12.02 ± 9.7   | 13.07 ± 9.8   | -                 | 1.41      | 0.16 |
 
 ## audio LLDs and features
 
