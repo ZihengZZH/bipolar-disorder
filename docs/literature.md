@@ -1,6 +1,6 @@
 # Literature Review
 
-This document records the literature of the project, and it focuses on other papers' contributions and methodological inspiration instead of results or conclusion.
+This document records the literature of the project, and it focuses on other papers' contributions and methodological inspiration whose results or conclusion will also be included.
 
 **Table of Contents**
 - [Literature Review](#literature-review)
@@ -18,10 +18,12 @@ This document records the literature of the project, and it focuses on other pap
       - [Eyben2015](#eyben2015)
     - [Dynamic Multimodal Measurement of Depression Severity Using Deep Autoencoding](#dynamic-multimodal-measurement-of-depression-severity-using-deep-autoencoding)
       - [Dibeklioglu2018](#dibeklioglu2018)
+    - [Automatic Depression Scale Prediction using Facial Expression Dynamics and Regression](#automatic-depression-scale-prediction-using-facial-expression-dynamics-and-regression)
+      - [Jan2014](#jan2014)
+    - [Personalized Multitask Learning for Predicting Tomorrow's Mood, Stress, and Health](#personalized-multitask-learning-for-predicting-tomorrows-mood-stress-and-health)
+      - [Taylor2017](#taylor2017)
     - [paper title](#paper-title)
       - [bibtex](#bibtex)
-    - [paper title](#paper-title-1)
-      - [bibtex](#bibtex-1)
 
 
 
@@ -111,7 +113,7 @@ One intuition of theirs was to perform different decision strategies for differe
 
 > Syed et al. have conducted research in this areas for a long time, and their paper in AVEC 2017 is still worthy reading.
 
-The **contributions** of the work are as follows:
+The **contributions** of their work are as follows:
 * The proposed 'turbulence features' to capture suddent, erratic changes in feature contours;
 * Fisher vector encoding of Computational Paralinguistics Challenge (ComParE) low level descriptors that were demonstrated to be viable for predicting the severity of mania;
 * Four feature sets from OpenSmile toolkit, namely Prosody, IS10-Paralinguistics, ComParE functionals and eGeMAPS features were most useful for automated screening of bipolar disorder;
@@ -148,12 +150,27 @@ Moreover, large brute-force feature sets reduce the generalisation capabilities 
 ### Dynamic Multimodal Measurement of Depression Severity Using Deep Autoencoding
 #### Dibeklioglu2018
 
+The **contributions** of their work are as follows:
+* They focused on an interpersonal context, clinical interviews and they anticipated that the interpersonal nature of clinical interviews would heighten discriminability across modalities. 
+* They investigated the discriminative power of three modalities, **facial movement dynamics**, **head movement dynamics**, and **vocal prosody**, individually and in combination to measure depression severity.
+* Instead of using a large number of descriptors or selecting informative features individually, they investigated the selection of **an optimum feature set** by maximizing the combined mutual information for depression severity measurement.
+
+
+### Automatic Depression Scale Prediction using Facial Expression Dynamics and Regression
+#### Jan2014
+
+The **contributions** of their work are as follows:
+* the dynamic feature extraction that use the idea of MHH on the feature space (they proposed 1-D MHH that can be applied to feature vector sequences and provide a dynamic feature, e.g. **EOH_MHH**, **LBP_MHH**, **LPQ_MHH**)
+* the feature fusion from different features from images (the fusion on **decision** level solution achieved better results on the development set, and the same result for the testing set)
+
+People express their emotions through the visual (i.e. facial expression and bodily gestures), vocal, and physiological modalities, and among these modalities, **facial expression** plays a primary role in representing emotional states of human beings.
 
 
 
-### paper title
-#### bibtex
+### Personalized Multitask Learning for Predicting Tomorrow's Mood, Stress, and Health
+#### Taylor2017
 
+They posited that the low performance of machine learning methods in predicting mood or wellbeing was because a one-size-fits-all machine learning model is inherently ill-suited to predicting outcomes like mood and stress, which vary greatly due to individual difference. Therefore, they employed Multitask Learning (MTL) techniques to train personalized ML models which were customized to the needs of each individual, but still leveraged data from across the population.
 
 
 

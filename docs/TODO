@@ -21,7 +21,7 @@ dataset:
     ☐ sentiment detection
   
 project:
-  ☐ utility.py
+  ✔ utility.py @done(19-02-22 17:59)
   ☐ audio_proc.py
   ☐ video_proc.py
   

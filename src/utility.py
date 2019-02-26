@@ -17,7 +17,7 @@ data_config = json.load(open('./config/data.json', 'r'))
 # load the label metadata (age, gender, YMRS)
 def load_label_metadata(verbose=False):
     # para verbose: whether or not to output more statistical results
-    label = pd.read_csv(data_config['data_path']['label_metadata'] + 'labels_metadata.csv')
+    label = pd.read_csv(data_config['data_path_U']['label_metadata'] + 'labels_metadata.csv')
     id_list = label['SubjectID'].tolist()
 
     id_set = set()
@@ -44,12 +44,19 @@ def load_label_metadata(verbose=False):
 # load the audio LLDs (MFCC)
 def load_audio_LLD_MFCC(verbose=False):
     # para verbose: whether or not to output more results
-    mfcc = pd.read_csv(data_config['data_path']['LLDs_audio_MFCC'] + 'dev_001.csv', sep=';')
-    print(mfcc)
+    mfcc = pd.read_csv(data_config['data_path_U']['LLDs_audio_MFCC'] + 'dev_010.csv', sep=';')
+    print(mfcc.shape)
 
 
 # load the audio LLDs (eGeMAPS)
 def load_audio_LLD_eGeMAPS(verbose=False):
     # para verbose: whether or not to output more results
-    egemaps = pd.read_csv(data_config['data_path']['LLDs_audio_eGeMAPS'] + 'dev_001.csv', sep=';')
-    print(egemaps)
+    egemaps = pd.read_csv(data_config['data_path_U']['LLDs_audio_eGeMAPS'] + 'dev_010.csv', sep=';')
+    print(egemaps.shape)
+
+
+# load the video LLDs (AUs)
+def load_video_LLD_openFace(verbose=False):
+    # para verbose: whether or not to output more results
+    face = pd.read_csv(data_config['data_path_U']['LLDs_video_openFace'] + 'dev_010.csv')
+    print(face.shape)

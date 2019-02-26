@@ -1,8 +1,14 @@
 {
-    "data_path": {
+    "data_path_700": {
         "label_metadata": "/media/zzh/Ziheng-700G/Dataset/BD dataset/",
         "LLDs_audio_MFCC": "/media/zzh/Ziheng-700G/Dataset/BD dataset/LLDs_audio_opensmile/LLDs_audio_opensmile_MFCCs/",
         "LLDs_audio_eGeMAPS": "/media/zzh/Ziheng-700G/Dataset/BD dataset/LLDs_audio_opensmile/LLDs_audio_eGeMAPS/"
+    },
+    "data_path_U": {
+        "label_metadata": "/media/zzh/ZZ362/Dataset/BD dataset/",
+        "LLDs_audio_MFCC": "/media/zzh/ZZ362/Dataset/BD dataset/LLDs_audio_opensmile/LLDs_audio_opensmile_MFCCs/",
+        "LLDs_audio_eGeMAPS": "/media/zzh/ZZ362/Dataset/BD dataset/LLDs_audio_opensmile/LLDs_audio_eGeMAPS/",
+        "LLDs_video_openFace": "/media/zzh/ZZ362/Dataset/BD dataset/LLDs_video_openface/LLDs_video_openFace/"
     },
     "audio_features": {
         "LLDs": {

@@ -132,7 +132,10 @@ Instead of collecting statistic information from the label metadata (let alone i
 
 ## audio LLDs and features
 
+> note that the feature for each sample is of variable length as each video clip has different lengths.
+
 ### MFCC
+
 In speech processing, the __mel-frequency cepstrum (MFC)__ is a representation of the short-term power spectrum of a sound based on a linear cosine transform of a log power spectrum on a nonlinear mel scale of frequency. __Mel-frequency cepstral coefficients (MFCC)__ are coefficients that collectively make up an MFC. They are derived from a type of cepstral representation of the audio clip. 
 
 MFCCs are commonly derived as follows:
@@ -142,7 +145,7 @@ MFCCs are commonly derived as follows:
 4. Take the discrete cosine transform of the list of mel log powers, as if it were a signal.
 5. The MFCCs are the amplitudes of the resulting spectrum.
 
-Extracted MFCCs features (#5931) have 40 dimensions:
+Extracted *MFCCs* features have 40 dimensions:
 * frameTime
 * pcm_fftMag_mfcc[0:12]
 * pcm_fftMag_mfcc_de[0:12]
@@ -154,7 +157,7 @@ Extracted MFCCs features (#5931) have 40 dimensions:
 
 GeMAPS stands for the Geneva Minimalistic Acoustic Parameter Set and it is a basic standard acoustic parameter set for various areas of automatic voice analysis. These parameters are selected based on a) the potential to index effective physiological changes in voice production, b) the proven value in former studies as well as the automatic extractability, and c) the theoretical significance.
 
-Extracted eGeMAPS features (#5928) have 24 dimensions:
+Extracted *eGeMAPS* features have 24 dimensions:
 * frameTime
 * **Loudness**_sma3 ------ estimate of perceived signal intensity from an auditory spectrum
 * **alphaRatio**_sma3 ------ ratio of the summed energy from 50-1000Hz and 1-5kHz
@@ -173,3 +176,27 @@ Extracted eGeMAPS features (#5928) have 24 dimensions:
 * **F3[frequency;amplitudeLogRelF0]**_sma3nz
 
 ## video LLDs and features
+
+### openFace
+
+OpenFace is an implementation of a number of research papers from the Multicomp group, Language Technologies Institute at the Carnegie Mellon University and Rainbow Group, Computer Laboratory, University of Cambridge. The system is capable of performing a number of facial analysis tasks:
+* facial landmark detection
+* facial landmark and head pose tracking
+* facial action unit recognition
+* facial feature extraction (aligned faces & HOG feature)
+* gaze tracking
+
+Extracted *openFace* features have 469 dimensions:
+* frame
+* face_id
+* timestamp
+* confidence
+* success
+* gaze_[0,1]_[x,y,z]
+* gaze_angle_[x,y]
+* eye_lmk_[x,y,X,Y,Z]_[0:55]
+* pose_[Tx,Ty,Tz]
+* pose_[Rx,Ry,Rz]
+* [x,y]_[0:67] 
+* AU[01,02,04,05,06,07,09,10,12,14,15,17,20,23,25,26,45]_r
+* AU[01,02,04,05,06,07,09,10,12,14,15,17,20,23,25,26,28,45]_c
