@@ -121,7 +121,7 @@ In this csv file, each instance has been labelled with SubjectID, Age, Gender, T
 
 According to the AVEC 2018 summary, after downloading the data, participants could directly start their own experiments with the train and development sets. Participants' results needed to be sent as a single packed file per Sub-challenge to the organisers by email and scores were returned within 24 hours during typical working days. Each participant had up to **five** submission attempts per Sub-challenge. 
 
-Instead of collecting statistic information from the label metadata (let alone it is inadequate), the demographic and clinical characteristics are listed as below:
+Instead of being collected statistic information from the label metadata (let alone it is quite inadequate), the demographic and clinical characteristics are gathered from the original dataset paper and listed as below:
 
 |       | female        | male          | all           | healthy control   | $t/x^2$   | $p$  |
 | :--   | :--:          | :--:          | :--:          | :--:              | :--:      | :--: |
@@ -129,6 +129,8 @@ Instead of collecting statistic information from the label metadata (let alone i
 | ED    | 12.6 ± 2.9    | 9.5 ± 3.3     | 10.5 ± 3.5    | 11.2 ± 3.7        | 0.89      | 0.11 |
 | TE    | 7.13 ± 7.7    | 7.67 ± 5.7    | 6.26 ± 6.4    | -                 | 0.71      | 0.48 |
 | TID   | 15.9 ± 9.9    | 12.02 ± 9.7   | 13.07 ± 9.8   | -                 | 1.41      | 0.16 |
+
+> ED: education in years, TE: total episode, TID: total illness duration
 
 ## audio LLDs and features
 
