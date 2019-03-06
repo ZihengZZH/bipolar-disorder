@@ -1,4 +1,7 @@
 {
+    "train_len": 104,
+    "dev_len": 60,
+    "test_len": 54,
     "data_path_700": {
         "label_metadata": "/media/zzh/Ziheng-700G/Dataset/BD dataset/",
         "LLD": {
@@ -27,11 +30,28 @@
         "baseline": {
             "audio": {
                 "BoAW": "./dataset/baseline_features/features_audio_BoAW_A20_C1000/",
-                "eGeMAPS": "./dataset/baseline_features/features_audio_eGeMAPS_turns/"
+                "eGeMAPS": "./dataset/baseline_features/features_audio_eGeMAPS_turns/",
+                "MFCC": "./dataset/baseline_features/LLDs_audio_opensmile_MFCCs_turns/",
+                "DeepSpectrum": "./dataset/baseline_features/LLDs_audio_DeepSpectrum_turns/"
             },
             "video": {
-                "BoVW": "./dataset/baseline_features/features_video_BoVW_A20_C1000/"
+                "BoVW": "./dataset/baseline_features/features_video_BoVW_A20_C1000/",
+                "AU": "./dataset/baseline_features/LLDs_video_openFace_AUs/"
             }
         }
+    },
+    "result_single": "./results/single_modality/",
+    "result_multi": "./results/multi_modality/",
+    "baseline_MATLAB": {
+        "AU": "./dataset/features_MATLAB/AU_featall_1.csv",
+        "BoW": "./dataset/features_MATLAB/BoW_featall_1.csv",
+        "Deep": "./dataset/features_MATLAB/Deep_featall_2.csv",
+        "eGeMAPS": "./dataset/features_MATLAB/eGeMAPS_featall_1.csv",
+        "MFCC": "./dataset/features_MATLAB/MFCC_featall_2.csv",
+        "AU_label": "./dataset/features_MATLAB/AU_labels_1.csv",
+        "BoW_label": "./dataset/features_MATLAB/BoW_labels_1.csv",
+        "Deep_label": "./dataset/features_MATLAB/Deep_labels_2.csv",
+        "eGeMAPS_label": "./dataset/features_MATLAB/eGeMAPS_labels_1.csv",
+        "MFCC_label": "./dataset/features_MATLAB/MFCC_labels_2.csv"
     }
 }

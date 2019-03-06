@@ -111,3 +111,6 @@ venv.bak/
 
 # dataset
 /dataset
+
+# vis
+/tools/*.csv

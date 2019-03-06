@@ -9,6 +9,7 @@
     </style>
 
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script src="https://d3js.org/d3.v5.js"></script>
     <script type="text/javascript" src="./graph3d.js"></script>
 
     <script type="text/javascript">
@@ -20,27 +21,45 @@
       // Set callback to run when API is loaded
       google.setOnLoadCallback(drawVisualization);
 
-      // amend to loading from json or csv etc
-      function custom(x, y) {
-        return Math.sin(x/50) * Math.cos(y/50) * 50 + 50;
-      }
+
+      var all_sample;
+
+      // name the csv file
+      d3.text("MFCC_featall_2.csv").then(function(data) {
+        // console.log(d3.csvParseRows(data));
+        all_sample = d3.csvParseRows(data);
+        retrieve_data();
+      });
+
+      var all_data;
+
+      function retrieve_data() {
+        no_sample = all_sample.length;
+        no_feature = all_sample[0].length;
+        // console.log(no_feature, no_sample);
+        // console.log(all_sample)
+
+        var all_data = new Array(no_sample);
+        for (var i = 0; i < no_sample; i++) {
+          all_data[i] = new Array(no_feature);
+          for (var j = 0; j < no_feature; j++) {
+            all_data[i][j] = parseFloat(all_sample[i][j]);
+          }
+        }
+        console.log(all_data);
+      };
 
       // Called when the Visualization API is loaded.
-      // need adjusting
       function drawVisualization() {
         // Create and populate a data table.
         data = new google.visualization.DataTable();
-        data.addColumn('number', 'x');
-        data.addColumn('number', 'y');
+        data.addColumn('number', 'sample');
+        data.addColumn('number', 'feature');
         data.addColumn('number', 'value');
 
-        // create some nice looking data with sin/cos
-        var steps = 25;  // number of data points will be steps*steps
-        var axisMax = 314;
-        axisStep = axisMax / steps;
-        for (var x = 0; x < axisMax; x+=axisStep) {
-          for (var y = 0; y < axisMax; y+=axisStep) {
-            var value = custom(x,y);
+        for (var x = 0; x < no_sample; x++) {
+          for (var y = 0; y < no_feature; y++) {
+            var value = all_data[x][y];
             data.addRow([x, y, value]);
           }
         }

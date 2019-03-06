@@ -2,12 +2,12 @@
 %
 %path of the main directory of the AVEC 2018 Bipolar Disorder Sub-challenge
 %=> must be changed to your own folder
-mainpath='/Users/ringeval/Documents/Databases/AVEC_2018/BDS/official_package';
+mainpath='~/workspace/bipolar-disorder/dataset';
 
 %path of the liblinear library - https://github.com/cjlin1/liblinear
 %=> must be changed to your own folder
 %=> liblinear needs to be compiled first with MATLAB using mex - see readme in liblinear
-libsvm_path='/Users/ringeval/Documents/Applications/liblinear/matlab';
+libsvm_path='~/libraries/liblinear/matlab';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %add liblinear path to MATLAB
