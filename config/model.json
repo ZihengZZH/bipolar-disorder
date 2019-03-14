@@ -1,0 +1,8 @@
+{
+    "random_forest": {
+        "n_estimators": [100, 300, 500],
+        "max_features": [0.1, 0.25, 0.5],
+        "criterion": ["entropy"],
+        "parameters": [500, 0.5, "entropy"]
+    }
+}

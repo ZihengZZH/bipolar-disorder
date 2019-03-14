@@ -1,6 +1,6 @@
 import unittest
 from src.utility import load_label, load_LLD, load_baseline_feature
-from src.utility import load_MATLAB_baseline_feature, load_MATLAB_label
+from src.utility import load_MATLAB_baseline_feature
 
 
 class TestUtility(unittest.TestCase):

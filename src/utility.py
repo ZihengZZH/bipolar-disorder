@@ -39,13 +39,16 @@ def load_label(partition=True, verbose=False):
         print("Female subjects", gender_list.count('F'))
         print("Age range (%d, %d), Age median %d" % (min(age_list), max(age_list), statistics.median(age_list)))
 
-    ymrs_score = pd.concat([label.iloc[:, 0], label.iloc[:,4]], axis=1)
+    ymrs_score = pd.concat([label.iloc[:, 0], label.iloc[:, 4]], axis=1)
+    mania_level = pd.concat([label.iloc[:, 0], label.iloc[:, 5]], axis=1)
     if partition:
         ymrs_dev = ymrs_score.iloc[:60, :]
         ymrs_train = ymrs_score.iloc[60:, :]
-        return ymrs_train, ymrs_dev
+        level_dev = mania_level.iloc[:60, :]
+        level_train = mania_level.iloc[60:, :]
+        return ymrs_train, ymrs_dev, level_dev, level_train
     else:
-        return ymrs_score, label
+        return ymrs_score, mania_level, _, _
 
 
 # retrieve the sample name
@@ -176,67 +179,37 @@ def load_MATLAB_baseline_feature(feature_name, verbose=False):
     if feature_name == "AU":
         filename = data_config['baseline_MATLAB']['AU']
         featall = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of features AU (extracted from MATLAB)", featall.shape)
-        
+    
     elif feature_name == "BoW":
         filename = data_config['baseline_MATLAB']['BoW']
         featall = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of features BoW (extracted from MATLAB)", featall.shape)
 
     elif feature_name == "Deep":
-        filename = data_config['baseline_MATLAB']['Deep']
-        featall = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of features Deep (extracted from MATLAB)", featall.shape)
+        train_data = pd.read_csv(data_config['baseline_MATLAB']['Deep']['train_data'], header=None)
+        train_label = pd.read_csv(data_config['baseline_MATLAB']['Deep']['train_label'], header=None)
+        train_inst = pd.read_csv(data_config['baseline_MATLAB']['Deep']['train_inst'], header=None)
+        test_data = pd.read_csv(data_config['baseline_MATLAB']['Deep']['test_data'], header=None)
+        test_label = pd.read_csv(data_config['baseline_MATLAB']['Deep']['test_label'], header=None)
+        test_inst = pd.read_csv(data_config['baseline_MATLAB']['Deep']['test_inst'], header=None)
 
     elif feature_name == "eGeMAPS":
         filename = data_config['baseline_MATLAB']['eGeMAPS']
         featall = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of features eGeMAPS (extracted from MATLAB)", featall.shape)
 
     elif feature_name == "MFCC":
-        filename = data_config['baseline_MATLAB']['MFCC']
-        featall = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of features MFCC (extracted from MATLAB)", featall.shape)
+        train_data = pd.read_csv(data_config['baseline_MATLAB']['MFCC']['train_data'], header=None)
+        train_label = pd.read_csv(data_config['baseline_MATLAB']['MFCC']['train_label'], header=None)
+        train_inst = pd.read_csv(data_config['baseline_MATLAB']['MFCC']['train_inst'], header=None)
+        test_data = pd.read_csv(data_config['baseline_MATLAB']['MFCC']['test_data'], header=None)
+        test_label = pd.read_csv(data_config['baseline_MATLAB']['MFCC']['test_label'], header=None)
+        test_inst = pd.read_csv(data_config['baseline_MATLAB']['MFCC']['test_inst'], header=None)
+    
+    if verbose:
+        print("Size of training data (extracted from MATLAB)", train_data.shape)
+        print("Size of training labels (extracted from MATLAB)", train_label.shape)
+        print("Size of training instance (extracted from MATLAB)", train_inst.shape)
+        print("Size of test data (extracted from MATLAB)", test_data.shape)
+        print("Size of test labels (extracted from MATLAB)", test_label.shape)
+        print("Size of test instance (extracted from MATLAB)", test_inst.shape)
 
-    return featall
-
-
-def load_MATLAB_label(feature_name, verbose=False):
-    # para feature_name: which feature, BoAW or eGeMAPS or BoVW
-    # para verbose: whether or not to output more results
-    if feature_name == "AU":
-        filename = data_config['baseline_MATLAB']['AU_label']
-        labels = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of labels AU (extracted from MATLAB)", labels.shape)
-        
-    elif feature_name == "BoW":
-        filename = data_config['baseline_MATLAB']['BoW_label']
-        labels = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of labels BoW (extracted from MATLAB)", labels.shape)
-
-    elif feature_name == "Deep":
-        filename = data_config['baseline_MATLAB']['Deep_label']
-        labels = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of labels Deep (extracted from MATLAB)", labels.shape)
-
-    elif feature_name == "eGeMAPS":
-        filename = data_config['baseline_MATLAB']['eGeMAPS_label']
-        labels = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of labels eGeMAPS (extracted from MATLAB)", labels.shape)
-
-    elif feature_name == "MFCC":
-        filename = data_config['baseline_MATLAB']['MFCC_label']
-        labels = pd.read_csv(filename, header=None)
-        if verbose:
-            print("Size of labels MFCC (extracted from MATLAB)", labels.shape)
-
-    return labels
+    return train_data, train_label, train_inst, test_data, test_label, test_inst

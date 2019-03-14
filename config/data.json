@@ -45,13 +45,22 @@
     "baseline_MATLAB": {
         "AU": "./dataset/features_MATLAB/AU_featall_1.csv",
         "BoW": "./dataset/features_MATLAB/BoW_featall_1.csv",
-        "Deep": "./dataset/features_MATLAB/Deep_featall_2.csv",
+        "Deep": {
+            "train_data": "./dataset/features_MATLAB/Deep_featall_1.csv",
+            "train_label": "./dataset/features_MATLAB/Deep_labels_1.csv",
+            "train_inst": "./dataset/features_MATLAB/Deep_instance_1.csv",
+            "test_data": "./dataset/features_MATLAB/Deep_featall_2.csv",
+            "test_label": "./dataset/features_MATLAB/Deep_labels_2.csv",
+            "test_inst": "./dataset/features_MATLAB/Deep_instance_2.csv"
+        },
         "eGeMAPS": "./dataset/features_MATLAB/eGeMAPS_featall_1.csv",
-        "MFCC": "./dataset/features_MATLAB/MFCC_featall_2.csv",
-        "AU_label": "./dataset/features_MATLAB/AU_labels_1.csv",
-        "BoW_label": "./dataset/features_MATLAB/BoW_labels_1.csv",
-        "Deep_label": "./dataset/features_MATLAB/Deep_labels_2.csv",
-        "eGeMAPS_label": "./dataset/features_MATLAB/eGeMAPS_labels_1.csv",
-        "MFCC_label": "./dataset/features_MATLAB/MFCC_labels_2.csv"
+        "MFCC": {
+            "train_data": "./dataset/features_MATLAB/MFCC_featall_1.csv",
+            "train_label": "./dataset/features_MATLAB/MFCC_labels_1.csv",
+            "train_inst": "./dataset/features_MATLAB/MFCC_instance_1.csv",
+            "test_data": "./dataset/features_MATLAB/MFCC_featall_2.csv",
+            "test_label": "./dataset/features_MATLAB/MFCC_labels_2.csv",
+            "test_inst": "./dataset/features_MATLAB/MFCC_instance_2.csv"
+        }
     }
 }
