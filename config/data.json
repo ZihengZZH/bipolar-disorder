@@ -49,18 +49,52 @@
             "train_data": "./dataset/features_MATLAB/Deep_featall_1.csv",
             "train_label": "./dataset/features_MATLAB/Deep_labels_1.csv",
             "train_inst": "./dataset/features_MATLAB/Deep_instance_1.csv",
-            "test_data": "./dataset/features_MATLAB/Deep_featall_2.csv",
-            "test_label": "./dataset/features_MATLAB/Deep_labels_2.csv",
-            "test_inst": "./dataset/features_MATLAB/Deep_instance_2.csv"
+            "dev_data": "./dataset/features_MATLAB/Deep_featall_2.csv",
+            "dev_label": "./dataset/features_MATLAB/Deep_labels_2.csv",
+            "dev_inst": "./dataset/features_MATLAB/Deep_instance_2.csv"
         },
-        "eGeMAPS": "./dataset/features_MATLAB/eGeMAPS_featall_1.csv",
+        "eGeMAPS": {
+            "train_data": "./dataset/features_MATLAB/eGeMAPS_featall_1.csv",
+            "train_label": "./dataset/features_MATLAB/eGeMAPS_labels_1.csv",
+            "train_inst": "./dataset/features_MATLAB/eGeMAPS_instance_1.csv",
+            "dev_data": "./dataset/features_MATLAB/eGeMAPS_featall_2.csv",
+            "dev_label": "./dataset/features_MATLAB/eGeMAPS_labels_2.csv",
+            "dev_inst": "./dataset/features_MATLAB/eGeMAPS_instance_2.csv"
+        },
         "MFCC": {
             "train_data": "./dataset/features_MATLAB/MFCC_featall_1.csv",
             "train_label": "./dataset/features_MATLAB/MFCC_labels_1.csv",
             "train_inst": "./dataset/features_MATLAB/MFCC_instance_1.csv",
-            "test_data": "./dataset/features_MATLAB/MFCC_featall_2.csv",
-            "test_label": "./dataset/features_MATLAB/MFCC_labels_2.csv",
-            "test_inst": "./dataset/features_MATLAB/MFCC_instance_2.csv"
+            "dev_data": "./dataset/features_MATLAB/MFCC_featall_2.csv",
+            "dev_label": "./dataset/features_MATLAB/MFCC_labels_2.csv",
+            "dev_inst": "./dataset/features_MATLAB/MFCC_instance_2.csv"
+        }
+    },
+    "keepinstance": 5,
+    "baseline_preproc": {
+        "MFCC": {
+            "train_data": "./dataset/baseline_features_proc/MFCC_train_1.csv",
+            "train_label": "./dataset/baseline_features_proc/MFCC_label_1.csv",
+            "train_inst": "./dataset/baseline_features_proc/MFCC_inst_1.csv",
+            "dev_data": "./dataset/baseline_features_proc/MFCC_train_2.csv",
+            "dev_label": "./dataset/baseline_features_proc/MFCC_label_2.csv",
+            "dev_inst": "./dataset/baseline_features_proc/MFCC_inst_2.csv"
+        },
+        "eGeMAPS": {
+            "train_data": "./dataset/baseline_features_proc/eGeMAPS_train_1.csv",
+            "train_label": "./dataset/baseline_features_proc/eGeMAPS_label_1.csv",
+            "train_inst": "./dataset/baseline_features_proc/eGeMAPS_inst_1.csv",
+            "dev_data": "./dataset/baseline_features_proc/eGeMAPS_train_2.csv",
+            "dev_label": "./dataset/baseline_features_proc/eGeMAPS_label_2.csv",
+            "dev_inst": "./dataset/baseline_features_proc/eGeMAPS_inst_2.csv"
+        },
+        "Deep": {
+            "train_data": "./dataset/baseline_features_proc/Deep_train_1.csv",
+            "train_label": "./dataset/baseline_features_proc/Deep_label_1.csv",
+            "train_inst": "./dataset/baseline_features_proc/Deep_inst_1.csv",
+            "dev_data": "./dataset/baseline_features_proc/Deep_train_2.csv",
+            "dev_label": "./dataset/baseline_features_proc/Deep_label_2.csv",
+            "dev_inst": "./dataset/baseline_features_proc/Deep_inst_2.csv"
         }
     }
 }

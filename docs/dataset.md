@@ -17,12 +17,6 @@ The core aim of the efforts on the corpus is to find **biological markers/predic
 | mania         | 88       | 276.4              | 246.3              |
 
 
-After reviewing some clips in the recordings, some feelings are listed as below:
-1. In some video clips, the audio quality is quite poor partly because of the low quality recoding device (the background noise is loud)
-2. On the other hand, the video/image quality is relatively good
-3. When the subject's sentiment shifts, the change is more clear in the voice than in the video/image [dev_038]()
-
-
 ## details about the dataset
 
 The BD corpus used for the AVEC 2018 BDS includes *audiovisual recordings* of structured interviews performed by **46** Turkish speaking subjects (**49** healthy controls). Participants of the BD corpus were asked to complete seven tasks, e.g. explaining the reason to participate the activity, describing happy and sad memories, counting up to thirty, and explaining two emotion eliciting pictures (as below). 
@@ -111,6 +105,14 @@ More specifically, the tree structure of the BD corpus:
 |   |   ├── dev_001 ... dev_060
 |   |   ├── test_001 ... test_054
 |   |   ├── (.csv)
+|   ├── baseline_features_proc
+|   |   ├── MFCC_[featall,labels,instance]_[1,2].csv
+|   ├── features_MATLAB 
+|   |   ├── AU_[featall,labels,instance]_[1,2].csv
+|   |   ├── BoW_[featall,labels,instace]_[1,2].csv
+|   |   ├── Deep_[featall,labels,instance]_[1,2].csv
+|   |   ├── eGeMAPS_[featall,labels,instance]_[1,2].csv
+|   |   ├── MFCC_[featall,labels,instance]_[1,2].csv
 ├── labels_metadata.csv
 ├── BD_corpus_intro.pdf
 ├── readme.txt
@@ -148,7 +150,7 @@ MFCCs are commonly derived as follows:
 5. The MFCCs are the amplitudes of the resulting spectrum.
 
 Extracted *MFCCs* features have 40 dimensions:
-* frameTime
+* frameTime > **COULD BE PARAGRAPH VECTOR**
 * pcm_fftMag_mfcc[0:12]
 * pcm_fftMag_mfcc_de[0:12]
 * pcm_fftMag_mfcc_de_de[0:12]

@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 import scipy
-from src.utility import load_MATLAB_baseline_feature, load_label
+from src.utility import load_proc_baseline_feature, load_label, save_results
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
@@ -61,22 +61,28 @@ class BaseLine():
         return 0
 
     def run_MFCC(self):
-        X_train, y_train, train_inst, X_test, y_test, test_inst = load_MATLAB_baseline_feature('MFCC')
+        print("\nbuilding a classifier on MFCC features (both frame-level and session-level)")
+        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('MFCC', matlab=False, verbose=True)
         
         y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, y_test, test_inst)
-        # self.run_Random_Forest(feature_all.values, label_all.T.values)
-        return 0
+        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'MFCC')
+        # self.tune_parameters_Random_Forest(X_train, np.ravel(y_train))
 
     def run_eGeMAPS(self):
-        return 0
+        print("\nbuilding a classifier on eGeMAPS features (both frame-level and session-level)")
+        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('eGeMAPS', matlab=False, verbose=True)
+        
+        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
+        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'eGeMAPS')
+        # self.tune_parameters_Random_Forest(X_train, np.ravel(y_train))
 
     def run_DeepSpectrum(self):
-        X_train, y_train, train_inst, X_test, y_test, test_inst = load_MATLAB_baseline_feature('Deep')
+        print("\nbuilding a classifier on Deep features (both frame-level and session-level)")
+        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('Deep', matlab=False, verbose=True)
 
         y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, y_test, test_inst)
-        # self.tune_parameters_Random_Forest(feature_all.values, label_all.T.values)
+        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'Deep')
+        # self.tune_parameters_Random_Forest(X_train, np.ravel(y_train))
 
     def run_BoVW(self):
         return 0
@@ -85,12 +91,10 @@ class BaseLine():
         return 0
 
     def run_Random_Forest(self, X_train, y_train, X_test, y_test):
-        # X_train, y_train, train_inst, X_test, y_test, test_inst = load_MATLAB_baseline_feature('Deep')
-        # X_train, X_test, y_train, y_test = train_test_split(features, labels)
         y_train, y_test = y_train.T.values, y_test.T.values
 
         print("\ntraining a Random Forest Classifier ...")
-        forest = RandomForestClassifier(n_estimators=200, max_features=0.5, criterion='entropy', verbose=1, n_jobs=N_JOBS)
+        forest = RandomForestClassifier(n_estimators=250, max_features=0.5, criterion='entropy', verbose=1, n_jobs=N_JOBS)
         forest.fit(X_train, y_train)
 
         print("\ntesting the Random Forest Classifier ...")
@@ -100,31 +104,43 @@ class BaseLine():
         y_pred = forest.predict(X_test)
         return y_pred
 
-    def tune_parameters_Random_Forest(self, features, labels):
-        X_train, X_test, y_train, y_test = train_test_split(features, labels)
+    def tune_parameters_Random_Forest(self, data, labels):
+        # para data: training data to tune the classifier
+        # para labels: training labels to tune the classifier
         parameters = {
             "n_estimators": model_config['random_forest']['n_estimators'],
             "max_features": model_config['random_forest']['max_features'],
+            "max_depth": model_config['random_forest']['max_depth'],
             "criterion": model_config['random_forest']['criterion']
         }
 
         print("\nrunning the Grid Search for Random Forest classifier ...")
-        clf = GridSearchCV(RandomForestClassifier(), parameters, cv=3, n_jobs=N_JOBS, verbose=10)
+        clf = GridSearchCV(RandomForestClassifier(), parameters, cv=10, n_jobs=N_JOBS, verbose=1)
 
-        clf.fit(X_train, y_train)
-        print(clf.score(X_train, y_train))
+        clf.fit(data, labels)
+        print(clf.score(data, labels))
         print(clf.best_params_)
         print(clf.cv_results_['mean_test_score'])
         print(clf.cv_results_['std_test_score'])
+
+        # write to model json file
+        with open('./config/model.json', 'a+') as output:
+            json.dump(clf.best_params_, output)
+            output.write("\n")
+        output.close()
 
     def fusion(self):
         return 0
 
     # get UAR metric for both frame-level and session-level
-    def get_UAR(self, y_pred, y_test, inst, frame=True, session=True):
+    def get_UAR(self, y_pred, y_test, inst, name, frame=True, session=True):
         # para y_pred: predicted mania level for each frame
         # para y_test: actual mania level for each frame
         # para inst: session mappings of frames
+        # para name: which feature is used
+        frame_res, session_res = 0.0, 0.0
+
+        # UAR for frame-level
         if frame:
             # get recalls for three classes
             recall = [0] * 3
@@ -132,8 +148,10 @@ class BaseLine():
                 index, = np.where(y_test == (i+1))
                 index_pred, = np.where(y_pred[index] == (i+1))
                 recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
-            print("\nUAR (mean of recalls) based on frame-level is ", np.mean(recall))
+            frame_res = np.mean(recall)
+            print("\nUAR (mean of recalls) based on frame-level is ", frame_res)
         
+        # UAR for session-level
         if session:
             # get majority-voting for each session
             decision = np.array(([0] * inst.max()))
@@ -154,4 +172,7 @@ class BaseLine():
                 index, = np.where(labels == (i+1))
                 index_pred, = np.where(decision[index] == (i+1))
                 recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
-            print("\nUAR (mean of recalls) based on session-level is ", np.mean(recall))
+            session_res = np.mean(recall)
+            print("\nUAR (mean of recalls) based on session-level is ", session_res)
+
+        save_results(frame_res, session_res, name, 'single')

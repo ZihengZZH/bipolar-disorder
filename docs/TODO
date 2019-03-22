@@ -5,28 +5,34 @@ literature:
   ☐ read ML algorithms on sequential data
   
 dataset:
-  ☐ get the basic understanding of dataset
-  ☐ get the subject feelings about video clips
-  ☐ label metadata analysis
+  ✔ get the basic understanding of dataset @done(19-03-17 15:39)
+  ✔ get the subject feelings about video clips @done(19-03-22 15:48)
+  ✔ label metadata analysis @done(19-03-22 15:48)
   ☐ audio data analysis
+    ✔ MFCC @done(19-03-17 17:11)
     ☐ BoAW
     ☐ eGeMAPS
-    ☐ openSmile
-    ☐ DeepSpectrum
+    ✔ DeepSpectrum @done(19-03-22 15:48)
   ☐ video data analysis
     ☐ BoVW
-    ☐ openFace
+    ☐ Action Units (openFace)
   ☐ text data analysis?
     ☐ google translate
     ☐ sentiment detection
   
 project:
   ✔ utility.py @done(19-02-22 17:59)
+  ☐ baseline.py
   ☐ audio_proc.py
   ☐ video_proc.py
-  
+
+modification:
+  ☐ native -> collections (high-performance)
+
 dissertation:
+  ☐ introduction
   ☐ literature review
   ☐ methogology
   ☐ experiment
   ☐ results & discussion
+  ☐ conclusion
