@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 import statistics
 import numpy as np
 import pandas as pd
@@ -9,6 +10,14 @@ from smart_open import smart_open
 
 '''
 ALL UTILITY FUNCTIONS
+----------------------------------------
+load_label(partition=True, verbose=False)
+get_sample(partition, index)
+load_LLD(LLD_name, partition, index, verbose=False)
+load_baseline_feature(feature_name, partition, index, verbose=False)
+load_proc_baseline_feature(feature_name, matlab=True, verbose=False)
+preproc_baseline_feature(feature_name, verbose=False)
+save_results(frame_res, session_res, name, modality)
 '''
 
 
@@ -184,45 +193,35 @@ def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
     # para verbose: whether or not to output more results
     baseline = 'baseline_MATLAB' if matlab else 'baseline_preproc'
 
-    if feature_name == "AU":
-        filename = data_config['baseline_MATLAB']['AU']
-        featall = pd.read_csv(filename, header=None)
-    
-    elif feature_name == "BoW":
-        filename = data_config['baseline_MATLAB']['BoW']
-        featall = pd.read_csv(filename, header=None)
+    try:
+        if feature_name != 'AU':
+            train_inst = pd.read_csv(data_config[baseline][feature_name]['train_inst'], header=None)
+            dev_inst = pd.read_csv(data_config[baseline][feature_name]['dev_inst'], header=None)
+        else:
+            train_inst, dev_inst = None, None
+        
+        train_data = pd.read_csv(data_config[baseline][feature_name]['train_data'], header=None)
+        train_label = pd.read_csv(data_config[baseline][feature_name]['train_label'], header=None)
+        dev_data = pd.read_csv(data_config[baseline][feature_name]['dev_data'], header=None)
+        dev_label = pd.read_csv(data_config[baseline][feature_name]['dev_label'], header=None)
 
-    elif feature_name == "Deep":
-        train_data = pd.read_csv(data_config[baseline]['Deep']['train_data'], header=None)
-        train_label = pd.read_csv(data_config[baseline]['Deep']['train_label'], header=None)
-        train_inst = pd.read_csv(data_config[baseline]['Deep']['train_inst'], header=None)
-        dev_data = pd.read_csv(data_config[baseline]['Deep']['dev_data'], header=None)
-        dev_label = pd.read_csv(data_config[baseline]['Deep']['dev_label'], header=None)
-        dev_inst = pd.read_csv(data_config[baseline]['Deep']['dev_inst'], header=None)
+        if verbose:
+            print("--"*20)
+            print(feature_name)
+            print("--"*20)
+            print("Size of training data (extracted from MATLAB)", train_data.shape)
+            print("Size of training labels (extracted from MATLAB)", train_label.shape)
+            print("Size of dev data (extracted from MATLAB)", dev_data.shape)
+            print("Size of dev labels (extracted from MATLAB)", dev_label.shape)
 
-    elif feature_name == "eGeMAPS":
-        train_data = pd.read_csv(data_config[baseline]['eGeMAPS']['train_data'], header=None)
-        train_label = pd.read_csv(data_config[baseline]['eGeMAPS']['train_label'], header=None)
-        train_inst = pd.read_csv(data_config[baseline]['eGeMAPS']['train_inst'], header=None)
-        dev_data = pd.read_csv(data_config[baseline]['eGeMAPS']['dev_data'], header=None)
-        dev_label = pd.read_csv(data_config[baseline]['eGeMAPS']['dev_label'], header=None)
-        dev_inst = pd.read_csv(data_config[baseline]['eGeMAPS']['dev_inst'], header=None)
+            if feature_name != 'AU':
+                print("Size of training instance (extracted from MATLAB)", train_inst.shape)
+                print("Size of dev instance (extracted from MATLAB)", dev_inst.shape)
+            
+            print("--"*20)
 
-    elif feature_name == "MFCC":
-        train_data = pd.read_csv(data_config[baseline]['MFCC']['train_data'], header=None)
-        train_label = pd.read_csv(data_config[baseline]['MFCC']['train_label'], header=None)
-        train_inst = pd.read_csv(data_config[baseline]['MFCC']['train_inst'], header=None)
-        dev_data = pd.read_csv(data_config[baseline]['MFCC']['dev_data'], header=None)
-        dev_label = pd.read_csv(data_config[baseline]['MFCC']['dev_label'], header=None)
-        dev_inst = pd.read_csv(data_config[baseline]['MFCC']['dev_inst'], header=None)
-    
-    if verbose:
-        print("Size of training data (extracted from MATLAB)", train_data.shape)
-        print("Size of training labels (extracted from MATLAB)", train_label.shape)
-        print("Size of training instance (extracted from MATLAB)", train_inst.shape)
-        print("Size of dev data (extracted from MATLAB)", dev_data.shape)
-        print("Size of dev labels (extracted from MATLAB)", dev_label.shape)
-        print("Size of dev instance (extracted from MATLAB)", dev_inst.shape)
+    except:
+        raise Exception("\nFAILED LOADING PRE-PROCESSED FEATURES")
 
     return train_data, train_label, train_inst, dev_data, dev_label, dev_inst
 
@@ -327,7 +326,7 @@ def preproc_baseline_feature(feature_name, verbose=False):
         instf.close()
 
 
-
+# save classification results to external files (I\O)
 def save_results(frame_res, session_res, name, modality):
     # para frame_res: classification UAR for frame-level
     # para session_res: classification UAR for session-level

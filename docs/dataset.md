@@ -179,6 +179,24 @@ Extracted *eGeMAPS* features have 24 dimensions:
 * **F2[frequency;amplitudeLogRelF0]**_sma3nz
 * **F3[frequency;amplitudeLogRelF0]**_sma3nz
 
+### Deep Spectrum
+
+As unsupervised audio baseline feature representations, __Deep Spectrum__ features are extracted using deep representation learning paradigm heavily inspired by image processing. __Deep Spectrum__ features have been shown to be effective in tasks highly related to emotion recognition, sentiment classification, and autism severity recognition. 
+
+[Deep Spectrum](https://github.com/DeepSpectrum/DeepSpectrum) is a Python toolkit for feature extraction from audio data with pre-trained Image Convolutional Neural Networks (CNNs). It features an extraction pipeline which first creates visual representations for audio data - plots of spectrograms or chromagrams - and then feeds them into a pre-trained Image CNN. Activations of a specific layer then form the final feature vectors. In this project, 4096-dimensional feature vectors are extracted from the mel-spectrogram images using the activations from the second fully-connected layer (*fc7*) of *ALEXNET*.
+
+Extracted *Deep Spectrum* features have 4096 dimensions:
+* frameTime
+* **neuron**_[1:4095] ------ activations from the second fully-connected layer in *ALEXNET*
+
+### BoAW 
+
+Bags-of-Words (BoW) represents the distribution of LLDs according to a dictionary learned from them. To generate the XBoW-representations, both the acoustic and the visual features are processed and summarised over a block of a fixed length duration, for each step of 100ms or 400ms. 
+
+Bags-of-Audio-Words (BoAW) are generated with a window size of 2s (best duration obtained by a grid search) and a hop-size of 1s, and 20 soft assignments are performed on a codebook size of 1000 instances. The whole XBoW processing is executed using [openXBOW](https://github.com/openXBOW/openXBOW).
+
+Extracted *BoAW* features have 1001 dimensions
+
 ## video LLDs and features
 
 ### openFace
@@ -204,3 +222,11 @@ Extracted *openFace* features have 469 dimensions:
 * [x,y]_[0:67] 
 * AU[01,02,04,05,06,07,09,10,12,14,15,17,20,23,25,26,45]_r
 * AU[01,02,04,05,06,07,09,10,12,14,15,17,20,23,25,26,28,45]_c
+
+### BoVW
+
+Bags-of-Words (BoW) represents the distribution of LLDs according to a dictionary learned from them. To generate the XBoW-representations, both the acoustic and the visual features are processed and summarised over a block of a fixed length duration, for each step of 100ms or 400ms. 
+
+Bags-of-Video-Words are generated with a window size of 11s (best duration found in a grid search) and a hop-size of 1s, and the same parameters for soft assignments and codebook size as defined for the audio data are used. The whole XBoW processing is executed using [openXBOW](https://github.com/openXBOW/openXBOW).
+
+Extracted *BoVW* features have 1001 dimensions

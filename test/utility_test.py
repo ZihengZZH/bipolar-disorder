@@ -25,6 +25,9 @@ class TestUtility(unittest.TestCase):
         load_proc_baseline_feature('Deep', verbose=True)
         load_proc_baseline_feature('eGeMAPS', verbose=True)
         load_proc_baseline_feature('MFCC', verbose=True)
+        load_proc_baseline_feature('BoAW', verbose=True)
+        load_proc_baseline_feature('BoVW', verbose=True)
+        load_proc_baseline_feature('AU', verbose=True)
 
 if __name__ == "__main__":
     unittest.main()

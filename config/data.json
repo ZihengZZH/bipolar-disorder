@@ -1,7 +1,7 @@
 {
-    "train_len": 104,
-    "dev_len": 60,
-    "test_len": 54,
+    "length_train": 104,
+    "length_dev": 60,
+    "length_test": 54,
     "data_path_700": {
         "label_metadata": "/media/zzh/Ziheng-700G/Dataset/BD dataset/",
         "LLD": {
@@ -42,9 +42,30 @@
     },
     "result_single": "./results/single_modality/",
     "result_multi": "./results/multi_modality/",
+    "keepinstance": 5,
     "baseline_MATLAB": {
-        "AU": "./dataset/features_MATLAB/AU_featall_1.csv",
-        "BoW": "./dataset/features_MATLAB/BoW_featall_1.csv",
+        "AU": {
+            "train_data": "./dataset/features_MATLAB/AU_featall_1.csv",
+            "train_label": "./dataset/features_MATLAB/AU_labels_1.csv",
+            "dev_data": "./dataset/features_MATLAB/AU_featall_2.csv",
+            "dev_label": "./dataset/features_MATLAB/AU_labels_2.csv"
+        },
+        "BoAW": {
+            "train_data": "./dataset/features_MATLAB/BoAW_featall_1.csv",
+            "train_label": "./dataset/features_MATLAB/BoAW_labels_1.csv",
+            "train_inst": "./dataset/features_MATLAB/BoAW_instance_1.csv",
+            "dev_data": "./dataset/features_MATLAB/BoAW_featall_2.csv",
+            "dev_label": "./dataset/features_MATLAB/BoAW_labels_2.csv",
+            "dev_inst": "./dataset/features_MATLAB/BoAW_instance_2.csv"
+        },
+        "BoVW": {
+            "train_data": "./dataset/features_MATLAB/BoVW_featall_1.csv",
+            "train_label": "./dataset/features_MATLAB/BoVW_labels_1.csv",
+            "train_inst": "./dataset/features_MATLAB/BoVW_instance_1.csv",
+            "dev_data": "./dataset/features_MATLAB/BoVW_featall_2.csv",
+            "dev_label": "./dataset/features_MATLAB/BoVW_labels_2.csv",
+            "dev_inst": "./dataset/features_MATLAB/BoVW_instance_2.csv"
+        },
         "Deep": {
             "train_data": "./dataset/features_MATLAB/Deep_featall_1.csv",
             "train_label": "./dataset/features_MATLAB/Deep_labels_1.csv",
@@ -70,7 +91,6 @@
             "dev_inst": "./dataset/features_MATLAB/MFCC_instance_2.csv"
         }
     },
-    "keepinstance": 5,
     "baseline_preproc": {
         "MFCC": {
             "train_data": "./dataset/baseline_features_proc/MFCC_train_1.csv",

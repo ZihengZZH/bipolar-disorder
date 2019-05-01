@@ -12,4 +12,4 @@
 
 > have not tuned hyper-parameters yet
 
-## multimodality classification
+## multiple modality classification
