@@ -339,7 +339,7 @@ def save_results(frame_res, session_res, name, modality):
             f.write("UAR on session-level: %.3f \n" % session_res)
         f.close()
         
-    elif modality == 'multi':
+    elif modality == 'multiple':
         filename = os.path.join(data_config['result_multi'], '%s_result.txt' % name)
         with smart_open(filename, 'w', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
@@ -349,3 +349,19 @@ def save_results(frame_res, session_res, name, modality):
     else:
         print("\n-- INVALID INPUT --\n")
         return
+
+
+# save posteriors probabilities to external files
+def save_post_probability(prob_dev, name):
+    # para prob_dev: posteriors probabilities of development set
+    # para name: which feature is used
+    filename = os.path.join(data_config['result_single'], '%s_post_prob' % name)
+    np.save(filename, prob_dev)
+
+
+# load posteriors probabilities from external files
+def load_post_probability(name):
+    # para name: which feature is used
+    filename = os.path.join(data_config['result_single'], '%s_post_prob.npy' % name)
+    prob_dev = np.load(filename)
+    return prob_dev

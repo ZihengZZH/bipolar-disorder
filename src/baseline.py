@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from src.utility import load_proc_baseline_feature, load_label, save_results
+from src.utility import save_post_probability, load_post_probability
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
@@ -44,7 +45,8 @@ class BaseLine():
         self.parameters_RF = dict()
         self.parameters_SVM = dict()
         self._load_basics()
-        print("\nbaseline system initialized")
+        self.session_prob = None # for AU feature only
+        print("\nbaseline system initialized, feature %s" % name)
 
     def _load_basics(self):
         self.length_train = int(data_config['length_train'])
@@ -70,7 +72,6 @@ class BaseLine():
             self.run_BoAW()
             self.run_AU()
             self.run_BoVW()
-            self.fusion()
         elif self.name == 'MFCC':
             self.run_MFCC()
         elif self.name == 'eGeMAPS':
@@ -86,51 +87,63 @@ class BaseLine():
 
     def run_MFCC(self):
         print("\nbuilding a classifier on MFCC features (both frame-level and session-level)")
-        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
+        X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
         
-        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'MFCC')
+        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
+        self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
+        self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_eGeMAPS(self):
         print("\nbuilding a classifier on eGeMAPS features (both frame-level and session-level)")
-        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('eGeMAPS', verbose=True)
+        X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('eGeMAPS', verbose=True)
         
-        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'eGeMAPS')
+        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
+        self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
+        self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_DeepSpectrum(self):
         print("\nbuilding a classifier on Deep features (both frame-level and session-level)")
-        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('Deep', verbose=True)
+        X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('Deep', verbose=True)
 
-        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'Deep')
+        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
+        self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
+        self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_BoAW(self):
         print("\nbuilding a classifier on BoAW features (both frame-level and session-level)")
-        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('BoAW', verbose=True)
+        X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoAW', verbose=True)
 
-        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'BoAW')
+        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
+        self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
+        self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_AU(self):
-        print("\nbuilding a classifier on AU features (both frame-level and session-level)")
-        X_train, y_train, _, X_test, y_test, _ = load_proc_baseline_feature('AU', verbose=True)
+        print("\nbuilding a classifier on AU features (already session-level)")
+        X_train, y_train, _, X_dev, y_dev, _ = load_proc_baseline_feature('AU', verbose=True)
 
-        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, np.ravel(y_test), np.array([]), 'AU')
+        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel([]), train_set=True)
+        self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel([]))
+        self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel([]))
 
     def run_BoVW(self):
-        print("\nbuilding a classifier on BoVW features (already session-level)")
-        X_train, y_train, train_inst, X_test, y_test, dev_inst = load_proc_baseline_feature('BoVW', verbose=True)
+        print("\nbuilding a classifier on BoVW features (both frame-level and session-level)")
+        X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoVW', verbose=True)
 
-        y_pred = self.run_Random_Forest(X_train, y_train, X_test, y_test)
-        self.get_UAR(y_pred, np.ravel(y_test), np.ravel(dev_inst), 'BoVW')
+        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
+        self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
+        self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
-    def run_linear_SVM(self, X_train, y_train, X_test, y_test):
+    def run_linear_SVM(self, X_train, y_train, X_dev, y_dev):
         pass
 
-    def run_Random_Forest(self, X_train, y_train, X_test, y_test):
-        y_train, y_test = y_train.T.values, y_test.T.values
+    def run_Random_Forest(self, X_train, y_train, X_dev, y_dev):
+        y_train, y_dev = y_train.T.values, y_dev.T.values
 
         if not self.parameters_RF['n_estimators'] or not self.parameters_RF['max_features'] or not self.parameters_RF['max_depth'] or not self.parameters_RF['criterion']:
             print("\nhyperparameters are not tuned yet")
@@ -144,10 +157,15 @@ class BaseLine():
 
         print("\ntesting the Random Forest Classifier ...")
         print("\naccuracy on training set: %.3f" % forest.score(X_train, np.ravel(y_train)))
-        print("\naccuracy on development set: %.3f" % forest.score(X_test, np.ravel(y_test)))
+        print("\naccuracy on development set: %.3f" % forest.score(X_dev, np.ravel(y_dev)))
+        
+        y_pred_train = forest.predict(X_train)
+        y_pred_dev = forest.predict(X_dev)
 
-        y_pred = forest.predict(X_test)
-        return y_pred
+        if self.name == 'AU':
+            self.session_prob = forest.predict_proba(X_dev)
+
+        return y_pred_train, y_pred_dev
 
     def tune_parameters_Random_Forest(self, data, labels):
         # para data: training data to tune the classifier
@@ -179,14 +197,41 @@ class BaseLine():
             output.write("\n")
         output.close()
 
-    def fusion(self):
-        return 0
+    # apply late fusion strategy on posterior probabilities of two modalities
+    def fusion(self, feature_1, feature_2):
+        # para feature_1: 1st of fused representations
+        # para feature_2: 2nd of fused representations
+        prob_dev_1 = load_post_probability(feature_1)
+        prob_dev_2 = load_post_probability(feature_2)
+        
+        assert prob_dev_1.shape == prob_dev_2.shape
+        """
+        PROB_DEV_1 = (3, 60)
+        PROB_DEV_2 = (3, 60)
+        """
+
+        _, _, level_dev, level_train = load_label()
+        y_dev = level_dev.values[:,1]
+        # get the shape
+        (_, num_inst) = prob_dev_1.shape
+        y_pred = np.array([0] * num_inst)
+
+        for i in range(num_inst):
+            prob = prob_dev_1[:,i] + prob_dev_2[:,i]
+            # fusion based on majority voting and averaging two modalities
+            y_pred[i] = np.argmax(prob) + 1
+
+        self.get_UAR(y_pred, y_dev, np.array([]), fusion=True)
 
     # get UAR metric for both frame-level and session-level
-    def get_UAR(self, y_pred, y_test, inst, frame=True, session=True):
+    def get_UAR(self, y_pred, y_dev, inst, frame=True, session=True, train_set=False, fusion=False):
         # para y_pred: predicted mania level for each frame
-        # para y_test: actual mania level for each frame
+        # para y_dev: actual mania level for each frame
         # para inst: session mappings of frames
+        # para frame:
+        # para session:
+        # para train_set:
+        # para fusion:
         frame_res, session_res = 0.0, 0.0
 
         # UAR for session-level only (AU features)
@@ -194,24 +239,34 @@ class BaseLine():
             # get recalls for three classes
             recall = [0] * 3
             for i in range(3):
-                index, = np.where(y_test == (i+1))
+                index, = np.where(y_dev == (i+1))
                 index_pred, = np.where(y_pred[index] == (i+1))
                 recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
             session_res = np.mean(recall)
-            print("\nUAR (mean of recalls) using %s feature based on session-level is %.2f" % (self.name, session_res))
-            save_results(frame_res, session_res, self.name, 'single')
-        
+            if not fusion:
+                if train_set:
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (self.name, session_res))
+                else:
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (self.name, session_res))
+                    save_results(frame_res, session_res, self.name, 'single')
+            else:
+                print("\nUAR (mean of recalls) using fusion based on session-level is %.2f" % session_res)
+                save_results(frame_res, session_res, 'fusion', 'multiple')
+
         else:
             # UAR for frame-level
             if frame:
                 # get recalls for three classes
                 recall = [0] * 3
                 for i in range(3):
-                    index, = np.where(y_test == (i+1))
+                    index, = np.where(y_dev == (i+1))
                     index_pred, = np.where(y_pred[index] == (i+1))
                     recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
                 frame_res = np.mean(recall)
-                print("\nUAR (mean of recalls) using %s feature based on frame-level is %.2f" % (self.name, frame_res))
+                if train_set:
+                    print("\nUAR (mean of recalls) using %s feature based on frame-level (training set) is %.2f" % (self.name, frame_res))
+                else:
+                    print("\nUAR (mean of recalls) using %s feature based on frame-level (development set) is %.2f" % (self.name, frame_res))
             
             # UAR for session-level
             if session:
@@ -235,6 +290,31 @@ class BaseLine():
                     index_pred, = np.where(decision[index] == (i+1))
                     recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
                 session_res = np.mean(recall)
-                print("\nUAR (mean of recalls) using %s feature based on session-level is %.2f" % (self.name, session_res))
+                if train_set:
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (self.name, session_res))
+                else:
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (self.name, session_res))
+            
+            if not train_set:
+                save_results(frame_res, session_res, self.name, 'single')
 
-            save_results(frame_res, session_res, self.name, 'single')
+    # get posteriors probabilities for features
+    def get_post_probability(self, y_pred, y_test, inst):
+        # para y_pred: predicted mania level for each frame
+        # para y_dev: actual mania level for each frame
+        # para inst: session mappings of frames
+        if self.name != 'AU':
+            len_inst = inst.max()
+            prob_dev = np.zeros((3, len_inst))
+            # assign values
+            for l in range(len_inst):
+                index, = np.where(inst == (l+1))
+                len_index = len(index)
+                for n in range(3):
+                    index_pred, = np.where(y_pred[index] == (n+1))
+                    prob_dev[n][l] = len(index_pred) / len_index
+        else:
+            if self.session_prob.any():
+                prob_dev = self.session_prob.T
+
+        save_post_probability(prob_dev, self.name)

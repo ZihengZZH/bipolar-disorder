@@ -1,2 +1,2 @@
-UAR on frame-level: 0.370 
-UAR on session-level: 0.381 
+UAR on frame-level: 0.360 
+UAR on session-level: 0.349 

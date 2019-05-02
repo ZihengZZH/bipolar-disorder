@@ -14,7 +14,7 @@ def main(argv):
     model = ''
     feature = ''
     try:
-        opts, args = getopt.getopt(argv, "h:m:f:", ["model=", "feature="])
+        opts, _ = getopt.getopt(argv, "h:m:f:", ["model=", "feature="])
     except getopt.GetoptError:
         print("main.py -m <model_name> -f <feature_name>")
         sys.exit(2)

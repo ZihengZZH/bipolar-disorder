@@ -27,5 +27,10 @@ class TestBaseLine(unittest.TestCase):
         classifier = BaseLine('RF', 'BoVW', test=True)
         classifier.run()
 
+    def test_fusion(self):
+        classifier = BaseLine('RF', 'MFCC', test=True)
+        classifier.fusion('Deep', 'AU')
+
+
 if __name__ == '__main__':
     unittest.main()
