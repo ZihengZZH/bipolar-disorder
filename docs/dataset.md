@@ -23,7 +23,7 @@ The BD corpus used for the AVEC 2018 BDS includes *audiovisual recordings* of st
 
 | van Gogh's *Depression* | Dengel's *Home Sweet Home* |
 | :---------------------: | :------------------------: |
-| <img src="../images/depression.jpg" height=250> | <img src="../images/sweet_home.jpg" height=250> |
+| <img src="../images/dataset_depression.jpg" height=250> | <img src="../images/dataset_sweet_home.jpg" height=250> |
 
 During hospitalisation, in every follow up day (0th, 3rd, 7th, 14th, 28th day) and after discharge on the 3rd month, the presence of depressive and manic features were evaluated using YMRS. The dataset can be summarized with following data:
 
@@ -199,9 +199,9 @@ Extracted *BoAW* features have 1001 dimensions
 
 ## video LLDs and features
 
-### openFace
+### AU (openFace) 
 
-OpenFace is an implementation of a number of research papers from the Multicomp group, Language Technologies Institute at the Carnegie Mellon University and Rainbow Group, Computer Laboratory, University of Cambridge. The system is capable of performing a number of facial analysis tasks:
+**OpenFace** is an implementation of a number of research papers from the Multicomp group, Language Technologies Institute at the Carnegie Mellon University and Rainbow Group, Computer Laboratory, University of Cambridge. The system is capable of performing a number of facial analysis tasks:
 * facial landmark detection
 * facial landmark and head pose tracking
 * facial action unit recognition

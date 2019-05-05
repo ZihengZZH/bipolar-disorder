@@ -1,13 +1,21 @@
 {
     "baseline": {
         "random_forest": {
-            "n_estimators": [100, 200, 300, 400, 500],
+            "n_estimators": [100, 200, 400, 800],
             "max_features": [0.1, 0.25, 0.5],
-            "max_depth": [2, 4, 6, 8],
+            "max_depth": [2, 4, 8],
             "criterion": ["entropy"]
         },
         "SVM": {
-            "C": [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10, 100, 1000, 10000]
+            "C": [0.000001, 0.0001, 0.01, 1.0, 100, 10000, 1000000]
         }
+    },
+    "autoencoder": {
+        "hidden_ratio": 0.35,
+        "learning_rate": 0.01,
+        "batch_size": 64,
+        "epochs": 30,
+        "noise": 0.2,
+        "save_dir": "./models/SDAE" 
     }
 }

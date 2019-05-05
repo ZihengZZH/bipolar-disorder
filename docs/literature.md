@@ -34,7 +34,7 @@ This paper introduces a new audio-visual Bipolar Disorder (BD) corpus for the af
 
 To provide a benchmark system and insight about the data, they investigated a direct approach to classify video sessions into BD and normal classes, using **audio-visual features**. 
 
-![](../images/pipeline_baseline.png)
+![](../images/Ciftci2018_pipeline_baseline.png)
 
 They experimented both modalities (audio & video) for **binary** (healthy/bipolar) and **ternary** (mania level) classifications. They also analysed the bipolar corpus using cross-corpus acoustic emotion recognition, to reveal statistically significant mid-level predictors of YMRS declines from the zeroth day recording.
 
@@ -125,7 +125,7 @@ The 'turbulence features' (for a wide range of audio/visual features) were the m
 
 > 'turbulence features': the measure of turbulence was computed from the crest factor, which measured the ratio between the absolute maximum value of the signal and its root mean square (RMS) value.
 
-The process of Fisher vector encoding was summarised as follows: ComParE LLDs from each speech recording was concatenated into one matrix and then using a GMM to build a backgound model for the feature space. 
+The process of Fisher vector encoding was summarised as follows: ComParE LLDs from each speech recording was concatenated into one matrix and then using a GMM to build a background model for the feature space. 
 
 They proposed GEWELMs for classification (the efficacy had been demonstrated), which is based on WELMs and ELMs (Weighted Extreme Learning Machines). They used ELMs as a method to reduce dimensionality and least square regression towards class label prediction. To handle the overfitting of GEWELMs, they trained two sets of GEWELMs, T2D-GEWELMs and D2T-GEWELMs, which are training on the training set and testing on the development set, and training on the development set and testing on the training set. This helped to regularise the selection of WELMs so only those that had acceptable performace for two regimes were selected.
 
@@ -146,7 +146,6 @@ Moreover, large brute-force feature sets reduce the generalisation capabilities 
 
 
 
-
 ### Dynamic Multimodal Measurement of Depression Severity Using Deep Autoencoding
 #### Dibeklioglu2018
 
@@ -155,6 +154,30 @@ The **contributions** of their work are as follows:
 * They investigated the discriminative power of three modalities, **facial movement dynamics**, **head movement dynamics**, and **vocal prosody**, individually and in combination to measure depression severity.
 * Instead of using a large number of descriptors or selecting informative features individually, they investigated the selection of **an optimum feature set** by maximizing the combined mutual information for depression severity measurement.
 
+
+Since depression _alters_ the timing of nonverbal behaviour, they focused on the dynamics of facial and head movement, as well as vocal fundamental frequency and switching pauses.
+
+In the visual features extraction, they proposed their pipeline:
+1. Automatic Tracking of Facial Landmarks and Head Pose 
+   1. Track and extract 49 facial landmarks and 3 degrees of out-of-plane rigid head movements (pitch, yaw, roll)
+2. Preprocessing of the Extracted Facial Landmarks and Head Pose
+   1. Normalize and smooth the landmark coordinates and 3 degress
+3. Per-Frame Encoding of Facial and Head Movement (SDAE)
+   1. Three challenges:
+      1. The movements of individual fiducial points and head pose orientations are highly correlated.
+      2. Both facial and head movement measures include redundant information and complex relations that cannot re revealed by linear methods.
+      3. Only a single label is available for each session.
+   2. Training should be layer-wise and fune-tuning on minimizing the prediction error
+   3. SDAE-based time series *D* (n\*d) are the learnt representation. Each column of *D* correspond to a specific movement and they computed the dynamics *V* (1st derivate of *D*) and *A* (2nd derivate of *D*).
+      1. For the purpose of alignment of the three time series (*D*, *V*, *A*), the first two frames of videos were discarded.
+4. Per-Video Encoding of Facial and Head Movement
+   1. It was useful to encode the extracted time series descriptors with fixed length per-video descriptors. 
+   2. Improved Fisher Vector (IFV)
+   3. Compact Dynamic Feature Set (DFS)
+
+**Stacked Denoising Autoencoders (SDAE)** has emerged as one of the most successful unsupervised methods to discover unknown non-linear mappings between features (face and head movement dynamics) and outcomes (depress severity scores) while coping with high dimensionality and redundancy.
+
+![](../images/dibeklioglu2018_SDAE.png)
 
 ### Automatic Depression Scale Prediction using Facial Expression Dynamics and Regression
 #### Jan2014

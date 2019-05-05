@@ -10,9 +10,9 @@ dataset:
   ✔ label metadata analysis @done(19-03-22 15:48)
   ☐ audio data analysis
     ✔ MFCC @done(19-03-17 17:11)
-    ☐ BoAW
-    ☐ eGeMAPS
+    ✔ eGeMAPS @done(19-05-05 14:56)
     ✔ DeepSpectrum @done(19-03-22 15:48)
+    ✔ BoAW @done(19-05-05 14:56)
   ☐ video data analysis
     ☐ BoVW
     ☐ Action Units (openFace)
@@ -27,9 +27,7 @@ dataset:
   
 project:
   ✔ utility.py @done(19-02-22 17:59)
-  ☐ baseline.py (completely)
-  ☐ audio_proc.py
-  ☐ video_proc.py
+  ✔ baseline.py (completely) @done(19-05-05 14:56)
   ☐ audoencoder.py
 
 modification:

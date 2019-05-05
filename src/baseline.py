@@ -1,14 +1,16 @@
+import os
 import json
 import math
 import numpy as np
-import pandas as pd
 import scipy
-from src.utility import load_proc_baseline_feature, load_label, save_results
-from src.utility import save_post_probability, load_post_probability
+import multiprocessing
+from sklearn import svm, metrics, preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-import multiprocessing
+
+from src.utility import load_proc_baseline_feature, load_label, save_results
+from src.utility import save_post_probability, load_post_probability
 
 
 '''
@@ -18,8 +20,8 @@ features        | computed level
 --------        | --------------
 MFCCs           | frame level
 eGeMAPS         | turn level
-BoAW            | window size (2s)
 Deep Spectrum   | activations in ALEXNET
+BoAW            | window size (2s)
 FAUs            | session level
 BoVW            | window size (11s)
 
@@ -29,10 +31,49 @@ BoVW            | window size (11s)
 # load the external configuration file
 data_config = json.load(open('./config/data.json', 'r'))
 model_config = json.load(open('./config/model.json', 'r'))
-N_JOBS = multiprocessing.cpu_count()
+N_JOBS = multiprocessing.cpu_count() * 2
 
 
 class BaseLine():
+    """
+    Baseline system in BD classification, based on SVM/RF using LLDs and fusion
+    ---
+    Attributes
+    -----------
+    model: str
+        model for BaseLine() instance, SVM or RF
+    name: str
+        feature for BaseLine() instance, MFCC/eGeMAPS/Deep/BoAW/FAU/BoVW
+    test: bool
+        whether to test BaseLine() or not
+    length_train, length_dev: int
+        length of training/development set
+    parameters_SVM, parameters_RF: dict()
+        hyperparameters for SVM or RF classifier
+    session_prob: np.array
+        posteriors probabilities for FAUs only (as it is session-level)
+    ----------------------------------------------------------------------
+    Functions
+    -----------
+    run(): public
+        main function
+    run_[MFCC,eGeMAPS,DeepSpectrum,BoAW,AU,BoVW](): public
+        run classifier on specified feature (single modality)
+    run_Linear_SVM(X_train, y_train, X_dev, y_dev): public
+        run Linear SVM on specified feature
+    tune_parameters_Linear_SVM(data, labels): public
+        fine tune hyperparameters for Linear SVM (parameters_SVM)
+    run_Random_Forest(X_train, y_train, X_dev, y_dev): public
+        run Random Forest on specified feature
+    tune_parameters_Random_Forest(data, labels): public
+        fine tune hyperparameters for Random Forest (parameters_RF)
+    fusion(feature_1, feature_2): public
+        apply late fusion strategy on posterior probabilities of two modalities
+    get_UAR(y_pred, y_dev, inst): public
+        get UAR metric for both frame-level and session-level
+    get_post_probability(y_pred, y_test, inst): public
+        get posteriors probabilities for features
+    """
     def __init__(self, model, name, test=False):
         # para model: determine the model in baseline system
         # para name: determine the feature in baseline system
@@ -42,11 +83,11 @@ class BaseLine():
         self.test = test
         self.length_train = None
         self.length_dev = None
-        self.parameters_RF = dict()
         self.parameters_SVM = dict()
+        self.parameters_RF = dict()
         self._load_basics()
         self.session_prob = None # for AU feature only
-        print("\nbaseline system initialized, feature %s" % name)
+        print("\nbaseline system initialized, model %s feature %s" % (self.model, self.name))
 
     def _load_basics(self):
         self.length_train = int(data_config['length_train'])
@@ -65,6 +106,8 @@ class BaseLine():
             self.parameters_SVM['C'] = None
 
     def run(self):
+        """main function of BaseLine() instance
+        """
         if self.name == 'ALL':
             self.run_MFCC()
             self.run_eGeMAPS()
@@ -86,63 +129,172 @@ class BaseLine():
             self.run_BoVW()
 
     def run_MFCC(self):
+        """run classifier on MFCC feature (single modality)
+        """
+
         print("\nbuilding a classifier on MFCC features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
         
-        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        if self.model == 'RF':
+            y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        elif self.model == 'SVM':
+            y_pred_train, y_pred_dev = self.run_Linear_SVM(X_train, y_train, X_dev, y_dev)
+        
         self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
         self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
         self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_eGeMAPS(self):
+        """run classifier on eGeMAPS feature (single modality)
+        """
+
         print("\nbuilding a classifier on eGeMAPS features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('eGeMAPS', verbose=True)
         
-        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        if self.model == 'RF':
+            y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        elif self.model == 'SVM':
+            y_pred_train, y_pred_dev = self.run_Linear_SVM(X_train, y_train, X_dev, y_dev)
+        
         self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
         self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
         self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_DeepSpectrum(self):
+        """run classifier on DeepSpectrum feature (single modality)
+        """
+
         print("\nbuilding a classifier on Deep features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('Deep', verbose=True)
 
-        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        if self.model == 'RF':
+            y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        elif self.model == 'SVM':
+            y_pred_train, y_pred_dev = self.run_Linear_SVM(X_train, y_train, X_dev, y_dev)
+        
         self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
         self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
         self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_BoAW(self):
+        """run classifier on BoAW feature (single modality)
+        """
+
         print("\nbuilding a classifier on BoAW features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoAW', verbose=True)
 
-        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        if self.model == 'RF':
+            y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        elif self.model == 'SVM':
+            y_pred_train, y_pred_dev = self.run_Linear_SVM(X_train, y_train, X_dev, y_dev)
+        
         self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
         self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
         self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
     def run_AU(self):
+        """run classifier on AU feature (single modality)
+        """
+
         print("\nbuilding a classifier on AU features (already session-level)")
         X_train, y_train, _, X_dev, y_dev, _ = load_proc_baseline_feature('AU', verbose=True)
 
-        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        if self.model == 'RF':
+            y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        elif self.model == 'SVM':
+            y_pred_train, y_pred_dev = self.run_Linear_SVM(X_train, y_train, X_dev, y_dev)
+        
         self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel([]), train_set=True)
         self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel([]))
         self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel([]))
 
     def run_BoVW(self):
+        """run classifier on BoVW feature (single modality)
+        """
+
         print("\nbuilding a classifier on BoVW features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoVW', verbose=True)
 
-        y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        if self.model == 'RF':
+            y_pred_train, y_pred_dev = self.run_Random_Forest(X_train, y_train, X_dev, y_dev)
+        elif self.model == 'SVM':
+            y_pred_train, y_pred_dev = self.run_Linear_SVM(X_train, y_train, X_dev, y_dev)
+        
         self.get_UAR(y_pred_train, np.ravel(y_train), np.ravel(train_inst), train_set=True)
         self.get_UAR(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
         self.get_post_probability(y_pred_dev, np.ravel(y_dev), np.ravel(dev_inst))
 
-    def run_linear_SVM(self, X_train, y_train, X_dev, y_dev):
-        pass
+    def run_Linear_SVM(self, X_train, y_train, X_dev, y_dev):
+        """run Linear SVM on specified feature
+        ---
+        # para X_train: training data
+        # para y_train: training labels
+        # para X_dev: validation data
+        # para y_dev: validation labels
+        """
+        # data normalization is a must for SVM
+        y_train, y_dev = y_train.T.values, y_dev.T.values
+        X_train, X_dev = preprocessing.normalize(X_train), preprocessing.normalize(X_dev)
+
+        if not self.parameters_SVM['C']:
+            print("\nhyperparameters are not tuned yet")
+            self.tune_parameters_Linear_SVM(X_train, y_train)
+        else:
+            print("\nno fine-tuning this time")
+        
+        print("\ntraining a Linear SVM Classifier ...")
+        linear_SVM = svm.SVC(kernel='linear', C=self.parameters_SVM['C'])
+        linear_SVM.fit(X_train, np.ravel(y_train))
+
+        print("\ntesting the Linear SVM Classifier ...")
+        y_pred_train = linear_SVM.predict(X_train)
+        y_pred_dev = linear_SVM.predict(X_dev)
+        print("\naccuracy on training set: %.3f" % metrics.accuracy_score(y_pred_train, np.ravel(y_train)))
+        print("\naccuracy on development set: %.3f" % metrics.accuracy_score(y_pred_dev, np.ravel(y_dev)))
+        
+        if self.name == 'AU':
+            self.session_prob = linear_SVM.predict_proba(X_dev)
+        
+        return y_pred_train, y_pred_dev
+
+    def tune_parameters_Linear_SVM(self, data, labels):
+        """fine tune hyperparameters for Linear SVM (parameters_SVM)
+        ---
+        # para data: training data to tune the classifier
+        # para labels: training labels to tune the classifier
+        """
+        parameters = {
+            "kernel": "linear",
+            "C": model_config['baseline']['SVM']['C']
+        }
+
+        print("\nrunning the Grid Search for Linear SVM classifier ...")
+        clf = GridSearchCV(svm.SVC(), parameters, cv=10, n_jobs=N_JOBS, verbose=1)
+        data = preprocessing.normalize(data)
+
+        clf.fit(data, labels)
+        print(clf.score(data, labels))
+        print(clf.best_params_)
+        print(clf.cv_results_['mean_test_score'])
+        print(clf.cv_results_['std_test_score'])
+
+        self.parameters_SVM['C'] = clf.best_params_['C']
+
+        # write to model json file
+        filename = os.path.join('config', 'baseline_%s_%s_params.json' % (self.model, self.name))
+        with open(filename, 'w') as output:
+            json.dump(clf.best_params_, output)
+            output.write("\n")
+        output.close()
 
     def run_Random_Forest(self, X_train, y_train, X_dev, y_dev):
+        """run Random Forest on specified feature
+        ---
+        # para X_train: training data
+        # para y_train: training labels
+        # para X_dev: validation data
+        # para y_dev: validation labels
+        """
         y_train, y_dev = y_train.T.values, y_dev.T.values
 
         if not self.parameters_RF['n_estimators'] or not self.parameters_RF['max_features'] or not self.parameters_RF['max_depth'] or not self.parameters_RF['criterion']:
@@ -166,10 +318,13 @@ class BaseLine():
             self.session_prob = forest.predict_proba(X_dev)
 
         return y_pred_train, y_pred_dev
-
+    
     def tune_parameters_Random_Forest(self, data, labels):
+        """fine tune hyperparameters for Random Forest (parameters_RF)
+        ---
         # para data: training data to tune the classifier
         # para labels: training labels to tune the classifier
+        """
         parameters = {
             "n_estimators": model_config['baseline']['random_forest']['n_estimators'],
             "max_features": model_config['baseline']['random_forest']['max_features'],
@@ -192,25 +347,26 @@ class BaseLine():
         self.parameters_RF['criterion'] = clf.best_params_['criterion']
 
         # write to model json file
-        with open('./config/model.json', 'a+') as output:
+        filename = os.path.join('config', '%s_%s_params.json' % (self.model, self.name))
+        with open(filename, 'w') as output:
             json.dump(clf.best_params_, output)
             output.write("\n")
         output.close()
 
-    # apply late fusion strategy on posterior probabilities of two modalities
     def fusion(self, feature_1, feature_2):
+        """apply late fusion strategy on posterior probabilities of two modalities
+        ---
         # para feature_1: 1st of fused representations
         # para feature_2: 2nd of fused representations
+        """
         prob_dev_1 = load_post_probability(feature_1)
         prob_dev_2 = load_post_probability(feature_2)
         
-        assert prob_dev_1.shape == prob_dev_2.shape
-        """
-        PROB_DEV_1 = (3, 60)
-        PROB_DEV_2 = (3, 60)
-        """
+        assert prob_dev_1.shape == prob_dev_2.shape        
+        # PROB_DEV_1 = (3, 60)
+        # PROB_DEV_2 = (3, 60)
 
-        _, _, level_dev, level_train = load_label()
+        _, _, level_dev, _ = load_label()
         y_dev = level_dev.values[:,1]
         # get the shape
         (_, num_inst) = prob_dev_1.shape
@@ -223,15 +379,17 @@ class BaseLine():
 
         self.get_UAR(y_pred, y_dev, np.array([]), fusion=True)
 
-    # get UAR metric for both frame-level and session-level
     def get_UAR(self, y_pred, y_dev, inst, frame=True, session=True, train_set=False, fusion=False):
+        """get UAR metric for both frame-level and session-level
+        ---
         # para y_pred: predicted mania level for each frame
         # para y_dev: actual mania level for each frame
         # para inst: session mappings of frames
-        # para frame:
-        # para session:
-        # para train_set:
-        # para fusion:
+        # para frame: whether to get frame-level UAR or not
+        # para session: whether to get session-level UAR or not
+        # para train_set: whether to get UAR on training set or not
+        # para fusion: whether to fuse UAR or not
+        """
         frame_res, session_res = 0.0, 0.0
 
         # UAR for session-level only (AU features)
@@ -282,7 +440,7 @@ class BaseLine():
 
                 # get recalls for three classes
                 recall = [0] * 3
-                _, _, level_dev, level_train = load_label()
+                _, _, level_dev, _ = load_label()
                 labels = level_dev.iloc[:, 1].tolist()
                 labels = np.array(labels, dtype=np.int8)
                 for i in range(3):
@@ -298,11 +456,13 @@ class BaseLine():
             if not train_set:
                 save_results(frame_res, session_res, self.name, 'single')
 
-    # get posteriors probabilities for features
     def get_post_probability(self, y_pred, y_test, inst):
+        """get posteriors probabilities for features
+        ---
         # para y_pred: predicted mania level for each frame
         # para y_dev: actual mania level for each frame
         # para inst: session mappings of frames
+        """
         if self.name != 'AU':
             len_inst = inst.max()
             prob_dev = np.zeros((3, len_inst))

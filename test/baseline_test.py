@@ -4,7 +4,7 @@ from src.baseline import BaseLine
 
 class TestBaseLine(unittest.TestCase):
     def test_MFCC(self):
-        classifier = BaseLine('RF', 'MFCC', test=True)
+        classifier = BaseLine('SVM', 'MFCC', test=True)
         classifier.run()
 
     def test_eGeMAPS(self):

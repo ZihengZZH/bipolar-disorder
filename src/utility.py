@@ -25,8 +25,9 @@ save_results(frame_res, session_res, name, modality)
 data_config = json.load(open('./config/data.json', 'r'))
 
 
-# load the labels (age, gender, YMRS)
 def load_label(partition=True, verbose=False):
+    """load the labels (age, gender, YMRS)
+    """
     # para partition: whether to partition labels into train/dev sets
     # para verbose: whether or not to output more statistical results
     # return: YMRS score and Mania level for train/dev set
@@ -64,8 +65,9 @@ def load_label(partition=True, verbose=False):
         return ymrs_score, mania_level, 0, 0
 
 
-# retrieve the sample name
 def get_sample(partition, index):
+    """retrieve the sample name
+    """
     # para partition: which partition, train/dev/test
     # para index: the index of sample
     if index < 0:
@@ -92,8 +94,9 @@ def get_sample(partition, index):
     return sample_name
 
 
-# load the audio LLDs
 def load_LLD(LLD_name, partition, index, verbose=False):
+    """load the audio LLDs
+    """
     # para LLD_name: which LLDs, MFCC or eGeMAPS or openFace
     # para partition: which partition, train/dev/test
     # para index: the index of sample
@@ -128,8 +131,9 @@ def load_LLD(LLD_name, partition, index, verbose=False):
         return
 
 
-# load the baseline features 
 def load_baseline_feature(feature_name, partition, index, verbose=False):
+    """load the baseline features
+    """
     # para feature_name: which feature, BoAW or eGeMAPS or BoVW
     # para partition: which partition, train/dev/test
     # para index: the index of sample
@@ -186,8 +190,9 @@ def load_baseline_feature(feature_name, partition, index, verbose=False):
         return
 
 
-# load the features pre-processed by MATLAB or Python as below
 def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
+    """load the features pre-processed by MATLAB or Python
+    """
     # para feature_name: which feature, BoAW or eGeMAPS or BoVW
     # para matlab: whether or not to use MATLAB processed features
     # para verbose: whether or not to output more results
@@ -226,8 +231,9 @@ def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
     return train_data, train_label, train_inst, dev_data, dev_label, dev_inst
 
 
-# pre-process the baseline features (LLDs)
 def preproc_baseline_feature(feature_name, verbose=False):
+    """pre-process the baseline features (LLDs)
+    """
     # para feature_name: which feature to pre-process
     # para verbose: whether or not to output more results
     no_train = data_config['train_len']
@@ -326,8 +332,9 @@ def preproc_baseline_feature(feature_name, verbose=False):
         instf.close()
 
 
-# save classification results to external files (I\O)
 def save_results(frame_res, session_res, name, modality):
+    """save classification results to external files (I\O)
+    """
     # para frame_res: classification UAR for frame-level
     # para session_res: classification UAR for session-level
     # para name: which feature is used
@@ -351,16 +358,18 @@ def save_results(frame_res, session_res, name, modality):
         return
 
 
-# save posteriors probabilities to external files
 def save_post_probability(prob_dev, name):
+    """save posteriors probabilities to external files
+    """
     # para prob_dev: posteriors probabilities of development set
     # para name: which feature is used
     filename = os.path.join(data_config['result_single'], '%s_post_prob' % name)
     np.save(filename, prob_dev)
 
 
-# load posteriors probabilities from external files
 def load_post_probability(name):
+    """load posteriors probabilities from external files
+    """
     # para name: which feature is used
     filename = os.path.join(data_config['result_single'], '%s_post_prob.npy' % name)
     prob_dev = np.load(filename)
