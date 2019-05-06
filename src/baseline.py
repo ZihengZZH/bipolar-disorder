@@ -8,6 +8,7 @@ from sklearn import svm, metrics, preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import KFold
 
 from src.utility import load_proc_baseline_feature, load_label, save_results
 from src.utility import save_post_probability, load_post_probability
@@ -31,7 +32,7 @@ BoVW            | window size (11s)
 # load the external configuration file
 data_config = json.load(open('./config/data.json', 'r'))
 model_config = json.load(open('./config/model.json', 'r'))
-N_JOBS = multiprocessing.cpu_count() * 2
+N_JOBS = multiprocessing.cpu_count()
 
 
 class BaseLine():
@@ -59,14 +60,20 @@ class BaseLine():
         main function
     run_[MFCC,eGeMAPS,DeepSpectrum,BoAW,AU,BoVW](): public
         run classifier on specified feature (single modality)
+    cross_validate_model(): public
+        run cross validation on proposed model using specified feature
     run_Linear_SVM(X_train, y_train, X_dev, y_dev): public
         run Linear SVM on specified feature
     tune_parameters_Linear_SVM(data, labels): public
         fine tune hyperparameters for Linear SVM (parameters_SVM)
+    cross_validate_Linear_SVM(X_train, y_train, X_dev, y_dev, inst_train, inst_dev): public
+        cross validate Linear SVM classifier using specified feature
     run_Random_Forest(X_train, y_train, X_dev, y_dev): public
         run Random Forest on specified feature
     tune_parameters_Random_Forest(data, labels): public
         fine tune hyperparameters for Random Forest (parameters_RF)
+    cross_validate_Random_Forest(X_train, y_train, X_dev, y_dev, inst_train, inst_dev): public
+        cross validate Random Forest classifier using specified feature
     fusion(feature_1, feature_2): public
         apply late fusion strategy on posterior probabilities of two modalities
     get_UAR(y_pred, y_dev, inst): public
@@ -86,6 +93,7 @@ class BaseLine():
         self.parameters_SVM = dict()
         self.parameters_RF = dict()
         self._load_basics()
+        self.frame_res, self.session_res = 0.0, 0.0
         self.session_prob = None # for AU feature only
         print("\nbaseline system initialized, model %s feature %s" % (self.model, self.name))
 
@@ -99,11 +107,20 @@ class BaseLine():
             self.parameters_RF['criterion'] = 'entropy'
             self.parameters_SVM['C'] = 10
         else:
-            self.parameters_RF['n_estimators'] = None
-            self.parameters_RF['max_features'] = None
-            self.parameters_RF['max_depth'] = None
-            self.parameters_RF['criterion'] = None
-            self.parameters_SVM['C'] = None
+            filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model, self.name))
+            if os.path.isfile(filename):
+                if self.model == 'SVM':
+                    self.parameters_SVM = json.load(open(filename, 'r'))
+                    print("\nhyperparameters set: %s" % self.parameters_SVM)
+                if self.model == 'RF':
+                    self.parameters_RF = json.load(open(filename, 'r'))
+                    print("\nhyperparameters set: %s" % self.parameters_RF)
+            else:
+                self.parameters_RF['n_estimators'] = None
+                self.parameters_RF['max_features'] = None
+                self.parameters_RF['max_depth'] = None
+                self.parameters_RF['criterion'] = None
+                self.parameters_SVM['C'] = None
 
     def run(self):
         """main function of BaseLine() instance
@@ -127,6 +144,17 @@ class BaseLine():
             self.run_AU()
         elif self.name == 'BoVW':
             self.run_BoVW()
+
+    def cross_validate_model(self):
+        """run cross validation on proposed model using specified feature
+        """
+        if self.model == 'SVM':
+            X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature(self.name, verbose=True)
+            self.cross_validate_Linear_SVM(X_train, y_train, X_dev, y_dev, train_inst, dev_inst)
+        
+        elif self.model == 'RF':
+            X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature(self.name, verbose=True)
+            self.cross_validate_Random_Forest(X_train, y_train, X_dev, y_dev, train_inst, dev_inst)
 
     def run_MFCC(self):
         """run classifier on MFCC feature (single modality)
@@ -264,13 +292,14 @@ class BaseLine():
         # para labels: training labels to tune the classifier
         """
         parameters = {
-            "kernel": "linear",
+            "kernel": ["linear"],
             "C": model_config['baseline']['SVM']['C']
         }
 
         print("\nrunning the Grid Search for Linear SVM classifier ...")
-        clf = GridSearchCV(svm.SVC(), parameters, cv=10, n_jobs=N_JOBS, verbose=1)
+        clf = GridSearchCV(svm.SVC(), parameters, cv=10, n_jobs=N_JOBS, verbose=3)
         data = preprocessing.normalize(data)
+        labels = np.ravel(labels)
 
         clf.fit(data, labels)
         print(clf.score(data, labels))
@@ -281,11 +310,46 @@ class BaseLine():
         self.parameters_SVM['C'] = clf.best_params_['C']
 
         # write to model json file
-        filename = os.path.join('config', 'baseline_%s_%s_params.json' % (self.model, self.name))
+        filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model, self.name))
         with open(filename, 'w') as output:
             json.dump(clf.best_params_, output)
             output.write("\n")
         output.close()
+
+    def cross_validate_Linear_SVM(self, X_train, y_train, X_dev, y_dev, inst_train, inst_dev):
+        """cross validate Linear SVM classifier using specified feature
+        ---
+        # para X_train, X_dev: training / development data
+        # para y_train, y_dev: training / development label
+        # para inst_train, inst_dev: training / development instance (if applicable)
+        """
+        y_train, y_dev = y_train.T.values, y_dev.T.values
+        inst_train, inst_dev = inst_train.T.values, inst_dev.T.values
+        # concatenate data/labels/instances
+        X = np.vstack((X_train, X_dev))
+        y = np.ravel(np.vstack((y_train, y_dev)))
+        inst = np.ravel(np.vstack((inst_train, inst_dev)))
+        # load optimal hyperparameters
+        filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model, self.name))
+        if os.path.isfile(filename):
+            self.parameters_SVM = json.load(open(filename, 'r'))
+        # 10-fold cross-validation
+        kf = KFold(n_splits=10)
+        frame_results, session_results = [], []
+        for idx_train, idx_test in kf.split(X):
+            X_train, X_test = X[idx_train], X[idx_test]
+            y_train, y_test = y[idx_train], y[idx_test]
+            inst_test = inst[idx_test]
+
+            linear_SVM = svm.SVC(kernel='linear', C=self.parameters_SVM['C'])
+            linear_SVM.fit(X_train, y_train)
+            y_pred = linear_SVM.predict(X_test)
+            
+            self.get_UAR(y_pred, y_test, inst_test)
+            frame_results.append(self.frame_res)
+            session_results.append(self.session_res)
+        
+        save_results(frame_results, session_results, self.model, self.name, 'baseline', cv=True)
 
     def run_Random_Forest(self, X_train, y_train, X_dev, y_dev):
         """run Random Forest on specified feature
@@ -333,7 +397,7 @@ class BaseLine():
         }
 
         print("\nrunning the Grid Search for Random Forest classifier ...")
-        clf = GridSearchCV(RandomForestClassifier(), parameters, cv=10, n_jobs=N_JOBS, verbose=1)
+        clf = GridSearchCV(RandomForestClassifier(), parameters, cv=10, n_jobs=N_JOBS, verbose=3)
 
         clf.fit(data, labels)
         print(clf.score(data, labels))
@@ -347,11 +411,46 @@ class BaseLine():
         self.parameters_RF['criterion'] = clf.best_params_['criterion']
 
         # write to model json file
-        filename = os.path.join('config', '%s_%s_params.json' % (self.model, self.name))
+        filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model, self.name))
         with open(filename, 'w') as output:
             json.dump(clf.best_params_, output)
             output.write("\n")
         output.close()
+
+    def cross_validate_Random_Forest(self, X_train, y_train, X_dev, y_dev, inst_train, inst_dev):
+        """cross validate Random Forest classifier using specified feature
+        ---
+        # para X_train, X_dev: training / development data
+        # para y_train, y_dev: training / development label
+        # para inst_train, inst_dev: training / development instance (if applicable)
+        """
+        y_train, y_dev = y_train.T.values, y_dev.T.values
+        inst_train, inst_dev = inst_train.T.values, inst_dev.T.values
+        # concatenate data/labels/instances
+        X = np.vstack((X_train, X_dev))
+        y = np.ravel(np.vstack((y_train, y_dev)))
+        inst = np.ravel(np.vstack((inst_train, inst_dev)))
+        # load optimal hyperparameters
+        filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model, self.name))
+        if os.path.isfile(filename):
+            self.parameters_RF = json.load(open(filename, 'r'))
+        # 10-fold cross-validation
+        kf = KFold(n_splits=10)
+        frame_results, session_results = [], []
+        for idx_train, idx_test in kf.split(X):
+            X_train, X_test = X[idx_train], X[idx_test]
+            y_train, y_test = y[idx_train], y[idx_test]
+            inst_test = inst[idx_test]
+
+            forest = RandomForestClassifier(n_estimators=self.parameters_RF['n_estimators'], max_features=self.parameters_RF['max_features'], max_depth=self.parameters_RF['max_depth'] , criterion=self.parameters_RF['criterion'], verbose=1, n_jobs=N_JOBS)
+            forest.fit(X_train, y_train)
+            y_pred = forest.predict(X_test)
+            
+            self.get_UAR(y_pred, y_test, inst_test)
+            frame_results.append(self.frame_res)
+            session_results.append(self.session_res)
+        
+        save_results(frame_results, session_results, self.model, self.name, 'baseline', cv=True)
 
     def fusion(self, feature_1, feature_2):
         """apply late fusion strategy on posterior probabilities of two modalities
@@ -359,8 +458,8 @@ class BaseLine():
         # para feature_1: 1st of fused representations
         # para feature_2: 2nd of fused representations
         """
-        prob_dev_1 = load_post_probability(feature_1)
-        prob_dev_2 = load_post_probability(feature_2)
+        prob_dev_1 = load_post_probability(self.model, feature_1)
+        prob_dev_2 = load_post_probability(self.model, feature_2)
         
         assert prob_dev_1.shape == prob_dev_2.shape        
         # PROB_DEV_1 = (3, 60)
@@ -390,7 +489,7 @@ class BaseLine():
         # para train_set: whether to get UAR on training set or not
         # para fusion: whether to fuse UAR or not
         """
-        frame_res, session_res = 0.0, 0.0
+        self.frame_res, self.session_res = 0.0, 0.0
 
         # UAR for session-level only (AU features)
         if not inst.any():
@@ -400,16 +499,16 @@ class BaseLine():
                 index, = np.where(y_dev == (i+1))
                 index_pred, = np.where(y_pred[index] == (i+1))
                 recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
-            session_res = np.mean(recall)
+            self.session_res = np.mean(recall)
             if not fusion:
                 if train_set:
-                    print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (self.name, session_res))
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (self.name, self.session_res))
                 else:
-                    print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (self.name, session_res))
-                    save_results(frame_res, session_res, self.name, 'single')
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (self.name, self.session_res))
+                    save_results(self.frame_res, self.session_res, self.model, self.name, 'baseline')
             else:
-                print("\nUAR (mean of recalls) using fusion based on session-level is %.2f" % session_res)
-                save_results(frame_res, session_res, 'fusion', 'multiple')
+                print("\nUAR (mean of recalls) using fusion based on session-level is %.2f" % self.session_res)
+                save_results(self.frame_res, self.session_res, self.model, 'fusion', 'baseline')
 
         else:
             # UAR for frame-level
@@ -420,11 +519,11 @@ class BaseLine():
                     index, = np.where(y_dev == (i+1))
                     index_pred, = np.where(y_pred[index] == (i+1))
                     recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
-                frame_res = np.mean(recall)
+                self.frame_res = np.mean(recall)
                 if train_set:
-                    print("\nUAR (mean of recalls) using %s feature based on frame-level (training set) is %.2f" % (self.name, frame_res))
+                    print("\nUAR (mean of recalls) using %s feature based on frame-level (training set) is %.2f" % (self.name, self.frame_res))
                 else:
-                    print("\nUAR (mean of recalls) using %s feature based on frame-level (development set) is %.2f" % (self.name, frame_res))
+                    print("\nUAR (mean of recalls) using %s feature based on frame-level (development set) is %.2f" % (self.name, self.frame_res))
             
             # UAR for session-level
             if session:
@@ -447,14 +546,14 @@ class BaseLine():
                     index, = np.where(labels == (i+1))
                     index_pred, = np.where(decision[index] == (i+1))
                     recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
-                session_res = np.mean(recall)
+                self.session_res = np.mean(recall)
                 if train_set:
-                    print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (self.name, session_res))
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (self.name, self.session_res))
                 else:
-                    print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (self.name, session_res))
+                    print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (self.name, self.session_res))
             
             if not train_set:
-                save_results(frame_res, session_res, self.name, 'single')
+                save_results(self.frame_res, self.session_res, self.model, self.name, 'baseline')
 
     def get_post_probability(self, y_pred, y_test, inst):
         """get posteriors probabilities for features
@@ -477,4 +576,4 @@ class BaseLine():
             if self.session_prob.any():
                 prob_dev = self.session_prob.T
 
-        save_post_probability(prob_dev, self.name)
+        save_post_probability(prob_dev, self.model, self.name)

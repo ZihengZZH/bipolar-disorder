@@ -332,22 +332,36 @@ def preproc_baseline_feature(feature_name, verbose=False):
         instf.close()
 
 
-def save_results(frame_res, session_res, name, modality):
+def save_results(frame_results, session_results, model, name, modality, cv=False):
     """save classification results to external files (I\O)
     """
     # para frame_res: classification UAR for frame-level
     # para session_res: classification UAR for session-level
+    # para model: which model is used
     # para name: which feature is used
     # para modality: either single or multiple
+    frame_res = frame_results if not cv else np.mean(frame_results)
+    session_res = session_results if not cv else np.mean(session_results)
+
     if modality == 'single':
-        filename = os.path.join(data_config['result_single'], '%s_result.txt' % name)
+        filename = os.path.join(data_config['result_single'], '%s_%s_result.txt' % (model, name)) if not cv else os.path.join(data_config['result_single'], 'cv_%s_%s_result.txt' % (model, name))
+
         with smart_open(filename, 'w', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
             f.write("UAR on session-level: %.3f \n" % session_res)
         f.close()
         
     elif modality == 'multiple':
-        filename = os.path.join(data_config['result_multi'], '%s_result.txt' % name)
+        filename = os.path.join(data_config['result_multi'], '%s_%s_result.txt' % (model, name)) if not cv else os.path.join(data_config['result_multi'], 'cv_%s_%s_result.txt' % (model, name))
+
+        with smart_open(filename, 'w', encoding='utf-8') as f:
+            f.write("UAR on frame-level: %.3f \n" % frame_res)
+            f.write("UAR on session-level: %.3f \n" % session_res)
+        f.close()
+
+    elif modality == 'baseline':
+        filename = os.path.join(data_config['result_baseline'], '%s_%s_result.txt' % (model, name)) if not cv else os.path.join(data_config['result_baseline'], 'cv_%s_%s_result.txt' % (model, name))
+
         with smart_open(filename, 'w', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
             f.write("UAR on session-level: %.3f \n" % session_res)
@@ -358,19 +372,21 @@ def save_results(frame_res, session_res, name, modality):
         return
 
 
-def save_post_probability(prob_dev, name):
+def save_post_probability(prob_dev, model, name):
     """save posteriors probabilities to external files
     """
     # para prob_dev: posteriors probabilities of development set
+    # para model: which model is used
     # para name: which feature is used
-    filename = os.path.join(data_config['result_single'], '%s_post_prob' % name)
+    filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob' % (model, name))
     np.save(filename, prob_dev)
 
 
-def load_post_probability(name):
+def load_post_probability(model, name):
     """load posteriors probabilities from external files
     """
+    # para model: which model is used
     # para name: which feature is used
-    filename = os.path.join(data_config['result_single'], '%s_post_prob.npy' % name)
+    filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob.npy' % (model, name))
     prob_dev = np.load(filename)
     return prob_dev

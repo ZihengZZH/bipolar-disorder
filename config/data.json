@@ -42,6 +42,7 @@
     },
     "result_single": "./results/single_modality/",
     "result_multi": "./results/multi_modality/",
+    "result_baseline": "./results/baseline",
     "keepinstance": 5,
     "baseline_MATLAB": {
         "AU": {

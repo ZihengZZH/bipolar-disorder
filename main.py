@@ -10,6 +10,7 @@ def run_baseline_system(model_name, feature_name):
     baseline = BaseLine(model_name, feature_name)
     baseline.run()
 
+
 def main(argv):
     model, feature = '', ''
 
@@ -30,8 +31,7 @@ def main(argv):
     except getopt.GetoptError:
         print("main.py -m <model_name> -f <feature_name>")
         sys.exit(2)
-    
-    
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

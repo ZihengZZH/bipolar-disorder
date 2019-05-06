@@ -4,7 +4,7 @@ from src.baseline import BaseLine
 
 class TestBaseLine(unittest.TestCase):
     def test_MFCC(self):
-        classifier = BaseLine('SVM', 'MFCC', test=True)
+        classifier = BaseLine('RF', 'MFCC', test=True)
         classifier.run()
 
     def test_eGeMAPS(self):
@@ -30,6 +30,10 @@ class TestBaseLine(unittest.TestCase):
     def test_fusion(self):
         classifier = BaseLine('RF', 'MFCC', test=True)
         classifier.fusion('Deep', 'AU')
+
+    def test_cross_validate_model(self):
+        classifier = BaseLine('RF', 'MFCC')
+        classifier.cross_validate_model()
 
 
 if __name__ == '__main__':
