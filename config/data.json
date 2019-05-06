@@ -17,8 +17,9 @@
             "video": {
                 "BoVW": "/media/zzh/Ziheng-700G/Dataset/BD dataset/baseline_features/features_video_BoVW_A20_C1000/"
             }
-        }
-
+        },
+        "audio": "/media/zzh/Ziheng-700G/Dataset/BD dataset/recordings/recordings_audio/",
+        "audio_gcs": "gs://zz362/bipolar_disorder/"
     },
     "data_path_local": {
         "label_metadata": "./dataset/",
@@ -117,5 +118,6 @@
             "dev_label": "./dataset/baseline_features_proc/Deep_label_2.csv",
             "dev_inst": "./dataset/baseline_features_proc/Deep_inst_2.csv"
         }
-    }
+    },
+    "transcript": "./dataset/transcripts/"
 }

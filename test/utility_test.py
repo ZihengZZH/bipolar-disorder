@@ -2,6 +2,7 @@ import unittest
 from src.utility import load_label, load_LLD, load_baseline_feature
 from src.utility import load_proc_baseline_feature
 from src.utility import preproc_baseline_feature
+from src.utility import load_audio_file
 
 
 class TestUtility(unittest.TestCase):
@@ -28,6 +29,11 @@ class TestUtility(unittest.TestCase):
         load_proc_baseline_feature('BoAW', verbose=True)
         load_proc_baseline_feature('BoVW', verbose=True)
         load_proc_baseline_feature('AU', verbose=True)
+    
+    def test_load_audio_file(self):
+        load_audio_file(None, None, verbose=True)
+        load_audio_file('dev', 23, verbose=True)
+
 
 if __name__ == "__main__":
     unittest.main()

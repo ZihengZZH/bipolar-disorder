@@ -16,19 +16,22 @@ dataset:
   ☐ video data analysis
     ☐ BoVW
     ☐ Action Units (openFace)
+  ✔ baseline cross validation @done(19-05-06 20:49)
   ☐ cross modality learning?
     (refer to bimodal speech recognition)
     ☐ multimodal learning
     ☐ cross modality learning
     ☐ shared representation learning
   ☐ text data analysis?
-    ☐ google translate
+    ✔ google transcribe @done(19-05-06 20:49)
+    ☐ translation from Turkish to English
     ☐ sentiment detection
   
 project:
   ✔ utility.py @done(19-02-22 17:59)
   ✔ baseline.py (completely) @done(19-05-05 14:56)
   ☐ audoencoder.py
+  ☐ speech2text.py
 
 modification:
   ☐ native -> collections (high-performance)

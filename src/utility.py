@@ -25,6 +25,88 @@ save_results(frame_res, session_res, name, modality)
 data_config = json.load(open('./config/data.json', 'r'))
 
 
+def get_sample(partition, index):
+    """retrieve the sample name
+    """
+    # para partition: which partition, train/dev/test
+    # para index: the index of sample
+    if index < 0:
+        print("\nINCORRECT INDEX INPUT")
+        return 
+    sample_name = ''
+    if partition == 'train':
+        if index > 104:
+            print("\nSAMPLE NOT EXIST")
+        else:
+            sample_name = 'train_' + str(index).zfill(3)
+    elif partition == 'dev':
+        if index > 60:
+            print("\nSAMPLE NOT EXIST")
+        else:
+            sample_name = 'dev_' + str(index).zfill(3)
+    elif partition == 'test':
+        if index > 54:
+            print("\nSAMPLE NOT EXIST")
+        else:
+            sample_name = 'test_' + str(index).zfill(3)
+    else:
+        print("\nINCORRECT PARTITION INPUT")
+    return sample_name
+
+
+def load_audio_file(partition, index, gcs=False, verbose=False):
+    """load audio files for transcribing
+    """
+    # para partition: which partition, train/dev/test
+    # para index: the index of sample
+    # para verbose: whether or not to output more results
+    # return: array of audio filenames 
+    audio_dir = data_config['data_path_700']['audio'] if not gcs else data_config['data_path_700']['audio_gcs']
+    audio_list = []
+
+    if not partition and not index:
+        len_train = data_config['length_train']
+        len_dev = data_config['length_dev']
+        len_test = data_config['length_test']
+
+        for i in range(len_train):
+            filename = get_sample('train', (i+1)) + '.wav'
+            audio_list.append(os.path.join(audio_dir, filename))
+            if verbose:
+                print("load audio file:", audio_list[-1])
+
+        for j in range(len_dev):
+            filename = get_sample('dev', (j+1)) + '.wav'
+            audio_list.append(os.path.join(audio_dir, filename))
+            if verbose:
+                print("load audio file:", audio_list[-1])
+
+        for k in range(len_test):
+            filename = get_sample('test', (k+1)) + '.wav'
+            audio_list.append(os.path.join(audio_dir, filename))
+            if verbose:
+                print("load audio file:", audio_list[-1])
+
+    elif partition and index:
+        filename = get_sample(partition, index) + '.wav'
+        audio_list.append(os.path.join(audio_dir, filename))
+        if verbose:
+            print("load audio file:", audio_list[-1])
+    
+    return audio_list
+
+
+def save_transcript(partition, index, transcript):
+    # para partition: which partition, train/dev/test
+    # para index: the index of sample
+    # para transcript: transcript to save
+    save_dir = data_config['transcript']
+    filename = get_sample(partition, index) + '.txt'
+    with smart_open(os.path.join(save_dir, filename), 'w', encoding='utf-8') as output:
+        output.write(transcript)
+        output.write("\n")
+    output.close()
+
 def load_label(partition=True, verbose=False):
     """load the labels (age, gender, YMRS)
     """
@@ -63,35 +145,6 @@ def load_label(partition=True, verbose=False):
         return ymrs_train, ymrs_dev, level_dev, level_train
     else:
         return ymrs_score, mania_level, 0, 0
-
-
-def get_sample(partition, index):
-    """retrieve the sample name
-    """
-    # para partition: which partition, train/dev/test
-    # para index: the index of sample
-    if index < 0:
-        print("\nINCORRECT INDEX INPUT")
-        return 
-    sample_name = ''
-    if partition == 'train':
-        if index > 104:
-            print("\nSAMPLE NOT EXIST")
-        else:
-            sample_name = 'train_' + str(index).zfill(3)
-    elif partition == 'dev':
-        if index > 60:
-            print("\nSAMPLE NOT EXIST")
-        else:
-            sample_name = 'dev_' + str(index).zfill(3)
-    elif partition == 'test':
-        if index > 54:
-            print("\nSAMPLE NOT EXIST")
-        else:
-            sample_name = 'test_' + str(index).zfill(3)
-    else:
-        print("\nINCORRECT PARTITION INPUT")
-    return sample_name
 
 
 def load_LLD(LLD_name, partition, index, verbose=False):
@@ -333,7 +386,7 @@ def preproc_baseline_feature(feature_name, verbose=False):
 
 
 def save_results(frame_results, session_results, model, name, modality, cv=False):
-    """save classification results to external files (I\O)
+    """save classification results to external files (IO)
     """
     # para frame_res: classification UAR for frame-level
     # para session_res: classification UAR for session-level
