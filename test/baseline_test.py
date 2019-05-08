@@ -1,39 +1,31 @@
 import unittest
-from src.baseline import BaseLine
+from src.model.baseline import BaseLine
 
 
 class TestBaseLine(unittest.TestCase):
     def test_MFCC(self):
-        classifier = BaseLine('RF', 'MFCC', test=True)
+        classifier = BaseLine('SVM', 'MFCC', test=True)
         classifier.run()
 
-    def test_eGeMAPS(self):
-        classifier = BaseLine('RF', 'eGeMAPS', test=True)
-        classifier.run()
+    # def test_eGeMAPS(self):
+    #     classifier = BaseLine('SVM', 'eGeMAPS', test=True)
+    #     classifier.run()
     
-    def test_DeepSpectrum(self):
-        classifier = BaseLine('RF', 'Deep', test=True)
-        classifier.run()
+    # def test_DeepSpectrum(self):
+    #     classifier = BaseLine('SVM', 'Deep', test=True)
+    #     classifier.run()
     
-    def test_BoAW(self):
-        classifier = BaseLine('RF', 'BoAW', test=True)
-        classifier.run()
+    # def test_BoAW(self):
+    #     classifier = BaseLine('SVM', 'BoAW', test=True)
+    #     classifier.run()
     
     def test_AU(self):
-        classifier = BaseLine('RF', 'AU', test=True)
+        classifier = BaseLine('SVM', 'AU', test=True)
         classifier.run()
 
-    def test_BoVW(self):
-        classifier = BaseLine('RF', 'BoVW', test=True)
-        classifier.run()
-
-    def test_fusion(self):
-        classifier = BaseLine('RF', 'MFCC', test=True)
-        classifier.fusion('Deep', 'AU')
-
-    def test_cross_validate_model(self):
-        classifier = BaseLine('RF', 'MFCC')
-        classifier.cross_validate_model()
+    # def test_BoVW(self):
+    #     classifier = BaseLine('SVM', 'BoVW', test=True)
+    #     classifier.run()
 
 
 if __name__ == '__main__':

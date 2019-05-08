@@ -9,15 +9,30 @@ from smart_open import smart_open
 
 
 '''
-ALL UTILITY FUNCTIONS
+ALL I\O FUNCTIONS
 ----------------------------------------
-load_label(partition=True, verbose=False)
 get_sample(partition, index)
+    retrieve the sample name
+load_audio_file(parition, index, gcs=False, verbose=False)
+    load audio files for transcribing
+save_transcript(partition, index, transcript)
+    save transcript to external files
+load_label(partition=True, verbose=False)
+    load the labels (age, gender, YMRS)
 load_LLD(LLD_name, partition, index, verbose=False)
+    load LLDs with given feature name, partition, index
 load_baseline_feature(feature_name, partition, index, verbose=False)
+    load the baseline features with given partition and index
 load_proc_baseline_feature(feature_name, matlab=True, verbose=False)
+    load the features pre-processed by MATLAB or Python
 preproc_baseline_feature(feature_name, verbose=False)
-save_results(frame_res, session_res, name, modality)
+    pre-process the baseline features (LLDs)
+save_UAR_results(frame_res, session_res, name, modality)
+    save classification results to external files
+save_post_probability(prob_dev, model_name, feature_name)
+    save posteriors probabilities to external files
+load_post_probability(model_name, feature_name)
+    load posteriors probabilities from external files
 '''
 
 
@@ -97,6 +112,8 @@ def load_audio_file(partition, index, gcs=False, verbose=False):
 
 
 def save_transcript(partition, index, transcript):
+    """save transcript to external files
+    """
     # para partition: which partition, train/dev/test
     # para index: the index of sample
     # para transcript: transcript to save
@@ -106,6 +123,7 @@ def save_transcript(partition, index, transcript):
         output.write(transcript)
         output.write("\n")
     output.close()
+
 
 def load_label(partition=True, verbose=False):
     """load the labels (age, gender, YMRS)
@@ -148,7 +166,7 @@ def load_label(partition=True, verbose=False):
 
 
 def load_LLD(LLD_name, partition, index, verbose=False):
-    """load the audio LLDs
+    """load LLDs with given feature name, partition, index
     """
     # para LLD_name: which LLDs, MFCC or eGeMAPS or openFace
     # para partition: which partition, train/dev/test
@@ -185,7 +203,7 @@ def load_LLD(LLD_name, partition, index, verbose=False):
 
 
 def load_baseline_feature(feature_name, partition, index, verbose=False):
-    """load the baseline features
+    """load the baseline features with given partition and index
     """
     # para feature_name: which feature, BoAW or eGeMAPS or BoVW
     # para partition: which partition, train/dev/test
@@ -281,7 +299,7 @@ def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
     except:
         raise Exception("\nFAILED LOADING PRE-PROCESSED FEATURES")
 
-    return train_data, train_label, train_inst, dev_data, dev_label, dev_inst
+    return train_data, np.ravel(train_label.T.values), np.ravel(train_inst), dev_data, np.ravel(dev_label.T.values), np.ravel(dev_inst)
 
 
 def preproc_baseline_feature(feature_name, verbose=False):
@@ -385,19 +403,19 @@ def preproc_baseline_feature(feature_name, verbose=False):
         instf.close()
 
 
-def save_results(frame_results, session_results, model, name, modality, cv=False):
-    """save classification results to external files (IO)
+def save_UAR_results(frame_results, session_results, model_name, feature_name, modality, cv=False):
+    """save UAR results to external files
     """
     # para frame_res: classification UAR for frame-level
     # para session_res: classification UAR for session-level
-    # para model: which model is used
-    # para name: which feature is used
+    # para model_name: which model is used
+    # para feature_name: which feature is used
     # para modality: either single or multiple
     frame_res = frame_results if not cv else np.mean(frame_results)
     session_res = session_results if not cv else np.mean(session_results)
 
     if modality == 'single':
-        filename = os.path.join(data_config['result_single'], '%s_%s_result.txt' % (model, name)) if not cv else os.path.join(data_config['result_single'], 'cv_%s_%s_result.txt' % (model, name))
+        filename = os.path.join(data_config['result_single'], '%s_%s_result.txt' % (model_name, feature_name)) if not cv else os.path.join(data_config['result_single'], 'cv_%s_%s_result.txt' % (model_name, feature_name))
 
         with smart_open(filename, 'w', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
@@ -405,7 +423,7 @@ def save_results(frame_results, session_results, model, name, modality, cv=False
         f.close()
         
     elif modality == 'multiple':
-        filename = os.path.join(data_config['result_multi'], '%s_%s_result.txt' % (model, name)) if not cv else os.path.join(data_config['result_multi'], 'cv_%s_%s_result.txt' % (model, name))
+        filename = os.path.join(data_config['result_multi'], '%s_%s_result.txt' % (model_name, feature_name)) if not cv else os.path.join(data_config['result_multi'], 'cv_%s_%s_result.txt' % (model_name, feature_name))
 
         with smart_open(filename, 'w', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
@@ -413,7 +431,7 @@ def save_results(frame_results, session_results, model, name, modality, cv=False
         f.close()
 
     elif modality == 'baseline':
-        filename = os.path.join(data_config['result_baseline'], '%s_%s_result.txt' % (model, name)) if not cv else os.path.join(data_config['result_baseline'], 'cv_%s_%s_result.txt' % (model, name))
+        filename = os.path.join(data_config['result_baseline'], '%s_%s_result.txt' % (model_name, feature_name)) if not cv else os.path.join(data_config['result_baseline'], 'cv_%s_%s_result.txt' % (model_name, feature_name))
 
         with smart_open(filename, 'w', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
@@ -425,21 +443,21 @@ def save_results(frame_results, session_results, model, name, modality, cv=False
         return
 
 
-def save_post_probability(prob_dev, model, name):
+def save_post_probability(prob_dev, model_name, feature_name):
     """save posteriors probabilities to external files
     """
     # para prob_dev: posteriors probabilities of development set
     # para model: which model is used
     # para name: which feature is used
-    filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob' % (model, name))
+    filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob' % (model_name, feature_name))
     np.save(filename, prob_dev)
 
 
-def load_post_probability(model, name):
+def load_post_probability(model_name, feature_name):
     """load posteriors probabilities from external files
     """
     # para model: which model is used
     # para name: which feature is used
-    filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob.npy' % (model, name))
+    filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob.npy' % (model_name, feature_name))
     prob_dev = np.load(filename)
     return prob_dev

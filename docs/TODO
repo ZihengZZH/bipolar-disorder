@@ -28,10 +28,16 @@ dataset:
     ☐ sentiment detection
   
 project:
-  ✔ utility.py @done(19-02-22 17:59)
-  ✔ baseline.py (completely) @done(19-05-05 14:56)
-  ☐ audoencoder.py
-  ☐ speech2text.py
+  ☐ model
+    ✔ baseline.py @done(19-05-08 22:44)
+    ✔ linear_svm.py @done(19-05-08 20:51)
+    ✔ random_forest.py @done(19-05-08 20:51)
+    ☐ autoencoder.py
+    ☐ speech2text.py
+  ☐ metric
+    ✔ uar.py @done(19-05-08 22:44)
+  ☐ utility
+    ✔ io.py @done(19-05-08 22:44)
 
 modification:
   ☐ native -> collections (high-performance)

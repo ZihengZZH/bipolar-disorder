@@ -5,8 +5,8 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
-from src.utility import load_audio_file
-from src.utility import save_transcript
+from src.utility.io import load_audio_file
+from src.utility.io import save_transcript
 
 
 class Speech2Text():
@@ -91,7 +91,7 @@ class Speech2Text():
         operation = self.client.long_running_recognize(config, audio)
 
         print("\nwaiting for operation to complete ...")
-        response = operation.result(timeout=300)
+        response = operation.result(timeout=500)
 
         # each result for a consecutive portion of audio
         # iterate through them to get transcipts for entire audio

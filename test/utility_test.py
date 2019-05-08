@@ -1,8 +1,8 @@
 import unittest
-from src.utility import load_label, load_LLD, load_baseline_feature
-from src.utility import load_proc_baseline_feature
-from src.utility import preproc_baseline_feature
-from src.utility import load_audio_file
+from src.utility.io import load_label, load_LLD, load_baseline_feature
+from src.utility.io import load_proc_baseline_feature
+from src.utility.io import preproc_baseline_feature
+from src.utility.io import load_audio_file
 
 
 class TestUtility(unittest.TestCase):

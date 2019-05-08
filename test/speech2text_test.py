@@ -1,5 +1,5 @@
 import unittest
-from src.speech2text import Speech2Text
+from src.model.speech2text import Speech2Text
 
 
 class TestSpeech2Text(unittest.TestCase):
