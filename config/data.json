@@ -1,7 +1,9 @@
 {
-    "length_train": 104,
-    "length_dev": 60,
-    "length_test": 54,
+    "length": {
+        "train": 104,
+        "dev": 60,
+        "test": 54
+    },
     "data_path_700": {
         "label_metadata": "/media/zzh/Ziheng-700G/Dataset/BD dataset/",
         "LLD": {
@@ -119,5 +121,11 @@
             "dev_inst": "./dataset/baseline_features_proc/Deep_inst_2.csv"
         }
     },
-    "transcript": "./dataset/transcripts/"
+    "transcript": "./dataset/transcripts/",
+    "transcript_preproc": {
+        "all": "./dataset/transcripts/0_all.txt",
+        "train": "./dataset/transcripts/0_train.txt",
+        "dev": "./dataset/transcripts/0_dev.txt",
+        "test": "./dataset/transcripts/0_test.txt"
+    }
 }

@@ -25,8 +25,6 @@ load_baseline_feature(feature_name, partition, index, verbose=False)
     load the baseline features with given partition and index
 load_proc_baseline_feature(feature_name, matlab=True, verbose=False)
     load the features pre-processed by MATLAB or Python
-preproc_baseline_feature(feature_name, verbose=False)
-    pre-process the baseline features (LLDs)
 save_UAR_results(frame_res, session_res, name, modality)
     save classification results to external files
 save_post_probability(prob_dev, model_name, feature_name)
@@ -80,9 +78,9 @@ def load_audio_file(partition, index, gcs=False, verbose=False):
     audio_list = []
 
     if not partition and not index:
-        len_train = data_config['length_train']
-        len_dev = data_config['length_dev']
-        len_test = data_config['length_test']
+        len_train = data_config['length']['train']
+        len_dev = data_config['length']['dev']
+        len_test = data_config['length']['test']
 
         for i in range(len_train):
             filename = get_sample('train', (i+1)) + '.wav'
@@ -160,7 +158,7 @@ def load_label(partition=True, verbose=False):
         ymrs_train = ymrs_score.iloc[60:, :]
         level_dev = mania_level.iloc[:60, :]
         level_train = mania_level.iloc[60:, :]
-        return ymrs_train, ymrs_dev, level_dev, level_train
+        return ymrs_dev, ymrs_train, level_dev, level_train
     else:
         return ymrs_score, mania_level, 0, 0
 
@@ -300,107 +298,6 @@ def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
         raise Exception("\nFAILED LOADING PRE-PROCESSED FEATURES")
 
     return train_data, np.ravel(train_label.T.values), np.ravel(train_inst), dev_data, np.ravel(dev_label.T.values), np.ravel(dev_inst)
-
-
-def preproc_baseline_feature(feature_name, verbose=False):
-    """pre-process the baseline features (LLDs)
-    """
-    # para feature_name: which feature to pre-process
-    # para verbose: whether or not to output more results
-    no_train = data_config['train_len']
-    no_dev = data_config['dev_len']
-    # keep one instance in every # instances
-    keep = data_config['keepinstance']
-
-    def remove_if_exist(filename):
-        if os.path.isfile(filename):
-            os.remove(filename)
-
-    # load output filenames
-    train_data = data_config['baseline_preproc'][feature_name]['train_data']
-    train_label = data_config['baseline_preproc'][feature_name]['train_label']
-    train_inst = data_config['baseline_preproc'][feature_name]['train_inst']
-    dev_data = data_config['baseline_preproc'][feature_name]['dev_data']
-    dev_label = data_config['baseline_preproc'][feature_name]['dev_label']
-    dev_inst = data_config['baseline_preproc'][feature_name]['dev_inst']
-
-    # remove file if exists
-    remove_if_exist(train_data)
-    remove_if_exist(train_label)
-    remove_if_exist(train_inst)
-    remove_if_exist(dev_data)
-    remove_if_exist(dev_label)
-    remove_if_exist(dev_inst)
-
-    # load the labels
-    ymrs_train, ymrs_dev, level_dev, level_train = load_label()
-
-    for partition in ['train', 'dev']:
-        index_range = no_train if partition == 'train' else no_dev
-        if verbose:
-            print("\n----preprocessing on %s, dataset %s----" % (feature_name, partition))
-        
-        if partition == 'train':
-            data_loc, label_loc, inst_loc = train_data, train_label, train_inst
-        else:
-            data_loc, label_loc, inst_loc = dev_data, dev_label, dev_inst
-
-        dataf = smart_open(data_loc, 'a+', encoding='utf-8')
-        labelf = smart_open(label_loc, 'a+', encoding='utf-8')
-        instf = smart_open(inst_loc, 'a+', encoding='utf-8')
-
-        for id in range(1, index_range+1):
-            sample = get_sample(partition, id)
-
-            if partition == 'train':
-                ymrs_sample = ymrs_train[ymrs_train.Instance_name == sample].iat[0,1]
-                level_sample = level_train[level_train.Instance_name == sample].iat[0,1]
-            else:
-                ymrs_sample = ymrs_dev[ymrs_dev.Instance_name == sample].iat[0,1]
-                level_sample = level_dev[level_dev.Instance_name == sample].iat[0,1]
-            
-            if verbose:
-                print("YMRS score for %s is %d" %(sample, ymrs_sample))
-                print("Mania level for %s is %d" % (sample, level_sample))
-
-            feat = load_baseline_feature(feature_name, partition, id)
-            no_frame, _ = feat.shape
-            count_nan = 0
-
-            for i in range(0, no_frame, keep):
-                if verbose:
-                    print("\n----processing no. %d frame----" % i)
-                data = feat.iloc[i,:]
-                data = data[1:] # remove name
-                if data.isnull().values.any():
-                    print("----NAN, DROP FEATURE----")
-                    count_nan += 1
-                    continue
-
-                data_str = data.to_string(header=False, index=False)
-                data_str = data_str.replace("\n", ",").replace(" ", "")
-
-                # write baseline features to external file    
-                dataf.write(data_str)
-                dataf.write("\n")
-                # write baseline labels and instance to external file
-                if id == 1 and i == 0:
-                    labelf.write("%d" % level_sample)
-                    instf.write("%d" % id)
-                else:
-                    labelf.write(",%d" % level_sample)
-                    instf.write(",%d" % id)
-
-            if verbose:
-                print("\n----next feature----")
-        if verbose:
-            print("\n----%s partition done----" % partition)
-            print("\n----ALL NAN DROPPED %d----" % count_nan)
-        
-        # close file handles
-        dataf.close()
-        labelf.close()
-        instf.close()
 
 
 def save_UAR_results(frame_results, session_results, model_name, feature_name, modality, cv=False):

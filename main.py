@@ -1,9 +1,7 @@
 import sys, getopt
 import numpy as np
 import pandas as pd
-
-from src.utility import preproc_baseline_feature
-from src.baseline import BaseLine
+from src.model.baseline import BaseLine
 
 
 def run_baseline_system(model_name, feature_name):

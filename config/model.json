@@ -16,6 +16,16 @@
         "batch_size": 64,
         "epochs": 30,
         "noise": 0.2,
-        "save_dir": "./models/SDAE" 
+        "save_dir": "./pre-trained/SDAE" 
+    },
+    "doc2vec": {
+        "dm": 1,
+        "vector_size": 50,
+        "negative": 0,
+        "hs": 0,
+        "min_count": 2,
+        "sample": 0,
+        "epochs": 30,
+        "save_dir": "./pre-trained/doc2vec"
     }
 }

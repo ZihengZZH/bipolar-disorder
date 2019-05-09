@@ -1,8 +1,9 @@
 import unittest
 from src.utility.io import load_label, load_LLD, load_baseline_feature
 from src.utility.io import load_proc_baseline_feature
-from src.utility.io import preproc_baseline_feature
 from src.utility.io import load_audio_file
+from src.utility.preprocess import preproc_baseline_feature
+from src.utility.preprocess import preproc_transcript
 
 
 class TestUtility(unittest.TestCase):
@@ -33,6 +34,9 @@ class TestUtility(unittest.TestCase):
     def test_load_audio_file(self):
         load_audio_file(None, None, verbose=True)
         load_audio_file('dev', 23, verbose=True)
+
+    def test_preprocess_transcript(self):
+        preproc_transcript('all')
 
 
 if __name__ == "__main__":
