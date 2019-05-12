@@ -19,13 +19,13 @@
         "save_dir": "./pre-trained/SDAE" 
     },
     "doc2vec": {
-        "dm": 1,
-        "vector_size": 50,
-        "negative": 0,
+        "dm": 0,
+        "vector_size": 100,
+        "negative": 5,
         "hs": 0,
         "min_count": 2,
         "sample": 0,
-        "epochs": 30,
+        "epochs": 20,
         "save_dir": "./pre-trained/doc2vec"
     }
 }

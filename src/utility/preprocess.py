@@ -1,9 +1,16 @@
 import os
 import json
+import string
 import numpy as np
 import pandas as pd
+import xml.etree.ElementTree as etree
 from smart_open import smart_open
-from src.utility.io import get_sample
+from gensim.corpora import WikiCorpus
+from gensim import utils
+
+from src.utility.io import get_sample, load_label
+from src.utility.io import load_baseline_feature
+
 
 '''
 ALL PRE-PROCESS FUNCTIONS
@@ -12,6 +19,10 @@ preproc_baseline_feature(feature_name, verbose=False)
     pre-process the baseline features (LLDs)
 preproc_transcript(partition)
     preprocess transcript files to one document
+tokenize_tr(content, token_min_len=2, token_max_len=50, lower=True)
+    tokenize words in the corpus
+process_corpus(verbose=False)
+    preprocess Turkish wikimedia cospus to line-based text file
 '''
 
 
@@ -178,3 +189,52 @@ def preproc_transcript(partition):
                         output.write(line)
                 input.close()
         output.close()
+
+
+def tokenize_tr(content, token_min_len=2, token_max_len=50, lower=True):
+    """tokenize words in the corpus
+    """
+    if lower:
+        lower_map = {ord(u'A'): u'a', 
+        ord(u'A'): u'a', ord(u'B'): u'b',
+        ord(u'C'): u'c', ord(u'Ç'): u'ç',
+        ord(u'D'): u'd', ord(u'E'): u'e',
+        ord(u'F'): u'f', ord(u'G'): u'g',
+        ord(u'Ğ'): u'ğ', ord(u'H'): u'h',
+        ord(u'I'): u'ı', ord(u'İ'): u'i',
+        ord(u'J'): u'j', ord(u'K'): u'k',
+        ord(u'L'): u'l', ord(u'M'): u'm', 
+        ord(u'N'): u'n', ord(u'O'): u'o',
+        ord(u'Ö'): u'ö', ord(u'P'): u'p',
+        ord(u'R'): u'r', ord(u'S'): u's',
+        ord(u'Ş'): u'ş', ord(u'T'): u't',
+        ord(u'U'): u'u', ord(u'Ü'): u'ü',
+        ord(u'V'): u'v', ord(u'Y'): u'y',
+        ord(u'Z'): u'z'}
+        content = content.translate(lower_map)
+    
+    return [utils.to_unicode(token) for token in utils.tokenize(content, lower=False, errors='ignore') if token_min_len <= len(token) <= token_max_len and not token.startswith('_')]
+
+
+def process_corpus(verbose=False):
+    """preprocess Turkish wikimedia cospus to line-based text file
+    """
+    input_file = data_config['turkish_corpus']
+    output_file = data_config['turkish_corpus_proc']
+    if os.path.isfile(output_file):
+        print("processed file already exist %s" % output_file)
+        os.remove(output_file)
+    print("\nraw Turkish corpus loaded")
+
+    wiki = WikiCorpus(input_file, lemmatize=False, tokenizer_func=tokenize_tr)
+    output = smart_open(output_file, 'w', encoding='utf-8')
+
+    i = 0
+    # write to processed file
+    for text in wiki.get_texts():
+        output.write(" ".join(text)+"\n")
+        i += 1
+        if (i % 100 == 0) and verbose:
+            print("no. %d \tarticle saved." % i)
+    output.close()
+

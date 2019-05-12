@@ -127,5 +127,7 @@
         "train": "./dataset/transcripts/0_train.txt",
         "dev": "./dataset/transcripts/0_dev.txt",
         "test": "./dataset/transcripts/0_test.txt"
-    }
+    },
+    "turkish_corpus": "./dataset/turkish_corpus/trwiki-20190501-pages-articles-multistream.xml.bz2",
+    "turkish_corpus_proc": "./dataset/turkish_corpus/turkish_corpus.txt"
 }

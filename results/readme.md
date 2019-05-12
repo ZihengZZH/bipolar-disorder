@@ -1,12 +1,45 @@
-# results log
+# results
 
-## single modality classification
+## single modality
 
-doc2vec embeddings 
-* accuracy on training set: 1.00
+### audio 
+
+### video
+
+LSTM-RNN Autoencoder (w/o audio)
+
+* accuracy on training set: 0.78
 * accuracy on development set: 0.35
 
-## multiple modality classification
+LSTM-RNN Autoencoder (w/ audio)
+
+* accuracy on training set: 0.75
+* accuracy on development set: 0.38
+
+Autoencoder (frame-level)
+
+
+
+### text
+
+doc2vec embeddings 
+| model name        | acc train | acc dev | 
+| --                | --        | --      |
+| dm-d50-w5-mc2     | 1.00      | 0.35    |
+| dbow-d50-n5-mc2   | 0.99      | 0.58    |
+
+MOST SIMILAR WORDS
+
+| model | word | 1 | 2 | 3 | 4 | 5 |
+| --    | --            | - | - | - | - | - |
+| dm    | iyi | yapma | Hayirdir | gaflette | olayi | kahve |
+| dm    | good | making | It is no | in garflet | probable | coffee | 
+| dbow  | iyi | birbirimize | tutuldum | ciktiktan | unuttun | iltihap |
+| dbow  | good | each other | I kept | after cikti | you forgot | inflammation |
+
+> 9th May test performance (without involvement of Turkish corpus)
+
+## multiple modality
 
 
 ## BASELINE

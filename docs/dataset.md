@@ -195,7 +195,7 @@ Bags-of-Words (BoW) represents the distribution of LLDs according to a dictionar
 
 Bags-of-Audio-Words (BoAW) are generated with a window size of 2s (best duration obtained by a grid search) and a hop-size of 1s, and 20 soft assignments are performed on a codebook size of 1000 instances. The whole XBoW processing is executed using [openXBOW](https://github.com/openXBOW/openXBOW).
 
-Extracted *BoAW* features have 1001 dimensions
+Extracted *BoAW* features have 1000 dimensions
 
 ## video LLDs and features
 
@@ -229,4 +229,8 @@ Bags-of-Words (BoW) represents the distribution of LLDs according to a dictionar
 
 Bags-of-Video-Words are generated with a window size of 11s (best duration found in a grid search) and a hop-size of 1s, and the same parameters for soft assignments and codebook size as defined for the audio data are used. The whole XBoW processing is executed using [openXBOW](https://github.com/openXBOW/openXBOW).
 
-Extracted *BoVW* features have 1001 dimensions
+Extracted *BoVW* features have 1000 dimensions
+
+## text modality
+
+The data in text modality (turkish) is transcribed using [Speech-to-Text Client Library](https://cloud.google.com/speech-to-text/docs/reference/libraries#client-libraries-install-python) and its embeddings are inferred through a ```doc2vec``` model, which is pre-trained on a Turkish corpus, "[trwiki](https://dumps.wikimedia.org/trwiki/20190501/)". The **trwiki** is based on Wikimedia dump service and it contains articles, templates, media/file descriptions, and primary meta-pages. 

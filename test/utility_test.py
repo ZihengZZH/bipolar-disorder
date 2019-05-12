@@ -4,6 +4,7 @@ from src.utility.io import load_proc_baseline_feature
 from src.utility.io import load_audio_file
 from src.utility.preprocess import preproc_baseline_feature
 from src.utility.preprocess import preproc_transcript
+from src.utility.preprocess import process_corpus
 
 
 class TestUtility(unittest.TestCase):
@@ -37,6 +38,9 @@ class TestUtility(unittest.TestCase):
 
     def test_preprocess_transcript(self):
         preproc_transcript('all')
+    
+    def test_process_corpus(self):
+        process_corpus(verbose=True)
 
 
 if __name__ == "__main__":
