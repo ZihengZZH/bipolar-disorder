@@ -1,6 +1,6 @@
 import numpy as np
-from src.utility.io import load_label, save_UAR_results
-from src.utility.io import save_post_probability, load_post_probability
+from src.utils.io import load_label, save_UAR_results
+from src.utils.io import save_post_probability, load_post_probability
 
 
 def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True, session=True, baseline=False, train_set=False, fusion=False, test=False):

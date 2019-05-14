@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential, Model
 from keras.layers import Input, Dense
 from keras.utils import plot_model
-from sklearn.model_selection import train_test_split
 
-from src.utility import load_proc_baseline_feature
+from src.utils.io import load_proc_baseline_feature
 
 
 # load the external configuration file
 data_config = json.load(open('./config/data.json', 'r'))
 model_config = json.load(open('./config/model.json', 'r'))
+np.random.seed(1337)
 
 
 class AutoEncoder():
@@ -33,7 +33,9 @@ class AutoEncoder():
     def __init__(self, feature_name):
         self.name = feature_name
         self.X_train = None
+        self.X_train_noisy = None
         self.X_dev = None
+        self.X_dev_noisy = None
         self.dimension = [0] * 5
         self.hidden_ratio = None
         self.learning_rate = None
@@ -43,10 +45,11 @@ class AutoEncoder():
         self.autoencoder = None
         self.encoder = None
         self.decoder = None
-        self._prepare_data()
+        self.load_basic()
     
-    def _prepare_data(self):
+    def load_basic(self):
         self.X_train, _, _, self.X_dev, _, _ = load_proc_baseline_feature(self.name, verbose=True)
+
         self.hidden_ratio = model_config['autoencoder']['hidden_ratio']
         self.learning_rate = model_config['autoencoder']['learning_rate']
         self.batch_size = model_config['autoencoder']['batch_size']
@@ -58,6 +61,12 @@ class AutoEncoder():
         self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
         self.dimension[3] = self.dimension[1]
         self.dimension[4] = self.dimension[0]
+        # prepare noisy data
+        self.X_train_noisy = self.X_train + np.random.normal(loc=0.5, scale=0.5, size=self.X_train.shape)
+        self.X_dev_noisy = self.X_dev + np.random.normal(loc=0.5, scale=0.5, size=self.X_dev.shape)
+
+        assert self.X_train_noisy.shape == self.X_train.shape
+        assert self.X_dev_noisy.shape == self.X_dev.shape
 
     def build_model(self):
         """build stacked denoising autoencoder model
@@ -94,11 +103,11 @@ class AutoEncoder():
     def train_model(self):
         """train stacked denoising autoencoder model
         """
-        self.autoencoder.fit(self.X_train, self.X_train, 
+        self.autoencoder.fit(self.X_train_noisy, self.X_train, 
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=(self.X_dev, self.X_dev))
+                            validation_data=(self.X_dev_noisy, self.X_dev))
         self.save_model()
     
     def encode(self):

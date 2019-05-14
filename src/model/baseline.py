@@ -5,8 +5,8 @@ import numpy as np
 from src.model.linear_svm import LinearSVM
 from src.model.random_forest import RandomForest
 from src.metric.uar import get_UAR, get_post_probability, get_late_fusion_UAR
-from src.utility.io import load_proc_baseline_feature, save_UAR_results
-from src.utility.io import save_post_probability, load_post_probability
+from src.utils.io import load_proc_baseline_feature, save_UAR_results
+from src.utils.io import save_post_probability, load_post_probability
 
 
 '''

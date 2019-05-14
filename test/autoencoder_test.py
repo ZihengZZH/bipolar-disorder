@@ -1,5 +1,5 @@
 import unittest
-from src.autoencoder import AutoEncoder
+from src.model.autoencoder import AutoEncoder
 
 
 class TestAutoEncoder(unittest.TestCase):

@@ -37,8 +37,10 @@ project:
     ☐ text2vec.py
   ☐ metric
     ✔ uar.py @done(19-05-08 22:44)
-  ☐ utility
+  ☐ utils
     ✔ io.py @done(19-05-08 22:44)
+    ☐ preprocess.py
+    ☐ vis.py
 
 modification:
   ☐ native -> collections (high-performance)

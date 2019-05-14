@@ -13,7 +13,7 @@ from gensim.models import doc2vec
 from gensim.models.doc2vec import TaggedDocument
 from gensim.test.test_doc2vec import ConcatenatedDoc2Vec
 
-from src.utility.io import load_label
+from src.utils.io import load_label
 
 
 class Text2Vec():
@@ -184,11 +184,15 @@ class Text2Vec():
     def evaluate_model(self, given_word):
         """evaluate doc2vec model by finding similar words
         """
-        similar_words = str(self.model.wv.most_similar(given_word, topn=5))
+        similar_words = self.model.wv.most_similar(given_word, topn=20)
         print("\nmost similar words to given word %s for doc2vec %s model are as follows" % (given_word, self.model_name))
         print("--" * 20)
-        print(similar_words)
+        output = smart_open(os.path.join(self.save_dir, 'similar_words_%s.txt' % given_word), 'w', encoding='utf-8')
+        for idx, word in enumerate(similar_words):
+            print(idx, word)
+            output.write("%d %s\n" % (idx, word))
         print("--" * 20)
+        output.close()
 
     def save_model(self):
         """save doc2vec model
@@ -202,5 +206,17 @@ class Text2Vec():
     def load_model(self):
         """load doc2vec model
         """
-        print("\nloading doc2vec %s model from file" % self.model_name)
-        self.model = doc2vec.Doc2Vec.load(os.path.join(self.save_dir, 'doc2vec.model'))
+        model_list = os.listdir(self.model_config['doc2vec']['save_dir'])
+        print("\npre-trained models as follows")
+        print("--" * 20)
+        for idx, name in enumerate(model_list):
+            print(idx, name)
+        print("--" * 20)
+        selection = int(input("please choose a doc2vec model "))
+        self.model_name = model_list[selection]
+        self.save_dir = os.path.join(self.model_config['doc2vec']['save_dir'], self.model_name)
+        if os.path.isdir(self.save_dir):
+            print("\nloading doc2vec %s model from file" % self.model_name)
+            self.model = doc2vec.Doc2Vec.load(os.path.join(self.save_dir, 'doc2vec.model'))
+        else:
+            print("\nwrong input or model does not exist")

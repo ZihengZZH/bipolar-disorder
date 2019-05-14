@@ -20,22 +20,22 @@ Autoencoder (frame-level)
 
 
 
-### text
+### text (w/ Turkish corpus)
 
 doc2vec embeddings 
 | model name        | acc train | acc dev | 
 | --                | --        | --      |
-| dm-d50-w5-mc2     | 1.00      | 0.35    |
-| dbow-d50-n5-mc2   | 0.99      | 0.58    |
+| dm-d100-n5-mc2    | 1.00      | 0.38    |
+| dbow-d100-n5-mc2  | 1.00      | 0.45    | 
 
-MOST SIMILAR WORDS
+MOST SIMILAR WORDS (iyi / good)
 
-| model | word | 1 | 2 | 3 | 4 | 5 |
-| --    | --            | - | - | - | - | - |
-| dm    | iyi | yapma | Hayirdir | gaflette | olayi | kahve |
-| dm    | good | making | It is no | in garflet | probable | coffee | 
-| dbow  | iyi | birbirimize | tutuldum | ciktiktan | unuttun | iltihap |
-| dbow  | good | each other | I kept | after cikti | you forgot | inflammation |
+| model | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| --    | - | - | - | - | - | - | - | - |
+| dm    | başarılı | azından | ıyi | kötü | az | pahalıdan | gelişmişe | sağlıklısı | basitinden | 
+|       | successful | least | good | bad | little | from expensive | advanced to | healthiest | from simple | 
+| dbow  | kuyucu | özneden | iğneliyici | oynasaydı | hồng | kavrayışında | kümesinin | kirpiklerden |
+|       | kuyucu | the subject | the iğneliyic | NA | NA | in understanding | set of | the lash |
 
 > 9th May test performance (without involvement of Turkish corpus)
 

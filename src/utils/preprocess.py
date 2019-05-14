@@ -8,8 +8,8 @@ from smart_open import smart_open
 from gensim.corpora import WikiCorpus
 from gensim import utils
 
-from src.utility.io import get_sample, load_label
-from src.utility.io import load_baseline_feature
+from src.utils.io import get_sample, load_label
+from src.utils.io import load_baseline_feature
 
 
 '''
@@ -23,6 +23,8 @@ tokenize_tr(content, token_min_len=2, token_max_len=50, lower=True)
     tokenize words in the corpus
 process_corpus(verbose=False)
     preprocess Turkish wikimedia cospus to line-based text file
+preprocess_AU(verbose=False)
+    preprocess Action Units data
 '''
 
 
@@ -238,3 +240,30 @@ def process_corpus(verbose=False):
             print("no. %d \tarticle saved." % i)
     output.close()
 
+
+def preprocess_AU(verbose=False):
+    """preprocess Action Units data
+    """
+    raw_dir = data_config['data_path_local']['LLD']['openFace']
+    proc_dir = data_config['baseline_preproc']['AU_landmarks']
+
+    length = dict()
+    length['train'] = data_config['length']['train']
+    length['dev'] = data_config['length']['dev']
+    length['test'] = data_config['length']['test']
+
+    landmarks = [['x_%d' % i, 'y_%d' % i] for i in range(68)]
+
+    for partition in ['train', 'dev', 'test']:
+        for i in range(length[partition]):
+            filename = get_sample(partition, (i+1))
+            temp = pd.read_csv(os.path.join(raw_dir, filename + '.csv'))
+            temp.columns = temp.columns.str.strip()
+            print("file %s loaded" % filename)
+            
+            idx = pd.DataFrame(temp['timestamp'])
+            for pair in landmarks:
+                idx[','.join(pair)] = temp[pair].apply(lambda x: ','.join(x.map(str)), axis=1)
+
+            idx.to_csv(os.path.join(proc_dir, filename + '.csv'), index=False)
+            print("file %s processing completed & saved" % filename)
