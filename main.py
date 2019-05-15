@@ -1,7 +1,7 @@
 import sys, getopt
 from src.model.baseline import BaseLine
 from src.utils.vis import visualize_landmarks
-from src.experiment import AE_BOW
+from src.experiment import AE_BOW, BAE_XBOW
 
 
 def display_help():
@@ -47,7 +47,7 @@ def main(argv):
             visualize_landmarks(vis)
         if len(exp) != 0:
             print("Experiment begins")
-            AE_BOW(verbose=True)
+            BAE_XBOW()
 
     except getopt.GetoptError:
         display_help()

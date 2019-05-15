@@ -15,34 +15,72 @@ class AutoEncoder():
     Attributes
     -----------
     name: str
+        model name
     X_train, X_dev: pd.DataFrame
+        original data without noise
+    X_train_noisy, X_dev_noisy: pd.DataFrame
+        noisy data generated with Gaussian noise
+    noisy: bool
+        whether or not to involve denoising fashion
+    autoencoder: keras.models.Model
+        keras Model mapping input to reconstructed input
+    encoder: keras.models.Model
+        keras Model mapping input to latent representation
+    decoder: keras.models.Model
+        keras Model mapping latent representation to input
+    dimension: list
+    hidden_raio: float
+    learning_rate: float
+    epochs: int
+    noise: float
+    save_dir: str
+    model_config: json.load()
     ---------------------------------------
     Functions
     -----------
+    load_basic(): public
+        load basic data and configuration for model
     build_model(): public
-
+        build stacked denoising autoencoder model
+    train_model(): public
+        train stacked denoising autoencoder model
+    encode(): public
+        encode raw input to latent representation
+    decode(): public
+        decode latent representation to raw input
+    save_model(): public
+        save stacked denoising autoencoder model to external file
+    load_model(): public
+        load stacked denoising autoencoder model from external file
     """
     def __init__(self, name, X_train, X_dev, noisy=True):
+        # para name: str
+        # para X_train: pd.DataFrame
+        # para X_dev: pd.DataFrame
         self.name = name
         self.X_train = X_train
         self.X_train_noisy = None
         self.X_dev = X_dev
         self.X_dev_noisy = None
         self.noisy = noisy
+        # AE model
+        self.autoencoder = None
+        self.encoder = None
+        self.decoder = None
+
         self.dimension = [0] * 5
         self.hidden_ratio = None
         self.learning_rate = None
         self.epochs = None
         self.noise = None
         self.save_dir = None
-        self.autoencoder = None
-        self.encoder = None
-        self.decoder = None
         self.model_config = json.load(open('./config/model.json', 'r'))
         self.load_basic()
         np.random.seed(1337)
-    
+
     def load_basic(self):
+        """load basic data and configuration for model
+        """
         self.hidden_ratio = self.model_config['autoencoder']['hidden_ratio']
         self.learning_rate = self.model_config['autoencoder']['learning_rate']
         self.batch_size = self.model_config['autoencoder']['batch_size']

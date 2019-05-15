@@ -31,6 +31,10 @@ save_post_probability(prob_dev, model_name, feature_name)
     save posteriors probabilities to external files
 load_post_probability(model_name, feature_name)
     load posteriors probabilities from external files
+load_facial_landmarks(verbose=False)
+    load preprocessed facial landmarks 
+load_bags_of_words(verbose=False)
+    load preprocessed BoXW (BoAW or BoVW)
 '''
 
 
@@ -342,6 +346,8 @@ def load_post_probability(model_name, feature_name):
 
 
 def load_facial_landmarks(verbose=False):
+    """load preprocessed facial landmarks 
+    """
     landmark_dir = data_config['baseline_preproc']['AU_landmarks']
     length = dict()
     length['train'] = data_config['length']['train']
@@ -351,3 +357,30 @@ def load_facial_landmarks(verbose=False):
     for partition in ['train', 'dev', 'test']:
         for i in range(length[partition]):
             break
+
+
+def load_bags_of_words(modality, verbose=False):
+    """load preprocessed BoXW (BoAW or BoVW)
+    """
+    # para modality: BoAW or BoXW
+    if modality == 'BoAW':
+        config = data_config['baseline_preproc']['BoAW']
+    elif modality == 'BoVW':
+        config = data_config['baseline_preproc']['BoVW']
+    else:
+        return
+    
+    X_train = pd.read_csv(config['train_data'], header=None) 
+    X_dev = pd.read_csv(config['dev_data'], header=None) 
+    X_test = pd.read_csv(config['test_data'], header=None)
+
+    if verbose:
+        print("--" * 20)
+        print(modality)
+        print("--" * 20)
+        print("training data size", X_train.shape)
+        print("development data size", X_dev.shape)
+        print("test data size", X_test.shape)
+        print("--" * 20)
+    
+    return X_train, X_dev, X_test

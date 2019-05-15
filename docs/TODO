@@ -19,8 +19,8 @@ dataset:
   ✔ baseline cross validation @done(19-05-06 20:49)
   ☐ cross modality learning?
     (refer to bimodal speech recognition)
-    ☐ preprocess BoXW features
-    ☐ align Audio & Video features
+    ✔ preprocess BoXW features @done(19-05-15 18:16)
+    ✔ align Audio & Video features @done(19-05-15 18:16)
     ☐ shared representation learning
   ☐ text data analysis?
     ✔ google transcribe @done(19-05-06 20:49)
@@ -32,17 +32,17 @@ project:
     ✔ baseline.py @done(19-05-08 22:44)
     ✔ linear_svm.py @done(19-05-08 20:51)
     ✔ random_forest.py @done(19-05-08 20:51)
-    ☐ autoencoder.py
+    ✔ autoencoder.py @done(19-05-15 18:16)
     ☐ autoencoder_lstm.py
-    ☐ autoencoder_bimodal.py
-    ☐ speech2text.py
-    ☐ text2vec.py
+    ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
+    ✔ speech2text.py @done(19-05-15 18:16)
+    ✔ text2vec.py @done(19-05-15 18:16)
   ☐ metric
     ✔ uar.py @done(19-05-08 22:44)
   ☐ utils
     ✔ io.py @done(19-05-08 22:44)
-    ☐ preprocess.py
-    ☐ vis.py
+    ✔ preprocess.py @done(19-05-15 18:16)
+    ✔ vis.py @done(19-05-15 18:16)
 
 modification:
   ☐ native -> collections (high-performance)
