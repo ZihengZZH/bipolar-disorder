@@ -1,8 +1,7 @@
 import sys, getopt
-import numpy as np
-import pandas as pd
 from src.model.baseline import BaseLine
 from src.utils.vis import visualize_landmarks
+from src.experiment import AE_BOW
 
 
 def display_help():
@@ -17,18 +16,17 @@ def display_help():
     print("\tmain.py -h")
     print("--" * 20)
 
+
 def run_baseline_system(model_name, feature_name):
     baseline = BaseLine(model_name, feature_name)
     baseline.run()
 
 
 def main(argv):
-    print(argv)
     model, feature = '', ''
-    vis = ''
+    vis, exp = '', ''
     try:
-        opts, _ = getopt.getopt(argv, "h:m:f:v:")
-        print(opts)
+        opts, _ = getopt.getopt(argv, "h:m:f:v:x:")
         for opt, arg in opts:
             if opt in ('-h', '--help'):
                 display_help()
@@ -39,12 +37,17 @@ def main(argv):
                 feature = arg
             elif opt in ('-v', '--visualize'):
                 vis = arg
+            elif opt in ('-x', '--experiment'):
+                exp = arg
         if len(model) != 0 and len(feature) != 0:
             print("Baseline System with model %s and feature %s" % (model, feature))
             run_baseline_system(model, feature)
         if len(vis) != 0:
             print("Visualize facial landmarks on videos")
             visualize_landmarks(vis)
+        if len(exp) != 0:
+            print("Experiment begins")
+            AE_BOW(verbose=True)
 
     except getopt.GetoptError:
         display_help()

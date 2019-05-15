@@ -3,17 +3,9 @@ import json
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.models import Sequential, Model
+from keras.models import Model
 from keras.layers import Input, Dense
 from keras.utils import plot_model
-
-from src.utils.io import load_proc_baseline_feature
-
-
-# load the external configuration file
-data_config = json.load(open('./config/data.json', 'r'))
-model_config = json.load(open('./config/model.json', 'r'))
-np.random.seed(1337)
 
 
 class AutoEncoder():
@@ -30,12 +22,13 @@ class AutoEncoder():
     build_model(): public
 
     """
-    def __init__(self, feature_name):
-        self.name = feature_name
-        self.X_train = None
+    def __init__(self, name, X_train, X_dev, noisy=True):
+        self.name = name
+        self.X_train = X_train
         self.X_train_noisy = None
-        self.X_dev = None
+        self.X_dev = X_dev
         self.X_dev_noisy = None
+        self.noisy = noisy
         self.dimension = [0] * 5
         self.hidden_ratio = None
         self.learning_rate = None
@@ -45,25 +38,30 @@ class AutoEncoder():
         self.autoencoder = None
         self.encoder = None
         self.decoder = None
+        self.model_config = json.load(open('./config/model.json', 'r'))
         self.load_basic()
+        np.random.seed(1337)
     
     def load_basic(self):
-        self.X_train, _, _, self.X_dev, _, _ = load_proc_baseline_feature(self.name, verbose=True)
-
-        self.hidden_ratio = model_config['autoencoder']['hidden_ratio']
-        self.learning_rate = model_config['autoencoder']['learning_rate']
-        self.batch_size = model_config['autoencoder']['batch_size']
-        self.epochs = model_config['autoencoder']['epochs']
-        self.noise = model_config['autoencoder']['noise']
-        self.save_dir = model_config['autoencoder']['save_dir']
-        self.dimension[0], _ = self.X_train.shape
+        self.hidden_ratio = self.model_config['autoencoder']['hidden_ratio']
+        self.learning_rate = self.model_config['autoencoder']['learning_rate']
+        self.batch_size = self.model_config['autoencoder']['batch_size']
+        self.epochs = self.model_config['autoencoder']['epochs']
+        self.noise = self.model_config['autoencoder']['noise']
+        self.save_dir = self.model_config['autoencoder']['save_dir']
+        self.dimension[0] = self.X_train.shape[1]
         self.dimension[1] = int(self.dimension[0] * self.hidden_ratio)
         self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
         self.dimension[3] = self.dimension[1]
         self.dimension[4] = self.dimension[0]
-        # prepare noisy data
-        self.X_train_noisy = self.X_train + np.random.normal(loc=0.5, scale=0.5, size=self.X_train.shape)
-        self.X_dev_noisy = self.X_dev + np.random.normal(loc=0.5, scale=0.5, size=self.X_dev.shape)
+
+        if self.noisy:
+            # prepare noisy data
+            self.X_train_noisy = self.X_train + np.random.normal(loc=0.5, scale=0.5, size=self.X_train.shape)
+            self.X_dev_noisy = self.X_dev + np.random.normal(loc=0.5, scale=0.5, size=self.X_dev.shape)
+        else:
+            self.X_train_noisy = self.X_train
+            self.X_dev_noisy = self.X_dev
 
         assert self.X_train_noisy.shape == self.X_train.shape
         assert self.X_dev_noisy.shape == self.X_dev.shape
@@ -96,8 +94,14 @@ class AutoEncoder():
 
         # configure model
         self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+        print("--" * 20)
+        print("autoencoder")
         print(self.autoencoder.summary())
+        print("--" * 20)
+        print("encoder")
         print(self.encoder.summary())
+        print("--" * 20)
+        print("decoder")
         print(self.decoder.summary())
 
     def train_model(self):
@@ -111,10 +115,16 @@ class AutoEncoder():
         self.save_model()
     
     def encode(self):
-        """encode raw data to hidden representation
+        """encode raw input to latent representation
         """
-        encoded_repre = self.encoder.predict(self.X_dev)
-        return encoded_repre
+        encoded_pre = self.encoder.predict(self.X_dev)
+        return encoded_pre
+
+    def decode(self, encoded_pre):
+        """decode latent representation to raw input
+        """
+        decoded_input = self.decoder.predict(encoded_pre)
+        return decoded_input
     
     def save_model(self):
         """save stacked denoising autoencoder model to external file

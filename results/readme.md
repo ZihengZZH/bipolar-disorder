@@ -23,10 +23,11 @@ Autoencoder (frame-level)
 ### text (w/ Turkish corpus)
 
 doc2vec embeddings 
+
 | model name        | acc train | acc dev | 
 | --                | --        | --      |
-| dm-d100-n5-mc2    | 1.00      | 0.38    |
-| dbow-d100-n5-mc2  | 1.00      | 0.45    | 
+| dm_d100_n5_mc2    | 1.00      | 0.38    |
+| dbow_d100_n5_mc2  | 1.00      | 0.45    | 
 
 MOST SIMILAR WORDS (iyi / good)
 

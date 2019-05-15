@@ -26,22 +26,13 @@
     },
     "data_path_local": {
         "label_metadata": "./dataset/",
-        "LLD": { 
-            "MFCC": "./dataset/LLDs_audio_opensmile/LLDs_audio_opensmile_MFCCs/",
-            "eGeMAPS": "./dataset/LLDs_audio_opensmile/LLDs_audio_eGeMAPS/",
-            "openFace": "./dataset/LLDs_video_openface/LLDs_video_openFace/"
-        },
         "baseline": {
-            "audio": {
-                "BoAW": "./dataset/baseline_features/features_audio_BoAW_A20_C1000/",
-                "eGeMAPS": "./dataset/baseline_features/features_audio_eGeMAPS_turns/",
-                "MFCC": "./dataset/baseline_features/LLDs_audio_opensmile_MFCCs_turns/",
-                "DeepSpectrum": "./dataset/baseline_features/LLDs_audio_DeepSpectrum_turns/"
-            },
-            "video": {
-                "BoVW": "./dataset/baseline_features/features_video_BoVW_A20_C1000/",
-                "AU": "./dataset/baseline_features/LLDs_video_openFace_AUs/"
-            }
+            "MFCC": "./dataset/baseline_features/LLDs_audio_opensmile_MFCCs_turns/",
+            "eGeMAPS": "./dataset/baseline_features/features_audio_eGeMAPS_turns/",
+            "Deep": "./dataset/baseline_features/LLDs_audio_DeepSpectrum_turns/",
+            "BoAW": "./dataset/baseline_features/features_audio_BoAW_A20_C1000/",
+            "AU": "./dataset/baseline_features/LLDs_video_openFace_AUs/",
+            "BoVW": "./dataset/baseline_features/features_video_BoVW_A20_C1000/"
         }
     },
     "result_single": "./results/single_modality/",
@@ -121,7 +112,25 @@
             "dev_label": "./dataset/baseline_features_proc/Deep_label_2.csv",
             "dev_inst": "./dataset/baseline_features_proc/Deep_inst_2.csv"
         },
-        "AU_landmarks": "./dataset/baseline_features_proc/AU_landmarks"
+        "AU_landmarks": "./dataset/baseline_features_proc/AU_landmarks",
+        "BoAW": {
+            "train_data": "./dataset/baseline_features_proc/BoAW_train_1.csv",
+            "train_label": "./dataset/baseline_features_proc/BoAW_label_1.csv",
+            "train_inst": "./dataset/baseline_features_proc/BoAW_inst_1.csv",
+            "dev_data": "./dataset/baseline_features_proc/BoAW_train_2.csv",
+            "dev_label": "./dataset/baseline_features_proc/BoAW_label_2.csv",
+            "dev_inst": "./dataset/baseline_features_proc/BoAW_inst_2.csv",
+            "test_data": "./dataset/baseline_features_proc/BoAW_train_3.csv"
+        },
+        "BoVW": {
+            "train_data": "./dataset/baseline_features_proc/BoVW_train_1.csv",
+            "train_label": "./dataset/baseline_features_proc/BoVW_label_1.csv",
+            "train_inst": "./dataset/baseline_features_proc/BoVW_inst_1.csv",
+            "dev_data": "./dataset/baseline_features_proc/BoVW_train_2.csv",
+            "dev_label": "./dataset/baseline_features_proc/BoVW_label_2.csv",
+            "dev_inst": "./dataset/baseline_features_proc/BoVW_inst_2.csv",
+            "test_data": "./dataset/baseline_features_proc/BoVW_train_3.csv"
+        }
     },
     "transcript": "./dataset/transcripts/",
     "transcript_preproc": {

@@ -32,6 +32,10 @@ def visualize_landmarks(partition, index=None, verbose=False):
 
     video_dir = data_config['data_path_700']['recordings']
     landmark_dir = data_config['baseline_preproc']['AU_landmarks']
+    if not os.path.isdir(video_dir):
+        print("\nerror without recordings available")
+        print("\nplease inject external hard drive")
+        return
 
     filename = get_sample(partition, index)
     video = cv2.VideoCapture(os.path.join(video_dir, filename+'.mp4'))

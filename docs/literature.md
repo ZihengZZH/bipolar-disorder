@@ -22,6 +22,8 @@ This document records the literature of the project, and it focuses on other pap
       - [Jan2014](#jan2014)
     - [Personalized Multitask Learning for Predicting Tomorrow's Mood, Stress, and Health](#personalized-multitask-learning-for-predicting-tomorrows-mood-stress-and-health)
       - [Taylor2017](#taylor2017)
+    - [Multimodal emotion recognition using deep learning architectures](#multimodal-emotion-recognition-using-deep-learning-architectures)
+      - [Ranganathan2016](#ranganathan2016)
     - [paper title](#paper-title)
       - [bibtex](#bibtex)
 
@@ -34,7 +36,7 @@ This paper introduces a new audio-visual Bipolar Disorder (BD) corpus for the af
 
 To provide a benchmark system and insight about the data, they investigated a direct approach to classify video sessions into BD and normal classes, using **audio-visual features**. 
 
-![](../images/Ciftci2018_pipeline_baseline.png)
+![](../images/literature/Ciftci2018_pipeline_baseline.png)
 
 They experimented both modalities (audio & video) for **binary** (healthy/bipolar) and **ternary** (mania level) classifications. They also analysed the bipolar corpus using cross-corpus acoustic emotion recognition, to reveal statistically significant mid-level predictors of YMRS declines from the zeroth day recording.
 
@@ -47,7 +49,6 @@ The **contributions** of their work are as follows:
 * A histogram based arousal feature, in which the continuous arousal values are estimated from the audio cues by a Long Short-Term Memory Recurrent Neural Network (LSTM-RNN) model (trained on AVEC 2015 affective database). Then the histogram of the arousal values in each segments are used for the classification;
 *  A Histogram of Displacement (HDR) based upper body posture feature, which characterizes the displacement and velocity of the key body points in the video segment;
 *  A DNN and Random Forest based multi-stream fusion framework, and several DNN models with an ensemble learning strategy in order to mitigate the overfitting because of the limited training data.
-
 
 Some effective features were proposed for the classification.
 
@@ -69,14 +70,18 @@ In the classification, features **Audio-Arousal_Hist** and **Video-HandsDist_His
 
 > To their best knowledge, it was the first to utilize the affective dimension (arousal) in bipolar depression assessment.
 
+![](../images/literature/Yang2018_pipeline.png)
+
 
 
 ### Bipolar Disorder Recognition via Multi-scale Discriminative Audio Temporal Representation
 #### Du2018
 
 The **contributions** of their work are as follows:
-* **IncepLSTM**, the Inception module joint with an LSTM layer, to achieve multi-scale audio temporal\footnote{Authors of Turkish Audio-Visual BD Corpus merely used statistics across the frame-based features} representation for BD recognition;
-* An improved triplet loss\footnote{The triplet loss optimizes the embedding space so that data points with the same identity are closer to each other than those with different identities.} function, called severity sensitive loss, to enhance the supervision of the learning procedure, making BD representation more discriminative;
+* **IncepLSTM**, the Inception module joint with an LSTM layer, to achieve multi-scale audio temporal representation for BD recognition;
+  * Authors of Turkish Audio-Visual BD Corpus merely used statistics across the frame-based features
+* An improved triplet loss function, called severity sensitive loss, to enhance the supervision of the learning procedure, making BD representation more discriminative;
+  * The triplet loss optimizes the embedding space so that data points with the same identity are closer to each other than those with different identities.
 * The sparse structure to compress the IncepLSTM network, reducing the risk of overfitting and improving the robustness
 
 Bipolar symptoms are _episodic_, especially with irregular variations among different episodes, making BD very difficult to be diagosed accurately.
@@ -85,6 +90,7 @@ Bipolar symptoms are _episodic_, especially with irregular variations among diff
 
 To sum up, for each audio, 16-dimensional normalized feature vectors were formed from MFCCs as the LLD input for __IncepLSTM__.
 
+![](../images/literature/Du2018_pipeline.png)
 
 
 ### Multi-modality Hierarchical Recall based on GBDTs for Bipolar Disorder Classification
@@ -177,7 +183,9 @@ In the visual features extraction, they proposed their pipeline:
 
 **Stacked Denoising Autoencoders (SDAE)** has emerged as one of the most successful unsupervised methods to discover unknown non-linear mappings between features (face and head movement dynamics) and outcomes (depress severity scores) while coping with high dimensionality and redundancy.
 
-![](../images/dibeklioglu2018_SDAE.png)
+![](../images/literature/dibeklioglu2018_SDAE.png)
+
+
 
 ### Automatic Depression Scale Prediction using Facial Expression Dynamics and Regression
 #### Jan2014
@@ -194,6 +202,23 @@ People express their emotions through the visual (i.e. facial expression and bod
 #### Taylor2017
 
 They posited that the low performance of machine learning methods in predicting mood or wellbeing was because a one-size-fits-all machine learning model is inherently ill-suited to predicting outcomes like mood and stress, which vary greatly due to individual difference. Therefore, they employed Multitask Learning (MTL) techniques to train personalized ML models which were customized to the needs of each individual, but still leveraged data from across the population.
+
+
+
+### Multimodal emotion recognition using deep learning architectures
+#### Ranganathan2016
+
+In their work, as the first contribution, they presented the *emoFBVP* database of multimodal recordings-facial expression, body gestures, vocal expressions and physiological signals. The second contribution was to investigate the use of deep learning architectures - DBNs and CDBNs - for multimodal emotion recognition. 
+
+In summary, the features they extracted included vocal expressions with **180** dimension, facial expressions with **540** dimension, body gestures with **540** dimension, and physiological signal data with **120** dimension.
+
+The proposed four *DemoDBN* models are:
+1. *DemoFBVP*: basic two-layer DBN model
+2. *f*+*DemoFBVP*: two-layer DBN with feature selection prior to training
+3. *DemoFBVP*+*f*: two-layer DBN with feature selection post training
+4. *3DemoFBVP*: three-layer DBN model
+
+![](../images/literature/Ranganathan2016_models.png)
 
 
 

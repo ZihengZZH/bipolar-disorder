@@ -25,6 +25,8 @@ process_corpus(verbose=False)
     preprocess Turkish wikimedia cospus to line-based text file
 preprocess_AU(verbose=False)
     preprocess Action Units data
+preprocess_BOXW(verbose=False)
+    preprocess Bags of X Words representations
 '''
 
 
@@ -254,7 +256,7 @@ def preprocess_AU(verbose=False):
 
     landmarks = [['x_%d' % i, 'y_%d' % i] for i in range(68)]
 
-    for partition in ['train', 'dev', 'test']:
+    for partition in ['dev', 'test']:
         for i in range(length[partition]):
             filename = get_sample(partition, (i+1))
             temp = pd.read_csv(os.path.join(raw_dir, filename + '.csv'))
@@ -267,3 +269,65 @@ def preprocess_AU(verbose=False):
 
             idx.to_csv(os.path.join(proc_dir, filename + '.csv'), index=False)
             print("file %s processing completed & saved" % filename)
+
+
+def preprocess_BOXW(verbose=False):
+    """preprocess Bags of X Words representations
+    """
+    # load directory from configuration file
+    A_input_dir = data_config['data_path_local']['baseline']['BoAW']
+    V_input_dir = data_config['data_path_local']['baseline']['BoVW']
+    A_output_dir = data_config['baseline_preproc']['BoAW']
+    V_output_dir = data_config['baseline_preproc']['BoVW']
+    # load length from configuration file
+    length = dict()
+    length['train'] = data_config['length']['train']
+    length['dev'] = data_config['length']['dev']
+    length['test'] = data_config['length']['test']
+    # load labels from configuration file
+    _, _, level_dev, level_train = load_label()
+    label_train, label_dev = level_train.values, level_dev.values
+    labels = dict()
+    labels['train'] = label_train[:, 1]
+    labels['dev'] = label_dev[:, 1]
+
+    for partition in ['train', 'dev']:
+        # write handle
+        A_label_f = smart_open(A_output_dir['%s_label' % partition], 'a+', encoding='utf-8')
+        V_label_f = smart_open(V_output_dir['%s_label' % partition], 'a+', encoding='utf-8')
+        A_inst_f = smart_open(A_output_dir['%s_inst' % partition], 'a+', encoding='utf-8')
+        V_inst_f = smart_open(V_output_dir['%s_inst' % partition], 'a+', encoding='utf-8')
+        A_data, V_data = None, None
+        label = labels[partition]
+
+        for i in range(length[partition]):
+
+            A_feature = load_baseline_feature('BoAW', partition, (i+1))
+            V_feature = load_baseline_feature('BoVW', partition, (i+1))
+            A_t, _ = A_feature.shape
+            V_t, _ = V_feature.shape
+            # ensure timesteps match between Audio and Video
+            timestep = A_t if A_t < V_t else V_t
+            A_feature = A_feature.iloc[:timestep, 2:]
+            V_feature = V_feature.iloc[:timestep, 2:]
+            # concatenate features
+            A_data = A_feature.copy() if not i else pd.concat([A_data, A_feature])
+            V_data = V_feature.copy() if not i else pd.concat([V_data, V_feature])
+            # write labels and instances
+            A_label_f.write(('%d,' % label[i]) * timestep)
+            V_label_f.write(('%d,' % label[i]) * timestep)
+            A_inst_f.write(('%d,' % (i+1)) * timestep)
+            V_inst_f.write(('%d,' % (i+1)) * timestep)
+
+            if verbose:
+                print(A_feature.shape, V_feature.shape)
+                print(A_data.shape, V_data.shape)
+        
+        # save to external files
+        A_data.to_csv(A_output_dir['%s_data' % partition], header=None, index=None)
+        V_data.to_csv(V_output_dir['%s_data' % partition], header=None, index=None)
+
+        A_label_f.close()
+        V_label_f.close()
+        A_inst_f.close()
+        V_inst_f.close()

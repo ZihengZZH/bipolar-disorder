@@ -209,54 +209,35 @@ def load_baseline_feature(feature_name, partition, index, verbose=False):
     # para verbose: whether or not to output more results
     if get_sample(partition, index):
         sample = get_sample(partition, index) + '.csv'
-
     else:
         print("\nWRONG INPUT - PARTITION or INDEX\n")
         return
 
-    if feature_name == 'BoAW':
-        sample = '2_' + sample
-        boaw = pd.read_csv(data_config['data_path_local']['baseline']['audio']['BoAW'] + sample, sep=';')
-        if verbose:
-            print(boaw.shape)
-        return boaw
-
+    if feature_name == 'MFCC':
+        sample = sample
     elif feature_name == 'eGeMAPS':
         sample = sample[:-3] + 'arff'
-        egemaps = arff.loadarff(data_config['data_path_local']['baseline']['audio']['eGeMAPS'] + sample)
-        egemaps_df = pd.DataFrame(egemaps[0])
-        if verbose:
-            print(egemaps_df.shape)
-        return egemaps_df
-
-    elif feature_name == 'MFCC':
-        mfcc = pd.read_csv(data_config['data_path_local']['baseline']['audio']['MFCC'] + sample, sep=';')
-        if verbose:
-            print(mfcc.shape)
-        return mfcc
-
+        feature_arff = arff.loadarff(data_config['data_path_local']['baseline'][feature_name] + sample)
+        feature = pd.DataFrame(feature_arff[0])
     elif feature_name == 'Deep':
-        deep = pd.read_csv(data_config['data_path_local']['baseline']['audio']['DeepSpectrum'] + sample, sep=';')
-        if verbose:
-            print(deep.shape)
-        return deep
-
+        sample = sample
+    elif feature_name == 'BoAW':
+        sample = '2_' + sample
+    elif feature_name == 'AU':
+        sample = sample
     elif feature_name == 'BoVW':
         sample = '11_' + sample
-        bovw = pd.read_csv(data_config['data_path_local']['baseline']['video']['BoVW'] + sample, sep=';')
-        if verbose:
-            print(bovw.shape)
-        return bovw
-
-    elif feature_name == 'AU':
-        au = pd.read_csv(data_config['data_path_local']['baseline']['video']['AU'] + sample, sep=';')
-        if verbose:
-            print(au.shape)
-        return au
-        
     else:
         print("\nWRONG INPUT - LLD NAME\n")
         return
+    
+    feature = pd.read_csv(data_config['data_path_local']['baseline'][feature_name] + sample, sep=';', header=None)
+    if verbose:
+        print("--" * 20)
+        print("Feature %s" % feature_name)
+        print(feature.shape)
+        print("--" * 20)
+    return feature
 
 
 def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
@@ -358,3 +339,15 @@ def load_post_probability(model_name, feature_name):
     filename = os.path.join(data_config['result_baseline'], '%s_%s_post_prob.npy' % (model_name, feature_name))
     prob_dev = np.load(filename)
     return prob_dev
+
+
+def load_facial_landmarks(verbose=False):
+    landmark_dir = data_config['baseline_preproc']['AU_landmarks']
+    length = dict()
+    length['train'] = data_config['length']['train']
+    length['dev'] = data_config['length']['dev']
+    length['test'] = data_config['length']['test']
+
+    for partition in ['train', 'dev', 'test']:
+        for i in range(length[partition]):
+            break

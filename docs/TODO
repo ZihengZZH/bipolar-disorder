@@ -19,13 +19,13 @@ dataset:
   ✔ baseline cross validation @done(19-05-06 20:49)
   ☐ cross modality learning?
     (refer to bimodal speech recognition)
-    ☐ multimodal learning
-    ☐ cross modality learning
+    ☐ preprocess BoXW features
+    ☐ align Audio & Video features
     ☐ shared representation learning
   ☐ text data analysis?
     ✔ google transcribe @done(19-05-06 20:49)
     ☐ translation from Turkish to English
-    ☐ sentiment detection
+    ✔ sentiment detection @done(19-05-14 16:19)
   
 project:
   ☐ model
@@ -33,6 +33,8 @@ project:
     ✔ linear_svm.py @done(19-05-08 20:51)
     ✔ random_forest.py @done(19-05-08 20:51)
     ☐ autoencoder.py
+    ☐ autoencoder_lstm.py
+    ☐ autoencoder_bimodal.py
     ☐ speech2text.py
     ☐ text2vec.py
   ☐ metric

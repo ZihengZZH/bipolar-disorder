@@ -18,6 +18,14 @@
         "noise": 0.2,
         "save_dir": "./pre-trained/SDAE" 
     },
+    "autoencoder-lstm": {
+        "hidden_ratio": 0.35,
+        "learning_rate": 0.01,
+        "batch_size": 64,
+        "epochs": 30,
+        "noise": 0.2,
+        "save_dir": "./pre-trained/LSTMAE" 
+    },
     "doc2vec": {
         "dm": 1,
         "vector_size": 100,
