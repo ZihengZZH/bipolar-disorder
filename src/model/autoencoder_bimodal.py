@@ -43,7 +43,7 @@ class AutoEncoderBimodal(AutoEncoder):
         decoded_A = Dense(self.dimension[4], activation='sigmoid')(decoded_A)
         decoded_V = Dense(self.dimension[4], activation='sigmoid')(decoded_V)
 
-        self.autoencoder = Model(input=[input_data_A, input_data_V], outputs=[decoded_A, decoded_V])
+        self.autoencoder = Model(inputs=[input_data_A, input_data_V], outputs=[decoded_A, decoded_V])
         self.encoder = Model([input_data_A, input_data_V], encoded)
 
         # configure model

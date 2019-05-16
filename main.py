@@ -47,7 +47,7 @@ def main(argv):
             visualize_landmarks(vis)
         if len(exp) != 0:
             print("Experiment begins")
-            BAE_XBOW()
+            AE_BOW()
 
     except getopt.GetoptError:
         display_help()

@@ -23,6 +23,8 @@ Tree structure of Bipolar Disorder project
 |   |__ model
 |   |   |__ init.py
 |   |   |__ autoencoder.py
+|   |   |__ autoencoder_bimodal.py
+|   |   |__ autoencoder_lstm.py
 |   |   |__ baseline.py
 |   |   |__ linear_svm.py
 |   |   |__ random_forest.py
