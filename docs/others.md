@@ -17,3 +17,8 @@ e.g.
 ```
 scp zz362@dev-gpu-0.cl.cam.ac.uk:~/workspace/bipolar-disorder/pre-trained/SDAE/xxx.zip ~/Downloads/
 ```
+
+### unzip
+```
+unzip <filename>.zip -d <destination_folder>
+```

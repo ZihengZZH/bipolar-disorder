@@ -72,8 +72,11 @@ class RandomForest():
         
         if self.baseline:
             filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model_name, self.feature_name))
-            if os.path.isfile(filename):
-                self.parameters = json.load(open(filename, 'r'))
+        else:
+            filename = os.path.join('config', '%s_%s_params.json' % (self.model_name, self.feature_name))
+
+        if os.path.isfile(filename):
+            self.parameters = json.load(open(filename, 'r'))
         
         if not self.parameters['n_estimators'] or not self.parameters['max_features'] or not self.parameters['max_depth'] or not self.parameters['criterion']:
             print("\nhyperparameters are not tuned yet")
@@ -112,7 +115,12 @@ class RandomForest():
             "criterion": self.config['baseline']['random_forest']['criterion']
         }
         print("\nrunning the Grid Search for Random Forest classifier ...")
-        clf = GridSearchCV(RandomForestClassifier(), parameters, cv=10, n_jobs=-1, verbose=3)
+        clf = GridSearchCV(RandomForestClassifier(), 
+                            parameters, 
+                            cv=10, 
+                            n_jobs=1, 
+                            verbose=3, 
+                            pre_dispatch='2*n_jobs')
 
         clf.fit(self.X_train, self.y_train)
         print("\nfinal score for the tuned model\n", clf.score(self.X_train, self.y_train))
@@ -126,13 +134,16 @@ class RandomForest():
         self.parameters['criterion'] = clf.best_params_['criterion']
 
         if self.baseline:
-            # write to model json file
             filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model_name, self.feature_name))
-            with open(filename, 'w') as output:
-                json.dump(clf.best_params_, output)
-                output.write("\n")
-            output.close()
-    
+        else:
+            filename = os.path.join('config', '%s_%s_params.json' % (self.model_name, self.feature_name))
+        
+        # write to model json file
+        with open(filename, 'w') as output:
+            json.dump(clf.best_params_, output)
+            output.write("\n")
+        output.close()
+        
     def get_session_probability(self):
         """get posterior probability on session-level (FAU feature)
         """

@@ -111,7 +111,12 @@ class LinearSVM():
             "C": self.config['baseline']['SVM']['C']
         }
         print("\nrunning the Grid Search for Linear SVM classifier ...")
-        clf = GridSearchCV(svm.SVC(), parameters, cv=10, n_jobs=-1, verbose=3)
+        clf = GridSearchCV(svm.SVC(), 
+                            parameters, 
+                            cv=10, 
+                            n_jobs=-1, 
+                            verbose=3,
+                            pre_dispatch='2*n_jobs')
         
         clf.fit(self.X_train, self.y_train)
         print("\nfinal score for the tuned model\n", clf.score(self.X_train, self.y_train))

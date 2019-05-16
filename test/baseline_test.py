@@ -1,5 +1,5 @@
 import unittest
-from src.model.baseline import BaseLine
+from src.baseline import BaseLine
 
 
 class TestBaseLine(unittest.TestCase):

@@ -16,7 +16,6 @@ class TestText2Vec(unittest.TestCase):
         random_forest = RandomForest('text', X_train, y_train, X_dev, y_dev, test=True)
         random_forest.run()
         random_forest.evaluate()
-        # sample.load_model()
         sample.evaluate_model('iyi')
 
 

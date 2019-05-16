@@ -2,7 +2,6 @@
 literature:
   ✔ read papers of AVEC 2018 (#4) @done(19-02-08 11:05)
   ☐ read relevant papers, depression detection
-  ☐ read ML algorithms on sequential data
   
 dataset:
   ✔ get the basic understanding of dataset @done(19-03-17 15:39)
@@ -45,7 +44,7 @@ project:
     ✔ vis.py @done(19-05-15 18:16)
 
 modification:
-  ☐ native -> collections (high-performance)
+  ☐ native -> collections (high-performance) [not necessary]
 
 dissertation:
   (starts from 29 April)
