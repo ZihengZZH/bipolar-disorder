@@ -29,7 +29,7 @@ class AutoEncoder():
     decoder: keras.models.Model
         keras Model mapping latent representation to input
     dimension: list
-    hidden_raio: float
+    hidden_ratio: float
     learning_rate: float
     epochs: int
     noise: float
@@ -74,19 +74,19 @@ class AutoEncoder():
         self.epochs = None
         self.noise = None
         self.save_dir = None
-        self.model_config = json.load(open('./config/model.json', 'r'))
+        self.model_config = json.load(open('./config/model.json', 'r'))['autoencoder']
         self.load_basic()
         np.random.seed(1337)
 
     def load_basic(self):
         """load basic data and configuration for model
         """
-        self.hidden_ratio = self.model_config['autoencoder']['hidden_ratio']
-        self.learning_rate = self.model_config['autoencoder']['learning_rate']
-        self.batch_size = self.model_config['autoencoder']['batch_size']
-        self.epochs = self.model_config['autoencoder']['epochs']
-        self.noise = self.model_config['autoencoder']['noise']
-        self.save_dir = self.model_config['autoencoder']['save_dir']
+        self.hidden_ratio = self.model_config['hidden_ratio']
+        self.learning_rate = self.model_config['learning_rate']
+        self.batch_size = self.model_config['batch_size']
+        self.epochs = self.model_config['epochs']
+        self.noise = self.model_config['noise']
+        self.save_dir = self.model_config['save_dir']
         self.dimension[0] = self.X_train.shape[1]
         self.dimension[1] = int(self.dimension[0] * self.hidden_ratio)
         self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
@@ -152,11 +152,12 @@ class AutoEncoder():
                             validation_data=(self.X_dev_noisy, self.X_dev))
         self.save_model()
     
-    def encode(self):
+    def encode(self, X_1, X_2):
         """encode raw input to latent representation
         """
-        encoded_pre = self.encoder.predict(self.X_dev)
-        return encoded_pre
+        encoded_train = self.encoder.predict(X_1)
+        encoded_dev = self.encoder.predict(X_2)
+        self.save_representation(encoded_train, encoded_dev)
 
     def decode(self, encoded_pre):
         """decode latent representation to raw input
@@ -178,7 +179,7 @@ class AutoEncoder():
         """load stacked denoising autoencoder model from external file
         """
         weights_list = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
-        print("Full list of pre-trained models")
+        print("\nfull list of pre-trained models")
         print("--"*20)
         for idx, name in enumerate(weights_list):
             print("no.%d model with name %s" % (idx, name))
@@ -186,12 +187,27 @@ class AutoEncoder():
         choose_model = None
         for _ in range(3):
             try:
-                choose_model = input("\nPlease make your choice\t")
+                choose_model = input("\nmake your choice: ")
                 weights_name = weights_list[int(choose_model)]
                 self.autoencoder.load_weights(os.path.join(self.save_dir, weights_name))
                 break
-            except:
+            except ValueError:
                 print("\nWrong input! Please start over")
+
+    def save_representation(self, encoded_train, encoded_dev):
+        """save encoded representation to external file
+        """
+        encoded_dir = self.model_config['encoded_dir']
+        np.save(os.path.join(encoded_dir, 'encoded_train_%s' % self.name), encoded_train)
+        np.save(os.path.join(encoded_dir, 'encoded_dev_%s' % self.name), encoded_dev)
+    
+    def load_presentation(self):
+        """load encoded representation from external file
+        """
+        encoded_dir = self.model_config['encoded_dir']
+        encoded_train = np.load(os.path.join(encoded_dir, 'encoded_train_%s.npy' % self.name))
+        encoded_dev = np.load(os.path.join(encoded_dir, 'encoded_dev_%s.npy' % self.name))
+        return encoded_train, encoded_dev
 
     def vis_model(self):
         pass

@@ -373,14 +373,21 @@ def load_bags_of_words(modality, verbose=False):
     X_train = pd.read_csv(config['train_data'], header=None) 
     X_dev = pd.read_csv(config['dev_data'], header=None) 
     X_test = pd.read_csv(config['test_data'], header=None)
+    y_train = pd.read_csv(config['train_label'], header=None) 
+    inst_train = pd.read_csv(config['train_inst'], header=None) 
+    y_dev = pd.read_csv(config['dev_label'], header=None) 
+    inst_dev = pd.read_csv(config['dev_inst'], header=None) 
 
     if verbose:
         print("--" * 20)
         print(modality)
         print("--" * 20)
         print("training data size", X_train.shape)
-        print("development data size", X_dev.shape)
+        print("dev data size", X_dev.shape)
         print("test data size", X_test.shape)
         print("--" * 20)
+        print("train label size", y_train.T.shape)
+        print("dev label size", y_dev.T.shape)
+        print("--" * 20)
     
-    return X_train, X_dev, X_test
+    return X_train, X_dev, X_test, y_train.T, inst_train.values, y_dev.T, inst_dev.values

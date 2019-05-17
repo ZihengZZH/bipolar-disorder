@@ -70,8 +70,9 @@ class AutoEncoderBimodal(AutoEncoder):
                             ))
         self.save_model()
 
-    def encode(self):
+    def encode(self, X_1_A, X_1_V, X_2_A, X_2_V):
         """encode bimodal input to latent representation
         """
-        encoded_pre = self.encoder.predict([self.X_dev_A, self.X_dev_V])
-        return encoded_pre
+        encoded_train = self.encoder.predict([X_1_A, X_1_V])
+        encoded_dev = self.encoder.predict([X_2_A, X_2_V])
+        self.save_representation(encoded_train, encoded_dev)

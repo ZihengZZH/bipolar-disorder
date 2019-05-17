@@ -32,7 +32,7 @@ class AutoEncoderLSTM():
         self.autoencoder = None
         self.encoder = None
         self.decoder = None
-        self.model_config = json.load(open('./config/model.json', 'r'))
+        self.model_config = json.load(open('./config/model.json', 'r'))['autoencoder-lstm']
         self.load_basic(test=test)
         np.random.seed(1337)
 
@@ -47,7 +47,7 @@ class AutoEncoderLSTM():
         print(self.X_train.shape)
         print(self.X_dev.shape)
         
-        self.epochs = self.model_config['autoencoder-lstm']['epochs']
+        self.epochs = self.model_config['epochs']
 
     def repeat(self, x):
         import keras.backend as K

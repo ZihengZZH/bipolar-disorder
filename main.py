@@ -1,15 +1,14 @@
 import sys, getopt
-from src.baseline import BaseLine
-from src.utils.vis import visualize_landmarks
-from src.experiment import AE_BOW, BAE_XBOW, TEXT
 
 
 def display_help():
-    print("--" * 10)
+    print("--" * 20)
     print("Several options to run")
     print("--" * 20)
     print("baseline system")
-    print("\tmain.py -m <model_name> -f <feature_name>")
+    print("\tmain.py -b")
+    print("experiment system")
+    print("\tmain.py -x")
     print("landmark visualization")
     print("\tmain.py -v <partition>")
     print("help list")
@@ -17,41 +16,48 @@ def display_help():
     print("--" * 20)
 
 
-def run_baseline_system(model_name, feature_name):
-    baseline = BaseLine(model_name, feature_name)
+def run_baseline_system():
+    from src.baseline import BaseLine
+    models = ['SVM', 'RF']
+    features = ['MFCC', 'eGeMAPS', 'Deep', 'BoAW', 'AU', 'BoVW']
+    print("--" * 20)
+    print("Available models:")
+    for idx, m in enumerate(models):
+        print(idx, m)
+    model_id = int(input("choose a model: "))
+    print("Available features:")
+    for idx, f in enumerate(features):
+        print(idx, f)
+    feature_id = int(input("choose a feature: "))
+    baseline = BaseLine(models[model_id], features[feature_id])
     baseline.run()
 
 
 def main(argv):
-    model, feature = '', ''
-    vis, exp = '', ''
     try:
-        opts, _ = getopt.getopt(argv, "h:m:f:v:x:")
-        for opt, arg in opts:
-            if opt in ('-h', '--help'):
-                display_help()
-                sys.exit()
-            elif opt in ('-m', '--model'):
-                model = arg
-            elif opt in ('-f', '--feature'):
-                feature = arg
-            elif opt in ('-v', '--visualize'):
-                vis = arg
-            elif opt in ('-x', '--experiment'):
-                exp = arg
-        if len(model) != 0 and len(feature) != 0:
-            print("Baseline System with model %s and feature %s" % (model, feature))
-            run_baseline_system(model, feature)
-        if len(vis) != 0:
-            print("Visualize facial landmarks on videos")
-            visualize_landmarks(vis)
-        if len(exp) != 0:
-            print("Experiment begins")
-            TEXT()
-
-    except getopt.GetoptError:
+        opts, _ = getopt.getopt(argv, "hbv:x", ["help", "baseline", "visualize", "experiment"])
+    except getopt.GetoptError as err:
+        print(err)
         display_help()
         sys.exit(2)
+    
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            display_help()
+        elif opt in ('-b', '--baseline'):
+            print("Baseline System")
+            print("--" * 20)
+            run_baseline_system()
+        elif opt in ('-x', '--experiment'):
+            from src.experiment import AE_BOAW, AE_BOVW, BAE_BOXW, TEXT
+            print("Experiment System")
+            print("--" * 20)
+            BAE_BOXW()
+        elif opt in ('-v', '--visualize'):
+            from src.utils.vis import visualize_landmarks
+            print("Visualize facial landmarks on videos")
+            print("--" * 20)
+            visualize_landmarks(arg)
 
 
 if __name__ == "__main__":
