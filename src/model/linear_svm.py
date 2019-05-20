@@ -5,6 +5,7 @@ from sklearn import svm
 from sklearn import metrics
 from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 
 
 class LinearSVM():
@@ -111,11 +112,12 @@ class LinearSVM():
             "C": self.config['baseline']['SVM']['C']
         }
         print("\nrunning the Grid Search for Linear SVM classifier ...")
-        clf = GridSearchCV(svm.SVC(), 
+        clf = RandomizedSearchCV(svm.SVC(), 
                             parameters, 
                             cv=10, 
                             n_jobs=-1, 
                             verbose=3,
+                            n_iter=10,
                             pre_dispatch='2*n_jobs')
         
         clf.fit(self.X_train, self.y_train)

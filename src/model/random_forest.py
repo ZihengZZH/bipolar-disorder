@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 
 
 class RandomForest():
@@ -115,12 +116,13 @@ class RandomForest():
             "criterion": self.config['baseline']['random_forest']['criterion']
         }
         print("\nrunning the Grid Search for Random Forest classifier ...")
-        clf = GridSearchCV(RandomForestClassifier(), 
-                            parameters, 
-                            cv=10, 
-                            n_jobs=1, 
-                            verbose=3, 
-                            pre_dispatch='2*n_jobs')
+        clf = RandomizedSearchCV(RandomForestClassifier(), 
+                                parameters, 
+                                cv=10, 
+                                n_jobs=-1, 
+                                verbose=3, 
+                                n_iter=50,
+                                pre_dispatch='2*n_jobs')
 
         clf.fit(self.X_train, self.y_train)
         print("\nfinal score for the tuned model\n", clf.score(self.X_train, self.y_train))
