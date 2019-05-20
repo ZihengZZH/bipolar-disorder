@@ -245,7 +245,7 @@ def process_corpus(verbose=False):
 def preprocess_AU(verbose=False):
     """preprocess Action Units data
     """
-    raw_dir = data_config['data_path_local']['LLD']['openFace']
+    raw_dir = data_config['data_path_700']['LLD']['openFace']
     proc_dir = data_config['baseline_preproc']['AU_landmarks']
 
     length = dict()

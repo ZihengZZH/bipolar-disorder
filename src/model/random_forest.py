@@ -109,11 +109,12 @@ class RandomForest():
     def tune(self):
         """fine tune hyperparameters for the model
         """
+        import scipy.stats as stats
         parameters = {
-            "n_estimators": self.config['baseline']['random_forest']['n_estimators'],
-            "max_features": self.config['baseline']['random_forest']['max_features'],
-            "max_depth": self.config['baseline']['random_forest']['max_depth'],
-            "criterion": self.config['baseline']['random_forest']['criterion']
+            "n_estimators": stats.randint(100, 800),
+            "max_features": stats.uniform(0.1, 0.5),
+            "max_depth": stats.randint(1, 11),
+            "criterion": ["entropy"]
         }
         print("\nrunning the Grid Search for Random Forest classifier ...")
         clf = RandomizedSearchCV(RandomForestClassifier(), 

@@ -107,9 +107,10 @@ class LinearSVM():
     def tune(self):
         """fine tune hyperparameters for the model
         """
+        import scipy.stats as stats
         parameters = {
             "kernel": ['linear'],
-            "C": self.config['baseline']['SVM']['C']
+            "C": stats.uniform(loc=0, scale=5)
         }
         print("\nrunning the Grid Search for Linear SVM classifier ...")
         clf = RandomizedSearchCV(svm.SVC(), 
@@ -117,7 +118,7 @@ class LinearSVM():
                             cv=10, 
                             n_jobs=-1, 
                             verbose=3,
-                            n_iter=10,
+                            n_iter=50,
                             pre_dispatch='2*n_jobs')
         
         clf.fit(self.X_train, self.y_train)
