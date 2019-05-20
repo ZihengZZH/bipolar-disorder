@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
+from keras import regularizers
 from keras.models import Model
 from keras.layers import Input, Dense, Concatenate
 from keras.utils import plot_model
@@ -26,7 +27,7 @@ class AutoEncoderBimodal(AutoEncoder):
     def build_model(self):
         """build bimodal stacked deep autoencoder
         """
-        self.dimension[2] = int(self.dimension[2] * 2)
+        self.dimension[2] = int(self.dimension[2] * 1.5)
 
         input_data_A = Input(shape=(self.dimension[0], ))
         input_data_V = Input(shape=(self.dimension[0], ))
@@ -35,7 +36,8 @@ class AutoEncoderBimodal(AutoEncoder):
         encoded_V = Dense(self.dimension[1], activation='relu')(input_data_V)
 
         shared = Concatenate(axis=1)([encoded_A, encoded_V])
-        encoded = Dense(self.dimension[2], activation='relu')(shared)
+        encoded = Dense(self.dimension[2], activation='relu',
+                        activity_regularizer=regularizers.l1(10e-5))(shared)
 
         decoded_A = Dense(self.dimension[3], activation='relu')(encoded)
         decoded_V = Dense(self.dimension[3], activation='relu')(encoded)

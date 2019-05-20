@@ -11,7 +11,7 @@
         }
     },
     "autoencoder": {
-        "hidden_ratio": 0.35,
+        "hidden_ratio": 0.4,
         "learning_rate": 0.01,
         "batch_size": 16,
         "epochs": 100,
