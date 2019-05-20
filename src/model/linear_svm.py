@@ -110,7 +110,7 @@ class LinearSVM():
         import scipy.stats as stats
         parameters = {
             "kernel": ['linear'],
-            "C": stats.uniform(loc=0, scale=5)
+            "C": stats.uniform(loc=0, scale=10000)
         }
         print("\nrunning the Grid Search for Linear SVM classifier ...")
         clf = RandomizedSearchCV(svm.SVC(), 
@@ -119,6 +119,7 @@ class LinearSVM():
                             n_jobs=-1, 
                             verbose=3,
                             n_iter=50,
+                            scoring='recall_macro',
                             pre_dispatch='2*n_jobs')
         
         clf.fit(self.X_train, self.y_train)

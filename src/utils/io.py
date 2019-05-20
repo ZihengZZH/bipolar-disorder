@@ -345,18 +345,83 @@ def load_post_probability(model_name, feature_name):
     return prob_dev
 
 
-def load_facial_landmarks(verbose=False):
-    """load preprocessed facial landmarks 
+def load_aligned_features(verbose=False):
+    """load preprocessed visual and acoustic features 
     """
-    landmark_dir = data_config['baseline_preproc']['AU_landmarks']
-    length = dict()
-    length['train'] = data_config['length']['train']
-    length['dev'] = data_config['length']['dev']
-    length['test'] = data_config['length']['test']
+    visual_dir = data_config['baseline_preproc']['AU_landmarks']
+    acoustic_dir = data_config['baseline_preproc']['MFCC_aligned']
+    output_dir = data_config['baseline_preproc']['aligned_AV']
 
-    for partition in ['train', 'dev', 'test']:
-        for i in range(length[partition]):
-            break
+    if os.path.isfile(output_dir['test_data_A']) and os.path.isfile(output_dir['test_data_V']):
+        X_train_A = pd.read_csv(output_dir['train_data_A'], header=None) 
+        X_dev_A = pd.read_csv(output_dir['dev_data_A'], header=None) 
+        X_test_A = pd.read_csv(output_dir['test_data_A'], header=None)
+        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None) 
+        X_dev_V = pd.read_csv(output_dir['dev_data_V'], header=None) 
+        X_test_V = pd.read_csv(output_dir['test_data_V'], header=None)
+        y_train = pd.read_csv(output_dir['train_label'], header=None) 
+        inst_train = pd.read_csv(output_dir['train_inst'], header=None) 
+        y_dev = pd.read_csv(output_dir['dev_label'], header=None) 
+        inst_dev = pd.read_csv(output_dir['dev_inst'], header=None)
+
+        if verbose:
+            print("--" * 20)
+            print("train data (A) size", X_train_A.shape)
+            print("train data (V) size", X_train_V.shape)
+            print("dev data (A) size", X_dev_A.shape)
+            print("dev data (V) size", X_dev_V.shape)
+            print("test data (A) size", X_test_A.shape)
+            print("test data (V) size", X_test_V.shape)
+            print("--" * 20)
+            print("train label size", y_train.T.shape)
+            print("dev label size", y_dev.T.shape)
+            print("--" * 20)
+
+        return X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train.T, inst_train.values, y_dev.T, inst_dev.values
+    
+    else:
+        length = dict()
+        length['train'] = data_config['length']['train']
+        length['dev'] = data_config['length']['dev']
+        length['test'] = data_config['length']['test']
+
+        _, _, level_dev, level_train = load_label()
+        label_train, label_dev = level_train.values, level_dev.values
+        labels = dict()
+        labels['train'] = label_train[:, 1]
+        labels['dev'] = label_dev[:, 1]
+
+        for partition in ['train', 'dev']:
+            label_f = smart_open(output_dir['%s_label' % partition], 'a+', encoding='utf-8')
+            inst_f = smart_open(output_dir['%s_inst' % partition], 'a+', encoding='utf-8')
+            A_data, V_data = None, None
+            label = labels[partition]
+
+            for i in range(length[partition]):
+                filename = get_sample(partition, (i+1)) + '.csv'
+
+                if verbose:
+                    print("file %s loaded." % filename)
+                
+                A_feature = pd.read_csv(os.path.join(acoustic_dir, filename), header=None)
+                V_feature = pd.read_csv(os.path.join(visual_dir, filename), header=None)
+                A_t, _ = A_feature.shape
+                V_t, _ = V_feature.shape
+                assert A_t == V_t
+
+                timestep = A_t
+                # concatenate features
+                A_data = A_feature.copy() if not i else pd.concat([A_data, A_feature])
+                V_data = V_feature.copy() if not i else pd.concat([V_data, V_feature])
+                # write labels and instances
+                label_f.write(('%d,' % label[i]) * timestep)
+                inst_f.write(('%d,' % (i+1)) * timestep)
+            
+            A_data.to_csv(output_dir['%s_data_A' % partition], header=None, index=None)
+            V_data.to_csv(output_dir['%s_data_V' % partition], header=None, index=None)
+            label_f.close()
+            inst_f.close()
+            print("partition %s done." % partition)
 
 
 def load_bags_of_words(modality, verbose=False):

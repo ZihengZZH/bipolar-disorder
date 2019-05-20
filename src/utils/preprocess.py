@@ -253,20 +253,34 @@ def preprocess_AU(verbose=False):
     length['dev'] = data_config['length']['dev']
     length['test'] = data_config['length']['test']
 
-    landmarks = [['x_%d' % i, 'y_%d' % i] for i in range(68)]
+    time = ['timestamp']
+    landmarks = ['%s_%d' % (xy, i) for xy in ['x', 'y'] for i in range(68)]
+    gazes = ['gaze_%d_%s' % (no, di) for no in range(2) for di in ['x', 'y', 'z']]
+    poses = ['pose_%s' % xyz for xyz in ['Tx', 'Ty', 'Tz', 'Rx', 'Ry', 'Rz']]
+    actions = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r', 'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r', 'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r', 'AU01_c', 'AU02_c', 'AU04_c', 'AU05_c', 'AU06_c', 'AU07_c', 'AU09_c', 'AU10_c', 'AU12_c', 'AU14_c', 'AU15_c', 'AU17_c', 'AU20_c', 'AU23_c', 'AU25_c', 'AU26_c', 'AU28_c', 'AU45_c']
 
-    for partition in ['dev', 'test']:
+    visual = time
+    visual.extend(landmarks)
+    visual.extend(gazes)
+    visual.extend(poses)
+    visual.extend(actions)
+
+    if verbose:
+        print(time)
+        print(landmarks)
+        print(gazes)
+        print(poses)
+        print(actions)
+
+    for partition in ['train', 'dev', 'test']:
         for i in range(length[partition]):
             filename = get_sample(partition, (i+1))
             temp = pd.read_csv(os.path.join(raw_dir, filename + '.csv'))
             temp.columns = temp.columns.str.strip()
             print("file %s loaded" % filename)
-            
-            idx = pd.DataFrame(temp['timestamp'])
-            for pair in landmarks:
-                idx[','.join(pair)] = temp[pair].apply(lambda x: ','.join(x.map(str)), axis=1)
-
-            idx.to_csv(os.path.join(proc_dir, filename + '.csv'), index=False)
+            # select specified columns
+            temp = temp.loc[:, visual]
+            temp.to_csv(os.path.join(proc_dir, filename + '.csv'), index=False)
             print("file %s processing completed & saved" % filename)
 
 
@@ -330,3 +344,61 @@ def preprocess_BOXW(verbose=False):
         V_label_f.close()
         A_inst_f.close()
         V_inst_f.close()
+
+
+def preprocess_align(verbose=False):
+    """preprocess MFCC data to align Audio / Video data
+    """
+    input_dir_A = data_config['data_path_local']['baseline']['MFCC']
+    input_dir_V = data_config['baseline_preproc']['AU_landmarks']
+    output_dir_A = data_config['baseline_preproc']['MFCC_aligned']
+
+    length = dict()
+    length['train'] = data_config['length']['train']
+    length['dev'] = data_config['length']['dev']
+    length['test'] = data_config['length']['test']
+
+    for partition in ['train', 'dev', 'test']:
+        for i in range(length[partition]):
+            filename = get_sample(partition, (i+1)) + '.csv'
+
+            if verbose:
+                print("file %s loaded." % filename)
+            
+            temp_A = pd.read_csv(os.path.join(input_dir_A, filename), sep=';', index_col=1)
+            temp_A.drop("name", axis=1, inplace=True)
+            del temp_A.index.name
+            temp_V = pd.read_csv(os.path.join(input_dir_V, filename))
+            align_A = pd.DataFrame(np.zeros((len(temp_V), temp_A.shape[1]*3)))
+            align_A.index = temp_V.loc[:, 'timestamp']
+            del align_A.index.name
+
+            A_list = temp_A.index.tolist()
+            V_list = temp_V.loc[:, 'timestamp'].tolist()
+            
+            for j in range(len(V_list) - 1):
+                a_list = []
+                for a in A_list:
+                    if a > V_list[j] and a < V_list[j+1]:
+                        a_list.append(a)
+                if len(a_list) == 1:
+                    a_list *= 3
+                elif len(a_list) == 2:
+                    a_list.append(a_list[1])
+                elif len(a_list) == 3:
+                    a_list = a_list
+                else:
+                    continue
+                
+                assert len(a_list) == 3
+
+                align_A.loc[V_list[j], :] = pd.concat([
+                    temp_A.loc[a_list[0]], 
+                    temp_A.loc[a_list[1]],
+                    temp_A.loc[a_list[2]]], 
+                    axis=0, sort=False, ignore_index=True)
+            
+            align_A.to_csv(os.path.join(output_dir_A, filename))
+
+            if verbose:
+                print("file %s processed & saved." % filename)

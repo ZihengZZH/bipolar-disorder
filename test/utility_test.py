@@ -2,11 +2,13 @@ import unittest
 from src.utils.io import load_label, load_LLD, load_baseline_feature
 from src.utils.io import load_proc_baseline_feature
 from src.utils.io import load_audio_file
+from src.utils.io import load_aligned_features
 from src.utils.preprocess import preproc_baseline_feature
 from src.utils.preprocess import preproc_transcript
 from src.utils.preprocess import process_corpus
 from src.utils.preprocess import preprocess_AU
 from src.utils.preprocess import preprocess_BOXW
+from src.utils.preprocess import preprocess_align
 from src.utils.vis import visualize_landmarks
 
 
@@ -51,8 +53,14 @@ class TestUtility(unittest.TestCase):
     # def test_visualize_landmarks(self):
     #     visualize_landmarks('train', index=10, verbose=True)
 
-    def test_preprocess_BoXW(self):
-        preprocess_BOXW(verbose=True)
+    # def test_preprocess_BoXW(self):
+    #     preprocess_BOXW(verbose=True)
+
+    # def test_preprocess_align(self):
+    #     preprocess_align(verbose=True)
+
+    def test_load_aligned_features(self):
+        load_aligned_features(verbose=True)
 
 
 if __name__ == "__main__":

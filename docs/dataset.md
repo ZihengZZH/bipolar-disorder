@@ -234,3 +234,13 @@ Extracted *BoVW* features have 1000 dimensions
 ## text modality
 
 The data in text modality (turkish) is transcribed using [Speech-to-Text Client Library](https://cloud.google.com/speech-to-text/docs/reference/libraries#client-libraries-install-python) and its embeddings are inferred through a ```doc2vec``` model, which is pre-trained on a Turkish corpus, "[trwiki](https://dumps.wikimedia.org/trwiki/20190501/)". The **trwiki** is based on Wikimedia dump service and it contains articles, templates, media/file descriptions, and primary meta-pages. 
+
+## Pre-Processed Features
+
+### BoAW & BoVW
+
+The alignment between BoAW features and BoVW features are conducted quite straightforward by retaining features of the same ```frameTime```.
+
+### FAUs & MFCC
+
+Facial Action Units, are processed by retaining poses, gazes, and facial landmarks. It is noticeable that the tme interval in OpenFace feature extraction is 0.033s.

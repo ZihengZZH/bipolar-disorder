@@ -28,7 +28,7 @@ def visualize_landmarks(partition, index=None, verbose=False):
     if partition not in ['train', 'dev', 'test']:
         print("\nerror input argument")
         return 
-    index = 30 if not index else index
+    index = 10 if not index else index
 
     video_dir = data_config['data_path_700']['recordings']
     landmark_dir = data_config['baseline_preproc']['AU_landmarks']
@@ -40,7 +40,7 @@ def visualize_landmarks(partition, index=None, verbose=False):
     filename = get_sample(partition, index)
     video = cv2.VideoCapture(os.path.join(video_dir, filename+'.mp4'))
     landmarks = pd.read_csv(os.path.join(landmark_dir, filename+'.csv'))
-    coordinates = ['x_%d,y_%d' % (i, i) for i in range(68)]
+    coordinates = ['%s_%d' % (xy, i) for xy in ['x', 'y'] for i in range(68)]
 
     if not video.isOpened():
         print("\nerror opening video file %s" % filename)
@@ -54,8 +54,8 @@ def visualize_landmarks(partition, index=None, verbose=False):
         landmarks_match = landmarks[landmarks['timestamp'] == time/1000]
 
         if landmarks_match.index.any():
-            for x_y in coordinates:
-                (x, y) = landmarks_match[x_y].values[0].split(',')
+            for i in range(68):
+                x, y = landmarks_match[coordinates[i]], landmarks_match[coordinates[68 + i]]
                 x, y = int(float(x)), int(float(y))
                 cv2.circle(frame, (x, y), 1, (255, 0, 0), -1)
             

@@ -123,6 +123,7 @@ class RandomForest():
                                 n_jobs=-1, 
                                 verbose=3, 
                                 n_iter=50,
+                                scoring='recall_macro',
                                 pre_dispatch='2*n_jobs')
 
         clf.fit(self.X_train, self.y_train)
