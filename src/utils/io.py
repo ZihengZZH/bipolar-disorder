@@ -354,12 +354,12 @@ def load_aligned_features(verbose=False):
 
     if os.path.isfile(output_dir['test_data_A']) and os.path.isfile(output_dir['test_data_V']):
         print("\nprocessed files exist, starting loading ...")
-        X_train_A = pd.read_csv(output_dir['train_data_A'], header=None) 
-        X_dev_A = pd.read_csv(output_dir['dev_data_A'], header=None) 
-        X_test_A = pd.read_csv(output_dir['test_data_A'], header=None)
-        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None, low_memory=False) 
-        X_dev_V = pd.read_csv(output_dir['dev_data_V'], header=None, low_memory=False) 
-        X_test_V = pd.read_csv(output_dir['test_data_V'], header=None, low_memory=False)
+        X_train_A = pd.read_csv(output_dir['train_data_A']) 
+        X_dev_A = pd.read_csv(output_dir['dev_data_A']) 
+        X_test_A = pd.read_csv(output_dir['test_data_A'])
+        X_train_V = pd.read_csv(output_dir['train_data_V'], low_memory=False) 
+        X_dev_V = pd.read_csv(output_dir['dev_data_V'], low_memory=False) 
+        X_test_V = pd.read_csv(output_dir['test_data_V'], low_memory=False)
         y_train = pd.read_csv(output_dir['train_label'], header=None) 
         inst_train = pd.read_csv(output_dir['train_inst'], header=None) 
         y_dev = pd.read_csv(output_dir['dev_label'], header=None) 
@@ -379,7 +379,7 @@ def load_aligned_features(verbose=False):
             print(inst_train.shape, inst_dev.shape)
             print("--" * 20)
 
-        return X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train.T, inst_train.values, y_dev.T, inst_dev.values
+        return X_train_A.iloc[:,1:], X_dev_A.iloc[:,1:], X_test_A.iloc[:,1:], X_train_V.iloc[:,1:], X_dev_V.iloc[:,1:], X_test_V.iloc[:,1:], y_train.T, inst_train.values, y_dev.T, inst_dev.values
     
     else:
         length = dict()
