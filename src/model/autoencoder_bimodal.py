@@ -23,27 +23,32 @@ class AutoEncoderBimodal(AutoEncoder):
         self.X_dev_V = X_dev_V
         AutoEncoder.__init__(self, 'bimodal', X_train_A, X_dev_A)
         self.load_basic()
+        self.dimension_A = self.X_train_A.shape[1]
+        self.dimension_V = self.X_train_V.shape[1]
 
     def build_model(self):
         """build bimodal stacked deep autoencoder
         """
-        self.dimension[2] = int(self.dimension[2] * 1.5)
-
-        input_data_A = Input(shape=(self.dimension[0], ))
-        input_data_V = Input(shape=(self.dimension[0], ))
+        input_data_A = Input(shape=(self.dimension_A, ))
+        input_data_V = Input(shape=(self.dimension_V, ))
         
-        encoded_A = Dense(self.dimension[1], activation='relu')(input_data_A)
-        encoded_V = Dense(self.dimension[1], activation='relu')(input_data_V)
+        encoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
+                        activation='relu')(input_data_A)
+        encoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
+                        activation='relu')(input_data_V)
 
         shared = Concatenate(axis=1)([encoded_A, encoded_V])
-        encoded = Dense(self.dimension[2], activation='relu',
+        encoded = Dense(int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 2), 
+                        activation='relu',
                         activity_regularizer=regularizers.l1(10e-5))(shared)
 
-        decoded_A = Dense(self.dimension[3], activation='relu')(encoded)
-        decoded_V = Dense(self.dimension[3], activation='relu')(encoded)
+        decoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
+                        activation='relu')(encoded)
+        decoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
+                        activation='relu')(encoded)
 
-        decoded_A = Dense(self.dimension[4], activation='sigmoid')(decoded_A)
-        decoded_V = Dense(self.dimension[4], activation='sigmoid')(decoded_V)
+        decoded_A = Dense(self.dimension_A, activation='sigmoid')(decoded_A)
+        decoded_V = Dense(self.dimension_V, activation='sigmoid')(decoded_V)
 
         self.autoencoder = Model(inputs=[input_data_A, input_data_V], outputs=[decoded_A, decoded_V])
         self.encoder = Model([input_data_A, input_data_V], encoded)

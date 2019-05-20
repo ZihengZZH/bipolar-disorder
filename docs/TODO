@@ -25,6 +25,8 @@ dataset:
     ✔ google transcribe @done(19-05-06 20:49)
     ☐ translation from Turkish to English
     ✔ sentiment detection @done(19-05-14 16:19)
+  ✔ AE sparsity @done(19-05-20 21:58)
+  ✔ evaluation on recall_macro @done(19-05-20 21:59)
   
 project:
   ☐ model
