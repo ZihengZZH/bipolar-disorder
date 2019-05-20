@@ -13,7 +13,7 @@ ALL I\O FUNCTIONS
 ----------------------------------------
 get_sample(partition, index)
     retrieve the sample name
-load_audio_file(parition, index, gcs=False, verbose=False)
+load_audio_file(partition, index, gcs=False, verbose=False)
     load audio files for transcribing
 save_transcript(partition, index, transcript)
     save transcript to external files
@@ -353,12 +353,13 @@ def load_aligned_features(verbose=False):
     output_dir = data_config['baseline_preproc']['aligned_AV']
 
     if os.path.isfile(output_dir['test_data_A']) and os.path.isfile(output_dir['test_data_V']):
+        print("\nprocessed files exist, starting loading ...")
         X_train_A = pd.read_csv(output_dir['train_data_A'], header=None) 
         X_dev_A = pd.read_csv(output_dir['dev_data_A'], header=None) 
         X_test_A = pd.read_csv(output_dir['test_data_A'], header=None)
-        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None) 
-        X_dev_V = pd.read_csv(output_dir['dev_data_V'], header=None) 
-        X_test_V = pd.read_csv(output_dir['test_data_V'], header=None)
+        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None, low_memory=False) 
+        X_dev_V = pd.read_csv(output_dir['dev_data_V'], header=None, low_memory=False) 
+        X_test_V = pd.read_csv(output_dir['test_data_V'], header=None, low_memory=False)
         y_train = pd.read_csv(output_dir['train_label'], header=None) 
         inst_train = pd.read_csv(output_dir['train_inst'], header=None) 
         y_dev = pd.read_csv(output_dir['dev_label'], header=None) 
@@ -375,6 +376,7 @@ def load_aligned_features(verbose=False):
             print("--" * 20)
             print("train label size", y_train.T.shape)
             print("dev label size", y_dev.T.shape)
+            print(inst_train.shape, inst_dev.shape)
             print("--" * 20)
 
         return X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train.T, inst_train.values, y_dev.T, inst_dev.values
@@ -391,25 +393,29 @@ def load_aligned_features(verbose=False):
         labels['train'] = label_train[:, 1]
         labels['dev'] = label_dev[:, 1]
 
+        dimensionality = dict()
+        dimensionality['train'] = 0
+        dimensionality['dev'] = 0
+
         for partition in ['train', 'dev']:
-            label_f = smart_open(output_dir['%s_label' % partition], 'a+', encoding='utf-8')
-            inst_f = smart_open(output_dir['%s_inst' % partition], 'a+', encoding='utf-8')
+            label_f = smart_open(output_dir['%s_label' % partition], 'w', encoding='utf-8')
+            inst_f = smart_open(output_dir['%s_inst' % partition], 'w', encoding='utf-8')
             A_data, V_data = None, None
             label = labels[partition]
 
             for i in range(length[partition]):
                 filename = get_sample(partition, (i+1)) + '.csv'
-
-                if verbose:
-                    print("file %s loaded." % filename)
-                
-                A_feature = pd.read_csv(os.path.join(acoustic_dir, filename), header=None)
-                V_feature = pd.read_csv(os.path.join(visual_dir, filename), header=None)
+                A_feature = pd.read_csv(os.path.join(acoustic_dir, filename), header=None, low_memory=False)
+                V_feature = pd.read_csv(os.path.join(visual_dir, filename), header=None, low_memory=False)
                 A_t, _ = A_feature.shape
                 V_t, _ = V_feature.shape
                 assert A_t == V_t
-
                 timestep = A_t
+                dimensionality[partition] += timestep
+
+                if verbose:
+                    print("file %s loaded with timestep %d" % (filename, timestep), A_feature.shape, V_feature.shape)
+
                 # concatenate features
                 A_data = A_feature.copy() if not i else pd.concat([A_data, A_feature])
                 V_data = V_feature.copy() if not i else pd.concat([V_data, V_feature])
@@ -417,8 +423,8 @@ def load_aligned_features(verbose=False):
                 label_f.write(('%d,' % label[i]) * timestep)
                 inst_f.write(('%d,' % (i+1)) * timestep)
             
-            A_data.to_csv(output_dir['%s_data_A' % partition], header=None, index=None)
-            V_data.to_csv(output_dir['%s_data_V' % partition], header=None, index=None)
+            A_data.to_csv(output_dir['%s_data_A' % partition], header=False, index=False)
+            V_data.to_csv(output_dir['%s_data_V' % partition], header=False, index=False)
             label_f.close()
             inst_f.close()
             print("partition %s done." % partition)

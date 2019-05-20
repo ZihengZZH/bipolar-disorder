@@ -89,28 +89,29 @@ def BAE_BOXW():
 
 
 def BAE():
+    print("\nrunning BiModal AE on aligned Audio / Video features")
     X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-    bae = AutoEncoderBimodal(
-        pd.concat([X_train_A, X_dev_A]), 
-        pd.concat([X_train_V, X_dev_V]), 
-        X_test_A, X_test_V)
+    # bae = AutoEncoderBimodal(
+    #     pd.concat([X_train_A, X_dev_A]), 
+    #     pd.concat([X_train_V, X_dev_V]), 
+    #     X_test_A, X_test_V)
     
-    bae.build_model()
+    # bae.build_model()
     # bae.train_model()
-    bae.load_model()
-    bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-    encoded_train, encoded_dev = bae.load_presentation()
+    # bae.load_model()
+    # bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+    # encoded_train, encoded_dev = bae.load_presentation()
 
-    rf = RandomForest('biAE', encoded_train, y_train, encoded_dev, y_dev, test=True)
-    rf.run()
-    y_pred_train, y_pred_dev = rf.evaluate()
+    # rf = RandomForest('biAE', encoded_train, y_train, encoded_dev, y_dev, test=True)
+    # rf.run()
+    # y_pred_train, y_pred_dev = rf.evaluate()
 
-    y_train = np.reshape(y_train, (len(y_train), ))
-    y_dev = np.reshape(y_dev, (len(y_dev), ))
+    # y_train = np.reshape(y_train, (len(y_train), ))
+    # y_dev = np.reshape(y_dev, (len(y_dev), ))
 
-    get_UAR(y_pred_train, y_train, inst_train, 'RF', 'biAE', 'multiple', train_set=True, test=True)
-    get_UAR(y_pred_dev, y_dev, inst_dev, 'RF', 'biAE', 'multiple', test=True)
+    # get_UAR(y_pred_train, y_train, inst_train, 'RF', 'biAE', 'multiple', train_set=True, test=True)
+    # get_UAR(y_pred_dev, y_dev, inst_dev, 'RF', 'biAE', 'multiple', test=True)
 
 
 def TEXT():
