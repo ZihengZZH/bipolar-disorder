@@ -15,14 +15,11 @@ def AE_BOAW(arg):
     print("\nrunning SDAE on BoAW representation")
     X_train_A, X_dev_A, X_test_A, y_train_A, inst_train_A, y_dev_A, inst_dev_A = load_bags_of_words('BoAW', verbose=True)
 
-    ae_boaw = AutoEncoder('BoAW', 
-                        pd.concat([X_train_A, X_dev_A]),
-                        X_test_A, 
-                        noisy=True)
+    ae_boaw = AutoEncoder('BoAW', X_train_A.shape[1])
     ae_boaw.build_model()
 
     if arg == 'train':
-        ae_boaw.train_model()
+        ae_boaw.train_model(pd.concat([X_train_A, X_dev_A]), X_test_A)
     else:
         ae_boaw.load_model()
         ae_boaw.encode(X_train_A, X_dev_A)
@@ -43,14 +40,11 @@ def AE_BOVW(arg):
     print("\nrunning SDAE on BoVW representation")
     X_train_V, X_dev_V, X_test_V, y_train_V, inst_train_V, y_dev_V, inst_dev_V = load_bags_of_words('BoVW', verbose=True)
 
-    ae_bovw = AutoEncoder('BoVW', 
-                        pd.concat([X_train_V, X_dev_V]),
-                        X_test_V, 
-                        noisy=True)
+    ae_bovw = AutoEncoder('BoVW', X_train_V.shape[1])
     ae_bovw.build_model()
 
     if arg == 'train':
-        ae_bovw.train_model()
+        ae_bovw.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
     else:
         ae_bovw.load_model()
         ae_bovw.encode(X_train_V, X_dev_V)
@@ -72,17 +66,16 @@ def BAE_BOXW(arg):
     X_train_A, X_dev_A, X_test_A, y_train_A, inst_train_A, y_dev_A, inst_dev_A = load_bags_of_words('BoAW', verbose=True)
     X_train_V, X_dev_V, X_test_V, y_train_V, inst_train_V, y_dev_V, inst_dev_V = load_bags_of_words('BoVW', verbose=True)
 
-    bae = AutoEncoderBimodal('bimodal_boxw',
-        pd.concat([X_train_A, X_dev_A]), 
-        pd.concat([X_train_V, X_dev_V]), 
-        X_test_A, X_test_V)
-    # bae.build_model()
+    bae = AutoEncoderBimodal('bimodal_boxw', X_train_A.shape[1], X_train_V.shape[1])
+    bae.build_model()
 
     if arg == 'train':
-        bae.train_model()
+        bae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                        pd.concat([X_train_V, X_dev_V]), 
+                        X_test_A, X_test_V)
     else:
-        # bae.load_model()
-        # bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+        bae.load_model()
+        bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
         encoded_train, encoded_dev = bae.load_presentation()
 
         rf = RandomForest('biAE_boxw', encoded_train, y_train_A, encoded_dev, y_dev_A, test=True)
@@ -102,14 +95,13 @@ def BAE(arg):
     print("\nrunning BiModal AE on aligned Audio / Video features")
     X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-    bae = AutoEncoderBimodal('bimodal_aligned',
-        pd.concat([X_train_A, X_dev_A]), 
-        pd.concat([X_train_V, X_dev_V]), 
-        X_test_A, X_test_V)
+    bae = AutoEncoderBimodal('bimodal_aligned', X_train_A.shape[1], X_train_V.shape[1])
     bae.build_model()
 
     if arg == 'train':
-        bae.train_model()
+        bae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                        pd.concat([X_train_V, X_dev_V]), 
+                        X_test_A, X_test_V)
     else:
         bae.load_model()
         bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)

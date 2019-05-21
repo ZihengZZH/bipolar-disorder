@@ -35,7 +35,7 @@ def run_baseline_system():
 
 def main(argv):
     try:
-        opts, _ = getopt.getopt(argv, "hbv:x", ["help", "baseline", "visualize", "experiment"])
+        opts, _ = getopt.getopt(argv, "hbv:x:", ["help", "baseline", "visualize", "experiment"])
     except getopt.GetoptError as err:
         print(err)
         display_help()
@@ -52,7 +52,7 @@ def main(argv):
             from src.experiment import BAE, BAE_BOXW, TEXT
             print("Experiment System")
             print("--" * 20)
-            BAE(arg)
+            BAE_BOXW(arg)
         elif opt in ('-v', '--visualize'):
             from src.utils.vis import visualize_landmarks
             print("Visualize facial landmarks on videos")

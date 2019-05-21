@@ -17,10 +17,6 @@ class AutoEncoder():
     -----------
     name: str
         model name
-    X_train, X_dev: pd.DataFrame
-        original data without noise
-    X_train_noisy, X_dev_noisy: pd.DataFrame
-        noisy data generated with Gaussian noise
     noisy: bool
         whether or not to involve denoising fashion
     sparse: bool
@@ -58,15 +54,9 @@ class AutoEncoder():
     load_model(): public
         load stacked denoising autoencoder model from external file
     """
-    def __init__(self, name, X_train, X_dev, noisy=True, sparse=False):
+    def __init__(self, name, input_dim, noisy=True, sparse=False):
         # para name: str
-        # para X_train: pd.DataFrame
-        # para X_dev: pd.DataFrame
         self.name = name
-        self.X_train = X_train
-        self.X_train_noisy = None
-        self.X_dev = X_dev
-        self.X_dev_noisy = None
         self.noisy = noisy
         self.sparse = sparse
         # AE model
@@ -74,7 +64,7 @@ class AutoEncoder():
         self.encoder = None
         self.decoder = None
 
-        self.dimension = [0] * 5
+        self.dimension = [input_dim] * 5
         self.hidden_ratio = None
         self.learning_rate = None
         self.epochs = None
@@ -97,22 +87,10 @@ class AutoEncoder():
         self.p = self.model_config['p']
         self.beta = self.model_config['beta']
         self.save_dir = self.model_config['save_dir']
-        self.dimension[0] = self.X_train.shape[1]
         self.dimension[1] = int(self.dimension[0] * self.hidden_ratio)
         self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
         self.dimension[3] = self.dimension[1]
         self.dimension[4] = self.dimension[0]
-
-        if self.noisy:
-            # prepare noisy data
-            self.X_train_noisy = self.X_train + np.random.normal(loc=0.5, scale=0.5, size=self.X_train.shape)
-            self.X_dev_noisy = self.X_dev + np.random.normal(loc=0.5, scale=0.5, size=self.X_dev.shape)
-        else:
-            self.X_train_noisy = self.X_train
-            self.X_dev_noisy = self.X_dev
-
-        assert self.X_train_noisy.shape == self.X_train.shape
-        assert self.X_dev_noisy.shape == self.X_dev.shape
 
     def _sparse_regularizer(self, activation_matrix):
         """define the custom regularizer function
@@ -138,9 +116,9 @@ class AutoEncoder():
         decoded = Dense(self.dimension[3], activation='relu')(encoded)
         decoded = Dense(self.dimension[4], activation='sigmoid')(decoded)
 
-        # maps input to its reconstruction
+        # maps input to reconstruction
         self.autoencoder = Model(input_data, decoded)
-        # maps input to its representation
+        # maps input to representation
         self.encoder = Model(input_data, encoded)
 
         # retrieve layers of autoencoder
@@ -161,14 +139,24 @@ class AutoEncoder():
         print("decoder")
         print(self.decoder.summary())
 
-    def train_model(self):
+    def train_model(self, X_train, X_dev):
         """train stacked denoising autoencoder model
         """
-        self.autoencoder.fit(self.X_train_noisy, self.X_train, 
+        if self.noisy:
+            X_train_noisy = X_train + np.random.normal(loc=0.5, scale=0.5, size=X_train.shape)
+            X_dev_noisy = X_dev + np.random.normal(loc=0.5, scale=0.5, size=X_dev.shape)
+        else:
+            X_train_noisy = X_train
+            X_dev_noisy = X_dev
+
+        assert X_train_noisy.shape == X_train.shape
+        assert X_dev_noisy.shape == X_dev.shape
+
+        self.autoencoder.fit(X_train_noisy, X_train, 
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=(self.X_dev_noisy, self.X_dev))
+                            validation_data=(X_dev_noisy, X_dev))
         self.save_model()
     
     def encode(self, X_1, X_2):
@@ -227,6 +215,13 @@ class AutoEncoder():
         encoded_train = np.load(os.path.join(encoded_dir, 'encoded_train_%s.npy' % self.name))
         encoded_dev = np.load(os.path.join(encoded_dir, 'encoded_dev_%s.npy' % self.name))
         return encoded_train, encoded_dev
+
+    def save_reconstruction(self, decoded_input_A, decoded_input_V):
+        """save reconstructed input
+        """
+        decoded_dir = self.model_config['decoded_dir']
+        np.save(os.path.join(decoded_dir, 'decoded_A_%s' % self.name), decoded_input_A)
+        np.save(os.path.join(decoded_dir, 'decoded_V_%s' % self.name), decoded_input_V)
 
     def vis_model(self):
         pass

@@ -19,7 +19,8 @@
         "p": 0.01,
         "beta": 3,
         "save_dir": "./pre-trained/SDAE",
-        "encoded_dir": "./pre-trained/SDAE_encoded"
+        "encoded_dir": "./pre-trained/SDAE_encoded",
+        "decoded_dir": "./pre-trained/SDAE_decoded"
     },
     "autoencoder-lstm": {
         "hidden_ratio": 0.35,

@@ -7,17 +7,11 @@ from keras.models import Sequential, Model
 from keras.layers import Input, Dense
 from keras.layers import LSTM, RepeatVector, TimeDistributed
 from keras.utils import plot_model
-
-from src.utils.io import load_proc_baseline_feature
 from src.model.autoencoder import AutoEncoder
 
-# load the external configuration file
-data_config = json.load(open('./config/data.json', 'r'))
-model_config = json.load(open('./config/model.json', 'r'))
-np.random.seed(1337)
 
 
-class AutoEncoderLSTM():
+class AutoEncoderLSTM(AutoEncoder):
     def __init__(self, test=False):
         self.X_train = None
         self.X_train_noisy = None
