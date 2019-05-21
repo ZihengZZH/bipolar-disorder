@@ -2,9 +2,15 @@
 
 ## basics about the dataset
 
-[The Turkish Audio-Visual Bipolar Disorder Corpus](https://www.cmpe.boun.edu.tr/~salah/ciftci18aciiasia.pdf) is a new dataset for the affective computing and psychiatric communities. The corpus is annotated for BD state, as well as Young Mania Rating Scale (YMRS) by psychiatrists. The investigated features include __functionals of appearance descriptors__ extracted from fine-tuned Deep Convolutional Neural Networks (DCNN), __geometric features__ obtained using tracked facial landmarks, as well as __acoustic features__ extracted via openSMILE tool. Furthermore, acoustics based emotion models are trained on a Turkish emotional dataset and emotion predictions are cast on the utterances of the BD corpus. The affective scores/predictions are investigated with linear regression and correlation analysis against YMRS declines to give insights about BD, which is directly linked with emotional lability, i.e. quick changes in affect.
+[The Turkish Audio-Visual Bipolar Disorder Corpus](https://www.cmpe.boun.edu.tr/~salah/ciftci18aciiasia.pdf) is a new dataset for the affective computing and psychiatric communities. The corpus is annotated for BD state, as well as Young Mania Rating Scale (YMRS) by psychiatrists. The investigated features include __functionals of appearance descriptors__ extracted from fine-tuned Deep Convolutional Neural Networks (DCNN), __geometric features__ obtained using tracked facial landmarks, as well as __acoustic features__ extracted via openSMILE tool. Furthermore, acoustics based emotion models are trained on a Turkish emotional dataset and emotion predictions are cast on the utterances of the BD corpus. The affective scores/predictions are investigated with linear regression and correlation analysis against YMRS declines to give insights about BD, which is directly linked with emotional liability, i.e. quick changes in affect.
 
 The core aim of the efforts on the corpus is to find **biological markers/predictors** of treatment response via signal processing and machine learning techniques to reduce treatment resistance.
+
+The Young Mania Rating Scale scores and the ternary value of manic symptoms:
+* *Remission* Yt <= 7
+* *Hypo-mania*: 7 < Yt < 20
+* *Mania*: Yt => 20
+
 
 ## recordings in the dataset
 
@@ -13,7 +19,7 @@ The core aim of the efforts on the corpus is to find **biological markers/predic
 | --            | --       | --                 | --                 |
 | healthy       | 120      | 138.9              | 68.4               |
 | remission     | 62       | 151.9              | 65.4               |
-| hypomania     | 82       | 221.1              | 171.4              |
+| hypo-mania    | 82       | 221.1              | 171.4              |
 | mania         | 88       | 276.4              | 246.3              |
 
 

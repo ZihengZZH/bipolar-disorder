@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import recall_score, classification_report
 from src.utils.io import load_label, save_UAR_results
 from src.utils.io import save_post_probability, load_post_probability
 
@@ -46,14 +47,18 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
         session_res = np.mean(recall)
         if not fusion:
             if train_set:
-                print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (feature_name, session_res))
+                print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.3f and %.3f (sklearn)" % (feature_name, session_res, recall_score(y_dev, y_pred, average='macro')))
             else:
-                print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (feature_name, session_res))
+                print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.3f and %.3f (sklearn)" % (feature_name, session_res, recall_score(y_dev, y_pred, average='macro')))
                 if not test:
+                    session_res = recall_score(y_dev, y_pred, average='macro') 
                     save_UAR_results(frame_res, session_res, model_name, feature_name, modality)
+            print(classification_report(y_dev, y_pred, target_names=['depression', 'hypo-mania', 'mania']))
+        
         else:
-            print("\nUAR (mean of recalls) using fusion based on session-level is %.2f" % session_res)
+            print("\nUAR (mean of recalls) using fusion based on session-level is %.3f and %.3f" % (session_res, recall_score(y_dev, y_pred, average='macro')))
             if not test:
+                session_res = recall_score(y_dev, y_pred, average='macro') 
                 save_UAR_results(frame_res, session_res, model_name, 'fusion', modality)
 
     else:
@@ -67,9 +72,10 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
                 recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
             frame_res = np.mean(recall)
             if train_set:
-                print("\nUAR (mean of recalls) using %s feature based on frame-level (training set) is %.2f" % (feature_name, frame_res))
+                print("\nUAR (mean of recalls) using %s feature based on frame-level (training set) is %.3f" % (feature_name, frame_res))
             else:
-                print("\nUAR (mean of recalls) using %s feature based on frame-level (development set) is %.2f" % (feature_name, frame_res))
+                print("\nUAR (mean of recalls) using %s feature based on frame-level (development set) is %.3f" % (feature_name, frame_res))
+            print(classification_report(y_dev, y_pred, target_names=['depression', 'hypo-mania', 'mania']))
         
         # UAR for session-level
         if session:
@@ -94,9 +100,10 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
                 recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
             session_res = np.mean(recall)
             if train_set:
-                print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.2f" % (feature_name, session_res))
+                print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.3f" % (feature_name, session_res))
+                
             else:
-                print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.2f" % (feature_name, session_res))
+                print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.3f" % (feature_name, session_res))
         
         if not train_set and not test:
             save_UAR_results(frame_res, session_res, model_name, feature_name, modality)

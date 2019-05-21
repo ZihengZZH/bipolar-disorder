@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 
-def AE_BOAW():
+def AE_BOAW(arg):
     print("\nrunning SDAE on BoAW representation")
     X_train_A, X_dev_A, X_test_A, y_train_A, inst_train_A, y_dev_A, inst_dev_A = load_bags_of_words('BoAW', verbose=True)
 
@@ -20,23 +20,26 @@ def AE_BOAW():
                         X_test_A, 
                         noisy=True)
     ae_boaw.build_model()
-    # ae_boaw.train_model()
-    ae_boaw.load_model()
-    ae_boaw.encode(X_train_A, X_dev_A)
-    encoded_train, encoded_dev = ae_boaw.load_presentation()
 
-    rf = RandomForest('biAE', encoded_train, y_train_A, encoded_dev, y_dev_A, test=True)
-    rf.run()
-    y_pred_train, y_pred_dev = rf.evaluate()
+    if arg == 'train':
+        ae_boaw.train_model()
+    else:
+        ae_boaw.load_model()
+        ae_boaw.encode(X_train_A, X_dev_A)
+        encoded_train, encoded_dev = ae_boaw.load_presentation()
 
-    y_train = np.reshape(y_train_A, (len(y_train_A), ))
-    y_dev = np.reshape(y_dev_A, (len(y_dev_A), ))
+        rf = RandomForest('biAE', encoded_train, y_train_A, encoded_dev, y_dev_A, test=True)
+        rf.run()
+        y_pred_train, y_pred_dev = rf.evaluate()
 
-    get_UAR(y_pred_train, y_train, inst_train_A, 'RF', 'BoAW', 'single', train_set=True, test=True)
-    get_UAR(y_pred_dev, y_dev, inst_dev_A, 'RF', 'BoVW', 'single', test=True)
+        y_train = np.reshape(y_train_A, (len(y_train_A), ))
+        y_dev = np.reshape(y_dev_A, (len(y_dev_A), ))
+
+        get_UAR(y_pred_train, y_train, inst_train_A, 'RF', 'BoAW', 'single', train_set=True, test=True)
+        get_UAR(y_pred_dev, y_dev, inst_dev_A, 'RF', 'BoVW', 'single', test=True)
 
 
-def AE_BOVW():
+def AE_BOVW(arg):
     print("\nrunning SDAE on BoVW representation")
     X_train_V, X_dev_V, X_test_V, y_train_V, inst_train_V, y_dev_V, inst_dev_V = load_bags_of_words('BoVW', verbose=True)
 
@@ -45,88 +48,100 @@ def AE_BOVW():
                         X_test_V, 
                         noisy=True)
     ae_bovw.build_model()
-    # ae_bovw.train_model()
-    ae_bovw.load_model()
-    ae_bovw.encode(X_train_V, X_dev_V)
-    encoded_train, encoded_dev = ae_bovw.load_presentation()
 
-    rf = RandomForest('biAE', encoded_train, y_train_V, encoded_dev, y_dev_V, test=True)
-    rf.run()
-    y_pred_train, y_pred_dev = rf.evaluate()
+    if arg == 'train':
+        ae_bovw.train_model()
+    else:
+        ae_bovw.load_model()
+        ae_bovw.encode(X_train_V, X_dev_V)
+        encoded_train, encoded_dev = ae_bovw.load_presentation()
 
-    y_train = np.reshape(y_train_V, (len(y_train_V), ))
-    y_dev = np.reshape(y_dev_V, (len(y_dev_V), ))
+        rf = RandomForest('biAE', encoded_train, y_train_V, encoded_dev, y_dev_V, test=True)
+        rf.run()
+        y_pred_train, y_pred_dev = rf.evaluate()
 
-    get_UAR(y_pred_train, y_train, inst_train_V, 'RF', 'BoVW', 'single', train_set=True, test=True)
-    get_UAR(y_pred_dev, y_dev, inst_dev_V, 'RF', 'BoVW', 'single', test=True)
+        y_train = np.reshape(y_train_V, (len(y_train_V), ))
+        y_dev = np.reshape(y_dev_V, (len(y_dev_V), ))
+
+        get_UAR(y_pred_train, y_train, inst_train_V, 'RF', 'BoVW', 'single', train_set=True, test=True)
+        get_UAR(y_pred_dev, y_dev, inst_dev_V, 'RF', 'BoVW', 'single', test=True)
 
 
-def BAE_BOXW():
+def BAE_BOXW(arg):
     print("\nrunning BiModal AE on XBoW representations")
     X_train_A, X_dev_A, X_test_A, y_train_A, inst_train_A, y_dev_A, inst_dev_A = load_bags_of_words('BoAW', verbose=True)
     X_train_V, X_dev_V, X_test_V, y_train_V, inst_train_V, y_dev_V, inst_dev_V = load_bags_of_words('BoVW', verbose=True)
 
-    bae = AutoEncoderBimodal(
+    bae = AutoEncoderBimodal('bimodal_boxw',
         pd.concat([X_train_A, X_dev_A]), 
         pd.concat([X_train_V, X_dev_V]), 
         X_test_A, X_test_V)
-    
-    bae.build_model()
-    bae.train_model()
-    # bae.load_model()
-    # bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-    # encoded_train, encoded_dev = bae.load_presentation()
+    # bae.build_model()
 
-    # rf = RandomForest('biAE', encoded_train, y_train_A, encoded_dev, y_dev_A, test=True)
-    # rf.run()
-    # y_pred_train, y_pred_dev = rf.evaluate()
+    if arg == 'train':
+        bae.train_model()
+    else:
+        # bae.load_model()
+        # bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+        encoded_train, encoded_dev = bae.load_presentation()
 
-    # y_train = np.reshape(y_train_A, (len(y_train_A), ))
-    # y_dev = np.reshape(y_dev_A, (len(y_dev_A), ))
+        rf = RandomForest('biAE_boxw', encoded_train, y_train_A, encoded_dev, y_dev_A, test=True)
+        rf.run()
+        y_pred_train, y_pred_dev = rf.evaluate()
 
-    # get_UAR(y_pred_train, y_train, inst_train_A, 'RF', 'biAE', 'multiple', train_set=True, test=True)
-    # get_UAR(y_pred_dev, y_dev, inst_dev_A, 'RF', 'biAE', 'multiple', test=True)
+        y_train = np.reshape(y_train_A, (len(y_train_A), ))
+        y_dev = np.reshape(y_dev_A, (len(y_dev_A), ))
+        inst_train = inst_train_A[0]
+        inst_dev = inst_dev_A[0]
+        
+        get_UAR(y_pred_train, y_train, inst_train, 'RF', 'biAE_boxw', 'multiple', train_set=True, test=True)
+        get_UAR(y_pred_dev, y_dev, inst_dev, 'RF', 'biAE_boxw', 'multiple', test=True)
 
 
-def BAE():
+def BAE(arg):
     print("\nrunning BiModal AE on aligned Audio / Video features")
     X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-    bae = AutoEncoderBimodal(
+    bae = AutoEncoderBimodal('bimodal_aligned',
         pd.concat([X_train_A, X_dev_A]), 
         pd.concat([X_train_V, X_dev_V]), 
         X_test_A, X_test_V)
-    
     bae.build_model()
-    bae.train_model()
-    # bae.load_model()
-    # bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-    # encoded_train, encoded_dev = bae.load_presentation()
 
-    # rf = RandomForest('biAE', encoded_train, y_train, encoded_dev, y_dev, test=True)
-    # rf.run()
-    # y_pred_train, y_pred_dev = rf.evaluate()
+    if arg == 'train':
+        bae.train_model()
+    else:
+        bae.load_model()
+        bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+        encoded_train, encoded_dev = bae.load_presentation()
 
-    # y_train = np.reshape(y_train, (len(y_train), ))
-    # y_dev = np.reshape(y_dev, (len(y_dev), ))
+        rf = RandomForest('biAE_aligned', encoded_train, y_train, encoded_dev, y_dev, test=True)
+        rf.run()
+        y_pred_train, y_pred_dev = rf.evaluate()
 
-    # get_UAR(y_pred_train, y_train, inst_train, 'RF', 'biAE', 'multiple', train_set=True, test=True)
-    # get_UAR(y_pred_dev, y_dev, inst_dev, 'RF', 'biAE', 'multiple', test=True)
+        y_train = np.reshape(y_train, (len(y_train), ))
+        y_dev = np.reshape(y_dev, (len(y_dev), ))
+
+        get_UAR(y_pred_train, y_train, inst_train[0], 'RF', 'biAE_aligned', 'multiple', train_set=True, test=True)
+        get_UAR(y_pred_dev, y_dev, inst_dev[0], 'RF', 'biAE_aligned', 'multiple', test=True)
 
 
-def TEXT():
+def TEXT(arg):
     print("\nrunning doc2vec embeddings on text modality")
     text2vec = Text2Vec(build_on_corpus=True)
-    text2vec.load_model()
-    feature_name = text2vec.model_name[8:12]
-    X_train, y_train = text2vec.load_embedding('train')
-    X_dev, y_dev = text2vec.load_embedding('dev')
-    rf = RandomForest(feature_name, X_train, y_train, X_dev, y_dev)
-    rf.run()
-    y_pred_train, y_pred_dev = rf.evaluate()
+    if arg == 'train':
+        text2vec.train_model()
+    else:
+        text2vec.load_model()
+        feature_name = text2vec.model_name[8:12]
+        X_train, y_train = text2vec.load_embedding('train')
+        X_dev, y_dev = text2vec.load_embedding('dev')
+        rf = RandomForest(feature_name, X_train, y_train, X_dev, y_dev)
+        rf.run()
+        y_pred_train, y_pred_dev = rf.evaluate()
 
-    y_train = np.reshape(y_train, (len(y_train), ))
-    y_dev = np.reshape(y_dev, (len(y_dev), ))
+        y_train = np.reshape(y_train, (len(y_train), ))
+        y_dev = np.reshape(y_dev, (len(y_dev), ))
 
-    get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature_name, 'single', train_set=True, test=False)
-    get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single')
+        get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature_name, 'single', train_set=True, test=False)
+        get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single')

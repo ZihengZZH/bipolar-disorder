@@ -125,7 +125,7 @@ The **contributions** of their work are as follows:
 * Four feature sets from OpenSmile toolkit, namely Prosody, IS10-Paralinguistics, ComParE functionals and eGeMAPS features were most useful for automated screening of bipolar disorder;
 * Greedy Ensembles of Weighted Extreme Learning Machines (GEWELMs) classifier for the task of predicting the severity of mania.
 
-Given that labels are based on YMRS scores, they firstly identify key behavioural characteritics of individuals with mania as per the YMRS. This enabled them to use craft features which can probe for the existence of these characteristics, as opposed to brute-force methods which aim to learn the dataset without using background knowledge. 
+Given that labels are based on YMRS scores, they firstly identify key behavioural characteristics of individuals with mania as per the YMRS. This enabled them to use craft features which can probe for the existence of these characteristics, as opposed to brute-force methods which aim to learn the dataset without using background knowledge. 
 
 The 'turbulence features' (for a wide range of audio/visual features) were the most important in the paper and authors computed the crest factor as the measure of turbulence, __the ratio between the absolute maximum value of the signal and its root mean square value__. 
 
@@ -133,7 +133,7 @@ The 'turbulence features' (for a wide range of audio/visual features) were the m
 
 The process of Fisher vector encoding was summarised as follows: ComParE LLDs from each speech recording was concatenated into one matrix and then using a GMM to build a background model for the feature space. 
 
-They proposed GEWELMs for classification (the efficacy had been demonstrated), which is based on WELMs and ELMs (Weighted Extreme Learning Machines). They used ELMs as a method to reduce dimensionality and least square regression towards class label prediction. To handle the overfitting of GEWELMs, they trained two sets of GEWELMs, T2D-GEWELMs and D2T-GEWELMs, which are training on the training set and testing on the development set, and training on the development set and testing on the training set. This helped to regularise the selection of WELMs so only those that had acceptable performace for two regimes were selected.
+They proposed GEWELMs for classification (the efficacy had been demonstrated), which is based on WELMs and ELMs (Weighted Extreme Learning Machines). They used ELMs as a method to reduce dimensionality and least square regression towards class label prediction. To handle the overfitting of GEWELMs, they trained two sets of GEWELMs, T2D-GEWELMs and D2T-GEWELMs, which are training on the training set and testing on the development set, and training on the development set and testing on the training set. This helped to regularize the selection of WELMs so only those that had acceptable performance for two regimes were selected.
 
 > GEWELMs are essentially a single layer feed-forward neural network where the hidden layer is assigned randomly generated weights which are not updated during the training process
 

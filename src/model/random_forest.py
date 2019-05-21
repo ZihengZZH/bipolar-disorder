@@ -112,7 +112,7 @@ class RandomForest():
         import scipy.stats as stats
         parameters = {
             "n_estimators": stats.randint(100, 800),
-            "max_features": stats.uniform(0.1, 0.5),
+            "max_features": np.arange(2, 9) / 10,
             "max_depth": stats.randint(1, 11),
             "criterion": ["entropy"]
         }

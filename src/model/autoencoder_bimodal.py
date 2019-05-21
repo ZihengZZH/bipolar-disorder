@@ -1,8 +1,8 @@
 import os
 import json
 import numpy as np
-import pandas as pd
 from keras import regularizers
+from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense, Concatenate
 from keras.utils import plot_model
@@ -12,7 +12,8 @@ from src.model.autoencoder import AutoEncoder
 class AutoEncoderBimodal(AutoEncoder):
     """
     """
-    def __init__(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
+    def __init__(self, name, X_train_A, X_train_V, X_dev_A, X_dev_V, sparse=False):
+        # para name: name of bimodal AE
         # para X_train_A: pd.DataFrame
         # para X_train_V: pd.DataFrame
         # para X_dev_A: pd.DataFrame
@@ -21,7 +22,7 @@ class AutoEncoderBimodal(AutoEncoder):
         self.X_train_V = X_train_V
         self.X_dev_A = X_dev_A
         self.X_dev_V = X_dev_V
-        AutoEncoder.__init__(self, 'bimodal', X_train_A, X_dev_A)
+        AutoEncoder.__init__(self, name, X_train_A, X_dev_A, sparse=sparse)
         self.load_basic()
         self.dimension_A = self.X_train_A.shape[1]
         self.dimension_V = self.X_train_V.shape[1]
@@ -29,8 +30,11 @@ class AutoEncoderBimodal(AutoEncoder):
     def build_model(self):
         """build bimodal stacked deep autoencoder
         """
+        hidden_dim = int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4)
+
         input_data_A = Input(shape=(self.dimension_A, ))
         input_data_V = Input(shape=(self.dimension_V, ))
+        encoded_input = Input(shape=(hidden_dim, ))
         
         encoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
                         activation='relu')(input_data_A)
@@ -38,10 +42,13 @@ class AutoEncoderBimodal(AutoEncoder):
                         activation='relu')(input_data_V)
 
         shared = Concatenate(axis=1)([encoded_A, encoded_V])
-        encoded = Dense(int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4), 
+        if self.sparse:
+            encoded = Dense(hidden_dim, 
                         activation='relu',
-                        activity_regularizer=regularizers.l1(10e-5))(shared)
-
+                        activity_regularizer=self._sparse_regularizer)(shared)
+        else:
+            encoded = Dense(hidden_dim, activation='relu')(shared)
+        
         decoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
                         activation='relu')(encoded)
         decoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
@@ -52,6 +59,8 @@ class AutoEncoderBimodal(AutoEncoder):
 
         self.autoencoder = Model(inputs=[input_data_A, input_data_V], outputs=[decoded_A, decoded_V])
         self.encoder = Model([input_data_A, input_data_V], encoded)
+        # only for visual
+        self.decoder = Model(encoded_input, decoded_V(encoded_input)) 
 
         # configure model
         self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
@@ -83,3 +92,9 @@ class AutoEncoderBimodal(AutoEncoder):
         encoded_train = self.encoder.predict([X_1_A, X_1_V])
         encoded_dev = self.encoder.predict([X_2_A, X_2_V])
         self.save_representation(encoded_train, encoded_dev)
+    
+    def decode(self, encoded_pre):
+        """decode latent representation to bimodal input
+        """
+        decoded_input_V = self.decoder.predict(encoded_pre)
+        return decoded_input_V

@@ -36,10 +36,14 @@ project:
     ✔ autoencoder.py @done(19-05-15 18:16)
     ☐ autoencoder_lstm.py
     ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
+      ☐ sparsity
+    ☐ fisher_encoder.py
+    ☐ dnn_classifier.py
     ✔ speech2text.py @done(19-05-15 18:16)
     ✔ text2vec.py @done(19-05-15 18:16)
   ☐ metric
     ✔ uar.py @done(19-05-08 22:44)
+      ✔ sklearn metric @done(19-05-21 23:18)
   ☐ utils
     ✔ io.py @done(19-05-08 22:44)
     ✔ preprocess.py @done(19-05-15 18:16)

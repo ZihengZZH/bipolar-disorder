@@ -379,7 +379,7 @@ def load_aligned_features(verbose=False):
             print(inst_train.shape, inst_dev.shape)
             print("--" * 20)
 
-        return X_train_A.iloc[:,1:], X_dev_A.iloc[:,1:], X_test_A.iloc[:,1:], X_train_V.iloc[:,1:], X_dev_V.iloc[:,1:], X_test_V.iloc[:,1:], y_train.T, inst_train.values, y_dev.T, inst_dev.values
+        return X_train_A.iloc[:,1:], X_dev_A.iloc[:,1:], X_test_A.iloc[:,1:], X_train_V.iloc[:,1:], X_dev_V.iloc[:,1:], X_test_V.iloc[:,1:], y_train.T.values, inst_train.values, y_dev.T.values, inst_dev.values
     
     else:
         length = dict()
@@ -461,4 +461,4 @@ def load_bags_of_words(modality, verbose=False):
         print("dev label size", y_dev.T.shape)
         print("--" * 20)
     
-    return X_train, X_dev, X_test, y_train.T, inst_train.values, y_dev.T, inst_dev.values
+    return X_train, X_dev, X_test, y_train.T.values, inst_train.values, y_dev.T.values, inst_dev.values

@@ -2,7 +2,8 @@ import os
 import json
 import datetime
 import numpy as np
-import matplotlib.pyplot as plt
+from keras import regularizers
+from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense
 from keras.utils import plot_model
@@ -22,6 +23,8 @@ class AutoEncoder():
         noisy data generated with Gaussian noise
     noisy: bool
         whether or not to involve denoising fashion
+    sparse: bool
+        whether or not to involve sparsity
     autoencoder: keras.models.Model
         keras Model mapping input to reconstructed input
     encoder: keras.models.Model
@@ -33,6 +36,8 @@ class AutoEncoder():
     learning_rate: float
     epochs: int
     noise: float
+    p:
+    beta:
     save_dir: str
     model_config: json.load()
     ---------------------------------------
@@ -53,7 +58,7 @@ class AutoEncoder():
     load_model(): public
         load stacked denoising autoencoder model from external file
     """
-    def __init__(self, name, X_train, X_dev, noisy=True):
+    def __init__(self, name, X_train, X_dev, noisy=True, sparse=False):
         # para name: str
         # para X_train: pd.DataFrame
         # para X_dev: pd.DataFrame
@@ -63,6 +68,7 @@ class AutoEncoder():
         self.X_dev = X_dev
         self.X_dev_noisy = None
         self.noisy = noisy
+        self.sparse = sparse
         # AE model
         self.autoencoder = None
         self.encoder = None
@@ -73,6 +79,8 @@ class AutoEncoder():
         self.learning_rate = None
         self.epochs = None
         self.noise = None
+        self.p = None
+        self.beta = None
         self.save_dir = None
         self.model_config = json.load(open('./config/model.json', 'r'))['autoencoder']
         self.load_basic()
@@ -86,6 +94,8 @@ class AutoEncoder():
         self.batch_size = self.model_config['batch_size']
         self.epochs = self.model_config['epochs']
         self.noise = self.model_config['noise']
+        self.p = self.model_config['p']
+        self.beta = self.model_config['beta']
         self.save_dir = self.model_config['save_dir']
         self.dimension[0] = self.X_train.shape[1]
         self.dimension[1] = int(self.dimension[0] * self.hidden_ratio)
@@ -104,15 +114,26 @@ class AutoEncoder():
         assert self.X_train_noisy.shape == self.X_train.shape
         assert self.X_dev_noisy.shape == self.X_dev.shape
 
+    def _sparse_regularizer(self, activation_matrix):
+        """define the custom regularizer function
+        """
+        p = 0.01
+        beta = 3
+        p_hat = K.mean(activation_matrix)
+        KLD = p*(K.log(p/p_hat)) + (1-p)*(K.log(1-p/1-p_hat))
+        return beta*K.sum(KLD)
+
     def build_model(self):
         """build stacked denoising autoencoder model
         """
         # input placeholder
         input_data = Input(shape=(self.dimension[0], ))
+        # encoded input placeholder
+        encoded_input = Input(shape=(self.dimension[2], ))
 
         # encoder part
         encoded = Dense(self.dimension[1], activation='relu')(input_data)
-        encoded = Dense(self.dimension[2], activation='relu')(encoded)
+        encoded = Dense(self.dimension[2], activation='relu', activity_regularizer=self._sparse_regularizer)(encoded) if self.sparse else Dense(self.dimension[2], activation='relu')(encoded)
         # decoder part
         decoded = Dense(self.dimension[3], activation='relu')(encoded)
         decoded = Dense(self.dimension[4], activation='sigmoid')(decoded)
@@ -122,8 +143,6 @@ class AutoEncoder():
         # maps input to its representation
         self.encoder = Model(input_data, encoded)
 
-        # encoded input placeholder
-        encoded_input = Input(shape=(self.dimension[2], ))
         # retrieve layers of autoencoder
         decoder_1 = self.autoencoder.layers[-2]
         decoder_2 = self.autoencoder.layers[-1]
