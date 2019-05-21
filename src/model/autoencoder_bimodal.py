@@ -38,7 +38,7 @@ class AutoEncoderBimodal(AutoEncoder):
                         activation='relu')(input_data_V)
 
         shared = Concatenate(axis=1)([encoded_A, encoded_V])
-        encoded = Dense(int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 2), 
+        encoded = Dense(int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4), 
                         activation='relu',
                         activity_regularizer=regularizers.l1(10e-5))(shared)
 

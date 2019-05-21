@@ -354,12 +354,12 @@ def load_aligned_features(verbose=False):
 
     if os.path.isfile(output_dir['test_data_A']) and os.path.isfile(output_dir['test_data_V']):
         print("\nprocessed files exist, starting loading ...")
-        X_train_A = pd.read_csv(output_dir['train_data_A']) 
-        X_dev_A = pd.read_csv(output_dir['dev_data_A']) 
-        X_test_A = pd.read_csv(output_dir['test_data_A'])
-        X_train_V = pd.read_csv(output_dir['train_data_V'], low_memory=False) 
-        X_dev_V = pd.read_csv(output_dir['dev_data_V'], low_memory=False) 
-        X_test_V = pd.read_csv(output_dir['test_data_V'], low_memory=False)
+        X_train_A = pd.read_csv(output_dir['train_data_A'], header=None) 
+        X_dev_A = pd.read_csv(output_dir['dev_data_A'], header=None) 
+        X_test_A = pd.read_csv(output_dir['test_data_A'], header=None)
+        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None, low_memory=False) 
+        X_dev_V = pd.read_csv(output_dir['dev_data_V'], header=None, low_memory=False) 
+        X_test_V = pd.read_csv(output_dir['test_data_V'], header=None, low_memory=False)
         y_train = pd.read_csv(output_dir['train_label'], header=None) 
         inst_train = pd.read_csv(output_dir['train_inst'], header=None) 
         y_dev = pd.read_csv(output_dir['dev_label'], header=None) 
@@ -405,8 +405,8 @@ def load_aligned_features(verbose=False):
 
             for i in range(length[partition]):
                 filename = get_sample(partition, (i+1)) + '.csv'
-                A_feature = pd.read_csv(os.path.join(acoustic_dir, filename), header=None, low_memory=False)
-                V_feature = pd.read_csv(os.path.join(visual_dir, filename), header=None, low_memory=False)
+                A_feature = pd.read_csv(os.path.join(acoustic_dir, filename), low_memory=False)
+                V_feature = pd.read_csv(os.path.join(visual_dir, filename), low_memory=False)
                 A_t, _ = A_feature.shape
                 V_t, _ = V_feature.shape
                 assert A_t == V_t
