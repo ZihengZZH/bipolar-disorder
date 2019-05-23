@@ -110,7 +110,7 @@ class LinearSVM():
         import scipy.stats as stats
         parameters = {
             "kernel": ['linear'],
-            "C": 10. ** np.arange(-3, 8)
+            "C": 10. ** np.arange(-3, 5)
         }
         print("\nrunning the Grid Search for Linear SVM classifier ...")
         clf = RandomizedSearchCV(svm.SVC(), 
@@ -118,7 +118,7 @@ class LinearSVM():
                             cv=10, 
                             n_jobs=-1, 
                             verbose=3,
-                            n_iter=50,
+                            n_iter=30,
                             scoring='recall_macro',
                             pre_dispatch='2*n_jobs')
         

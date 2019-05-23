@@ -15,12 +15,12 @@ The Young Mania Rating Scale scores and the ternary value of manic symptoms:
 ## recordings in the dataset
 
 
-| diagnosis     | # videos | average time (s)   | standard deviation |
-| --            | --       | --                 | --                 |
-| healthy       | 120      | 138.9              | 68.4               |
-| remission     | 62       | 151.9              | 65.4               |
-| hypo-mania    | 82       | 221.1              | 171.4              |
-| mania         | 88       | 276.4              | 246.3              |
+| diagnosis     | # videos | train / dev / test | average time (s)   | standard deviation |
+| --            | --       | --                 | --                 | --                 |
+| healthy       | 120      | NA                 | 138.9              | 68.4               |
+| remission     | 62       | 25 / 18 / 19       | 151.9              | 65.4               |
+| hypo-mania    | 82       | 38 / 21 / 23       | 221.1              | 171.4              |
+| mania         | 88       | 41 / 21 / 26       | 276.4              | 246.3              |
 
 
 ## details about the dataset

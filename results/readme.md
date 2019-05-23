@@ -44,6 +44,12 @@ Autoencoder (frame-level) {trained on all available data}
 
 ![](../images/models/structure_frame.png)
 
+## Single Task DNN
+
+The classification results show a better performance on the recall in Mania symptom (label 3, YMRS > 12)
+
+## Multitask DNN
+
 
 ## BASELINE (self-implemented)
 

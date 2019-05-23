@@ -13,9 +13,14 @@ from src.utils.vis import visualize_landmarks
 
 
 class TestUtility(unittest.TestCase):
-    # def test_load_label(self):
-    #     load_label(verbose=True)
-    
+    def test_load_label(self):
+        _, _, y_dev, y_train = load_label(verbose=True)
+        y_dev = y_dev.values[:, 1]
+        y_train = y_train.values[:, 1]
+        import collections
+        print(collections.Counter(y_dev))
+        print(collections.Counter(y_train))
+
     # def test_load_LLD(self):
     #     load_LLD('MFCC', 'train', 1, verbose=True)
     #     load_LLD('eGeMAPS', 'dev', 30, verbose=True)
@@ -59,8 +64,8 @@ class TestUtility(unittest.TestCase):
     # def test_preprocess_align(self):
     #     preprocess_align(verbose=True)
 
-    def test_load_aligned_features(self):
-        load_aligned_features(verbose=True)
+    # def test_load_aligned_features(self):
+        # load_aligned_features(verbose=True)
 
 
 if __name__ == "__main__":
