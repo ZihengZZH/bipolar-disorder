@@ -19,7 +19,6 @@ class AutoEncoderLSTM(AutoEncoder):
         self.X_dev_noisy = None
         self.dimension = [0] * 5
         self.hidden_ratio = None
-        self.learning_rate = None
         self.epochs = None
         self.noise = None
         self.save_dir = None

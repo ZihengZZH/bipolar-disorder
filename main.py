@@ -52,7 +52,7 @@ def main(argv):
             from src.experiment import BAE, BAE_BOXW, TEXT
             print("Experiment System")
             print("--" * 20)
-            BAE_BOXW(arg)
+            BAE(arg)
         elif opt in ('-v', '--visualize'):
             from src.utils.vis import visualize_landmarks
             print("Visualize facial landmarks on videos")

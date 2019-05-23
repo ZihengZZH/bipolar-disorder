@@ -31,7 +31,7 @@ The BD corpus used for the AVEC 2018 BDS includes *audiovisual recordings* of st
 | :---------------------: | :------------------------: |
 | <img src="../images/dataset_depression.jpg" height=250> | <img src="../images/dataset_sweet_home.jpg" height=250> |
 
-During hospitalisation, in every follow up day (0th, 3rd, 7th, 14th, 28th day) and after discharge on the 3rd month, the presence of depressive and manic features were evaluated using YMRS. The dataset can be summarized with following data:
+During hospitalization, in every follow up day (0th, 3rd, 7th, 14th, 28th day) and after discharge on the 3rd month, the presence of depressive and manic features were evaluated using YMRS. The dataset can be summarized with following data:
 
 * audio (.wav), video recording (.mp4) of each subject
 * labels (level of mania and YMRS) and metadata (age, gender)

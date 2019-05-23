@@ -11,7 +11,7 @@ from keras.utils import plot_model
 
 class AutoEncoder():
     """
-    Stacked Denoising Autoencoder (SDAC) to encode visual data
+    Stacked Denoising Autoencoder (SDAE) to encode visual data
     ---
     Attributes
     -----------
@@ -67,6 +67,7 @@ class AutoEncoder():
         self.dimension = [input_dim] * 5
         self.hidden_ratio = None
         self.learning_rate = None
+        self.batch_size = None
         self.epochs = None
         self.noise = None
         self.p = None

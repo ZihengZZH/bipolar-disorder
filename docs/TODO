@@ -34,11 +34,15 @@ project:
     ✔ linear_svm.py @done(19-05-08 20:51)
     ✔ random_forest.py @done(19-05-08 20:51)
     ✔ autoencoder.py @done(19-05-15 18:16)
+      ☐ remove learning_rate
+      ☐ config keras optimizers
     ☐ autoencoder_lstm.py
     ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
       ☐ sparsity
     ☐ fisher_encoder.py
+      ☐ temporary information
     ☐ dnn_classifier.py
+      ☐ label & YMRS score
     ✔ speech2text.py @done(19-05-15 18:16)
     ✔ text2vec.py @done(19-05-15 18:16)
   ☐ metric
@@ -48,13 +52,11 @@ project:
     ✔ io.py @done(19-05-08 22:44)
     ✔ preprocess.py @done(19-05-15 18:16)
     ✔ vis.py @done(19-05-15 18:16)
-
-modification:
-  ☐ native -> collections (high-performance) [not necessary]
+      ☐ visualize reconstructed facial landmarks
 
 dissertation:
   (starts from 29 April)
-  ☐ introduction
+  ✔ introduction @done(19-05-22 14:42)
   ☐ literature review
   ☐ methogology
   ☐ experiment

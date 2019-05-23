@@ -17,6 +17,8 @@ Tree structure of Bipolar Disorder project
 |   |__ single_modality
 |__ src
 |   |__ init.py
+|   |__ baseline.py
+|   |__ experiment.py
 |   |__ metric
 |   |   |__ init.py
 |   |   |__ uar.py
@@ -25,7 +27,8 @@ Tree structure of Bipolar Disorder project
 |   |   |__ autoencoder.py
 |   |   |__ autoencoder_bimodal.py
 |   |   |__ autoencoder_lstm.py
-|   |   |__ baseline.py
+|   |   |__ dnn_classifier.py
+|   |   |__ fisher_encoder.py
 |   |   |__ linear_svm.py
 |   |   |__ random_forest.py
 |   |   |__ speech2text.py
@@ -38,6 +41,7 @@ Tree structure of Bipolar Disorder project
 |   |__ all_test.py
 |   |__ autoencoder_test.py
 |   |__ baseline_test.py
+|   |__ fisher_encoder_test.py
 |   |__ linear_svm_test.py
 |   |__ random_forest_test.py
 |   |__ speech2text_test.py

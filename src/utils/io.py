@@ -268,14 +268,14 @@ def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
             print("--"*20)
             print(feature_name)
             print("--"*20)
-            print("Size of training data (extracted from MATLAB)", train_data.shape)
-            print("Size of training labels (extracted from MATLAB)", train_label.shape)
-            print("Size of dev data (extracted from MATLAB)", dev_data.shape)
-            print("Size of dev labels (extracted from MATLAB)", dev_label.shape)
+            print("Shape of training data (extracted from MATLAB)", train_data.shape)
+            print("Shape of training labels (extracted from MATLAB)", train_label.T.shape)
+            print("Shape of dev data (extracted from MATLAB)", dev_data.shape)
+            print("Shape of dev labels (extracted from MATLAB)", dev_label.T.shape)
 
             if feature_name != 'AU':
-                print("Size of training instance (extracted from MATLAB)", train_inst.shape)
-                print("Size of dev instance (extracted from MATLAB)", dev_inst.shape)
+                print("Shape of training instance (extracted from MATLAB)", train_inst.T.shape)
+                print("Shape of dev instance (extracted from MATLAB)", dev_inst.T.shape)
             
             print("--"*20)
 
