@@ -49,10 +49,10 @@ def main(argv):
             print("--" * 20)
             run_baseline_system()
         elif opt in ('-x', '--experiment'):
-            from src.experiment import BAE, BAE_BOXW, TEXT
+            from src.experiment import BAE, BAE_BOXW, TEXT, DNN
             print("Experiment System")
             print("--" * 20)
-            BAE(arg)
+            DNN(arg)
         elif opt in ('-v', '--visualize'):
             from src.utils.vis import visualize_landmarks
             print("Visualize facial landmarks on videos")

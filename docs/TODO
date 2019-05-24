@@ -44,7 +44,7 @@ project:
     ☐ dnn_classifier.py
       ✔ label & YMRS score @done(19-05-23 22:37)
       ☐ overfitting
-      ☐ regression work?
+      ✔ regression work @done(19-05-24 10:49)
     ✔ speech2text.py @done(19-05-15 18:16)
     ✔ text2vec.py @done(19-05-15 18:16)
   ☐ metric

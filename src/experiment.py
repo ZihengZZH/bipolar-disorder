@@ -2,9 +2,11 @@ from src.model.autoencoder import AutoEncoder
 from src.model.autoencoder_bimodal import AutoEncoderBimodal
 from src.model.text2vec import Text2Vec
 from src.model.random_forest import RandomForest
+from src.model.dnn_classifier import MultiTaskDNN
 from src.utils.io import load_proc_baseline_feature
 from src.utils.io import load_aligned_features
 from src.utils.io import load_bags_of_words
+from src.utils.io import load_label
 from src.metric.uar import get_UAR
 
 import numpy as np
@@ -116,6 +118,24 @@ def BAE(arg):
 
         get_UAR(y_pred_train, y_train, inst_train[0], 'RF', 'biAE_aligned', 'multiple', train_set=True, test=True)
         get_UAR(y_pred_dev, y_dev, inst_dev[0], 'RF', 'biAE_aligned', 'multiple', test=True)
+
+
+def DNN(arg):
+    X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
+
+    bae = AutoEncoderBimodal('bimodal_aligned', X_train_A.shape[1], X_train_V.shape[1])
+    encoded_train, encoded_dev = bae.load_presentation()
+
+    ymrs_dev, ymrs_train, _, _ = load_label()
+    num_classes = max(max(y_train), max(y_dev))
+
+    test_dnn = MultiTaskDNN('bimodal_aligned', encoded_train.shape[1], num_classes)
+    y_dev_r = test_dnn.prepare_regression_label(ymrs_dev.values[:, 1], inst_dev)
+    y_train_r = test_dnn.prepare_regression_label(ymrs_train.values[:, 1], inst_train)
+    
+    test_dnn.build_model()
+    test_dnn.train_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
+    test_dnn.evaluate_model(encoded_dev, y_dev, y_dev_r)
 
 
 def TEXT(arg):
