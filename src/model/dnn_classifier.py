@@ -28,7 +28,7 @@ class SingleTaskDNN():
         self.epochs = self.config['epochs']
         self.hidden_dim = [int(self.input_dim * self.hidden_ratio), 
                             int(self.input_dim / self.hidden_ratio),
-                            int(self.input_dim / self.hidden_ratio * 2)]
+                            int(self.input_dim / (self.hidden_ratio * 2))]
         self.output_dim = int(self.input_dim  / (self.hidden_ratio * 4))
 
     def prepare_label(self, labels, dimension):
@@ -76,9 +76,9 @@ class SingleTaskDNN():
 
 class MultiTaskDNN(SingleTaskDNN):
     def __init__(self, name, input_dim, num_class):
-        self.config = json.load(open('./config/model.json', 'r'))['multiDNN']
         SingleTaskDNN.__init__(self, name, input_dim, num_class)
         self.load_basics()
+        self.config = json.load(open('./config/model.json', 'r'))['multiDNN']
     
     def prepare_regression_label(self, ymrs, inst):
         return np.array([ymrs[inst[i] - 1] for i in range(len(inst))])
@@ -120,8 +120,20 @@ class MultiTaskDNN(SingleTaskDNN):
                     verbose=1,
                     validation_data=(X_dev, [y_dev_c, y_dev_r]))
     
-    def evaluate_model(self, X_test, y_test_c, y_test_r):
-        y_pred_c, y_pred_r = self.model.predict(X_test, batch_size=self.batch_size)
-        y_pred_c = [np.argmax(y) + 1 for y in y_pred_c]
-        print(classification_report(y_test_c, y_pred_c))
-        print(mean_squared_error(y_test_r, y_pred_r))
+    def evaluate_model(self, X_train, y_train_c, y_train_r, X_dev, y_dev_c, y_dev_r):
+        y_pred_train_c, y_pred_train_r = self.model.predict(X_train, batch_size=self.batch_size)
+        y_pred_dev_c, y_pred_dev_r = self.model.predict(X_dev, batch_size=self.batch_size)
+        y_pred_train_c = [np.argmax(y) + 1 for y in y_pred_train_c]
+        y_pred_dev_c = [np.argmax(y) + 1 for y in y_pred_dev_c]
+
+        print("--" * 20)
+        print("performance on training set")
+        print(classification_report(y_train_c, y_pred_train_c))
+        print("mean squared error of regression")
+        print(mean_squared_error(y_train_r, y_pred_train_r))
+        
+        print("--" * 20)
+        print("performance on dev set")
+        print(classification_report(y_dev_c, y_pred_dev_c))
+        print("mean squared error of regression")
+        print(mean_squared_error(y_dev_r, y_pred_dev_r))

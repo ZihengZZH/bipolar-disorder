@@ -127,11 +127,14 @@ def DNN(arg):
     encoded_train, encoded_dev = bae.load_presentation()
 
     ymrs_dev, ymrs_train, _, _ = load_label()
-    num_classes = max(max(y_train), max(y_dev))
+    num_classes = 3
 
     test_dnn = MultiTaskDNN('bimodal_aligned', encoded_train.shape[1], num_classes)
     y_dev_r = test_dnn.prepare_regression_label(ymrs_dev.values[:, 1], inst_dev)
     y_train_r = test_dnn.prepare_regression_label(ymrs_train.values[:, 1], inst_train)
+
+    assert len(y_train) == len(y_train_r)
+    assert len(y_dev) == len(y_dev_r)
     
     test_dnn.build_model()
     test_dnn.train_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)

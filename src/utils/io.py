@@ -376,10 +376,11 @@ def load_aligned_features(verbose=False):
             print("--" * 20)
             print("train label size", y_train.T.shape)
             print("dev label size", y_dev.T.shape)
-            print(inst_train.shape, inst_dev.shape)
+            print("train inst size", inst_train.T.shape)
+            print("dev inst size", inst_dev.shape)
             print("--" * 20)
 
-        return X_train_A.iloc[:,1:], X_dev_A.iloc[:,1:], X_test_A.iloc[:,1:], X_train_V.iloc[:,1:], X_dev_V.iloc[:,1:], X_test_V.iloc[:,1:], y_train.T.values, inst_train.values, y_dev.T.values, inst_dev.values
+        return X_train_A.iloc[:,1:], X_dev_A.iloc[:,1:], X_test_A.iloc[:,1:], X_train_V.iloc[:,1:], X_dev_V.iloc[:,1:], X_test_V.iloc[:,1:], y_train.T.values, inst_train.T.values, y_dev.T.values, inst_dev.T.values
     
     else:
         length = dict()

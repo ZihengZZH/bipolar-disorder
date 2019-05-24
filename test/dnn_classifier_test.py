@@ -44,7 +44,7 @@ class TestDNNClassifier(unittest.TestCase):
 
         test_dnn.build_model()
         test_dnn.train_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
-        test_dnn.evaluate_model(X_dev, y_dev, y_dev_r)
+        test_dnn.evaluate_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
 
 
 if __name__ == '__main__':
