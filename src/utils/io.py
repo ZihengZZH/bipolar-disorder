@@ -5,6 +5,7 @@ import statistics
 import numpy as np
 import pandas as pd
 from scipy.io import arff
+from collections import Counter
 from smart_open import smart_open
 
 
@@ -148,12 +149,15 @@ def load_label(partition=True, verbose=False):
         gender_list.append(sub[:1])
         if verbose:
             print("%s subject have %d instances" % (sub, id_list.count(sub)))
+    
+    classes_stats = Counter(label['ManiaLevel'].tolist())
 
     if verbose:
         print("All subjects", len(id_set))
         print("Male subjects ", gender_list.count('M'))
         print("Female subjects", gender_list.count('F'))
         print("Age range (%d, %d), Age median %d" % (min(age_list), max(age_list), statistics.median(age_list)))
+        print("Class distribution stats", classes_stats)
 
     ymrs_score = pd.concat([label.iloc[:, 0], label.iloc[:, 4]], axis=1)
     mania_level = pd.concat([label.iloc[:, 0], label.iloc[:, 5]], axis=1)
@@ -345,14 +349,31 @@ def load_post_probability(model_name, feature_name):
     return prob_dev
 
 
-def load_aligned_features(verbose=False):
+def load_aligned_features(no_data=False, verbose=False):
     """load preprocessed visual and acoustic features 
     """
     visual_dir = data_config['baseline_preproc']['AU_landmarks']
     acoustic_dir = data_config['baseline_preproc']['MFCC_aligned']
     output_dir = data_config['baseline_preproc']['aligned_AV']
 
-    if os.path.isfile(output_dir['test_data_A']) and os.path.isfile(output_dir['test_data_V']):
+    if no_data:
+        print("\nprocessed files exist, starting loading (w/o raw data) ...")
+        y_train = pd.read_csv(output_dir['train_label'], header=None) 
+        inst_train = pd.read_csv(output_dir['train_inst'], header=None) 
+        y_dev = pd.read_csv(output_dir['dev_label'], header=None) 
+        inst_dev = pd.read_csv(output_dir['dev_inst'], header=None)
+
+        if verbose:
+            print("--" * 20)
+            print("train label size", y_train.T.shape)
+            print("dev label size", y_dev.T.shape)
+            print("train inst size", inst_train.T.shape)
+            print("dev inst size", inst_dev.T.shape)
+            print("--" * 20)
+        
+        return y_train.T.values, inst_train.T.values, y_dev.T.values, inst_dev.T.values
+
+    elif os.path.isfile(output_dir['test_data_A']) and os.path.isfile(output_dir['test_data_V']):
         print("\nprocessed files exist, starting loading ...")
         X_train_A = pd.read_csv(output_dir['train_data_A'], header=None) 
         X_dev_A = pd.read_csv(output_dir['dev_data_A'], header=None) 
@@ -377,7 +398,7 @@ def load_aligned_features(verbose=False):
             print("train label size", y_train.T.shape)
             print("dev label size", y_dev.T.shape)
             print("train inst size", inst_train.T.shape)
-            print("dev inst size", inst_dev.shape)
+            print("dev inst size", inst_dev.T.shape)
             print("--" * 20)
 
         return X_train_A.iloc[:,1:], X_dev_A.iloc[:,1:], X_test_A.iloc[:,1:], X_train_V.iloc[:,1:], X_dev_V.iloc[:,1:], X_test_V.iloc[:,1:], y_train.T.values, inst_train.T.values, y_dev.T.values, inst_dev.T.values

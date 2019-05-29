@@ -121,9 +121,9 @@ def BAE(arg):
 
 
 def DNN(arg):
-    X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
+    y_train, inst_train, y_dev, inst_dev = load_aligned_features(no_data=True, verbose=True)
 
-    bae = AutoEncoderBimodal('bimodal_aligned', X_train_A.shape[1], X_train_V.shape[1])
+    bae = AutoEncoderBimodal('bimodal_aligned', 1000, 1000)
     encoded_train, encoded_dev = bae.load_presentation()
 
     ymrs_dev, ymrs_train, _, _ = load_label()
@@ -138,7 +138,7 @@ def DNN(arg):
     
     test_dnn.build_model()
     test_dnn.train_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
-    test_dnn.evaluate_model(encoded_dev, y_dev, y_dev_r)
+    test_dnn.evaluate_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
 
 
 def TEXT(arg):

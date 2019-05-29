@@ -34,10 +34,12 @@ Tree structure of Bipolar Disorder project
 |   |   |__ speech2text.py
 |   |   |__ text2vec.py
 |   |__ utils
+|   |   |__ init.py
 |   |   |__ io.py
 |   |   |__ preprocess.py
 |   |   |__ vis.py
 |__ test
+|   |__ init.py
 |   |__ all_test.py
 |   |__ autoencoder_test.py
 |   |__ baseline_test.py

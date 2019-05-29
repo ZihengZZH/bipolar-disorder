@@ -82,3 +82,14 @@ The classification results show a better performance on the recall in Mania symp
 | Xing2018  | Hierarchical      | **0.868** / **0.574** | NA / NA          |
 | Syed2018  | V                 | NA / **0.574**        | NA / NA          |
 | Syed2018  | A+V               | NA / 0.518            | NA / NA          |
+| **Zhang2019** | SDAE+FV+DNN       | 0.55 / NA             | 0.53 / NA        |
+
+Training set
+* avg accuracy: 0.87
+* avg recall: 0.84
+* mean_squared_error: 31.67
+
+Dev set
+* avg accuracy: 0.53
+* avg recall: 0.55
+* mean_squared_error: 128.95

@@ -17,6 +17,8 @@ class AutoEncoder():
     -----------
     name: str
         model name
+    input_dim: int
+        input data dimensionality
     noisy: bool
         whether or not to involve denoising fashion
     sparse: bool
@@ -28,14 +30,23 @@ class AutoEncoder():
     decoder: keras.models.Model
         keras Model mapping latent representation to input
     dimension: list
+        list of dimensionalities in hidden layers
     hidden_ratio: float
+        ratio between hidden layers
     learning_rate: float
+        learning rate
     epochs: int
+        epochs 
     noise: float
-    p:
-    beta:
+        noise level
+    p: float
+        sparsity regularizer
+    beta: float
+        sparsity regularizer
     save_dir: str
+        saving directory
     model_config: json.load()
+        configuration
     ---------------------------------------
     Functions
     -----------
@@ -55,7 +66,7 @@ class AutoEncoder():
         load stacked denoising autoencoder model from external file
     """
     def __init__(self, name, input_dim, noisy=True, sparse=False):
-        # para name: str
+        # para name: name of SDAE
         self.name = name
         self.noisy = noisy
         self.sparse = sparse

@@ -1,103 +1,85 @@
+import os
+import json
 import numpy as np
 from sklearn.mixture import GaussianMixture
-import pickle, os
+from sklearn.mixture import BayesianGaussianMixture
 
-N_Kernel_Choices = [5, 20, 60, 100, 200, 500]
 
 class FisherVectorGMM:
     """
+    Fisher Vector derived from GMM
+    ---
+    Attributes
+    -----------
+    n_kernels: int
+        number of kernels in GMM
+    convars_type: str
+        convariance type for GMM
+    use_bayesian: bool
+        whether or not to use Baysian GMM
+    gmm: GaussianMixture() or BayesianGaussianMixture()
+        GMM instance in sklearn
+    means: np.array()
+        means learned in GMM
+    covars: np.array()
+        covariance learned in GMM
+    weights: np.array()
+        weights learned in GMM
+    ---------------------------------------
+    Functions
+    -----------
+    fit(): public
+        fit raw data into GMM
+    predict(): public
+        predict FV for one video (variable frames)
+    predict_alternative(): public
+        predict FV for one video (variable frames) alternative
+        not validated
+    save(): public
+        save GMM model into external file
+    load(): public
+        load GMM model from external file
     """
-    def __init__(self, n_kernels=1, covariance_type='diag'):
-        assert covariance_type in ['diag', 'full']
+    def __init__(self, n_kernels=1, convars_type='diag', use_bayesian=False):
+        # para n_kernels:
+        # para convars_type:
+        # para use_bayesian:
+        assert convars_type in ['diag', 'full']
         assert n_kernels > 0
 
         self.n_kernels = n_kernels
-        self.covariance_type = covariance_type
-        self.fitted = False
+        self.convars_type = convars_type
+        self.use_bayesian = use_bayesian
+        self.gmm = None
+        self.means = None
+        self.covars = None
+        self.weights = None
+        self.feature_dim = 0
+        self.config = json.load(open('./config/model.json', 'r'))['fisher_vector']
+        self.save_dir = self.config['save_dir']
 
-    def score(self, X):
-        return self.gmm.bic(X.reshape(-1, X.shape[-1]))
-
-    def fit(self, X, model_dump_path=None, verbose=True):
-        """
-        :param X: either a ndarray with 4 dimensions (n_videos, n_frames, n_descriptors_per_image, n_dim_descriptor) or with 3 dimensions (n_images, n_descriptors_per_image, n_dim_descriptor)
-        :param model_dump_path: (optional) path where the fitted model shall be dumped
-        :param verbose - boolean that controls the verbosity
-        :return: fitted Fisher vector object
-        """
-
-        if X.ndim == 4:
-            self.ndim = 4
-            return self._fit(X, model_dump_path=model_dump_path, verbose=verbose)
-
-        elif X.ndim == 3:
-            self.ndim = 3
-            X = np.reshape(X, [1] + list(X.shape))
-            return self._fit(X, model_dump_path=model_dump_path, verbose=verbose)
-
-        else:
-            raise AssertionError("X must be an ndarray with 3 or 4 dimensions")
-
-    def fit_by_bic(self, X, choices_n_kernels=N_Kernel_Choices, model_dump_path=None, verbose=True):
-        """
-        Fits the GMM with various n_kernels and selects the model with the lowest BIC
-        :param X: either a ndarray with 4 dimensions (n_videos, n_frames, n_descriptors_per_image, n_dim_descriptor) or with 3 dimensions (n_images, n_descriptors_per_image, n_dim_descriptor)
-        :param choices_n_kernels: array of positive integers that specify with how many kernels the GMM shall be trained default: [20, 60, 100, 200, 500]
-        :param model_dump_path: (optional) path where the fitted model shall be dumped
-        :param verbose - boolean that controls the verbosity
-        :return: fitted Fisher vector object
-        """
-
-        if X.ndim == 4:
-            self.ndim = 4
-            return self._fit_by_bic(X, choices_n_kernels=choices_n_kernels, model_dump_path=model_dump_path, verbose=verbose)
-
-        elif X.ndim == 3:
-            self.ndim = 3
-            X = np.reshape(X, [1] + list(X.shape))
-            return self._fit_by_bic(X, choices_n_kernels=choices_n_kernels, model_dump_path=model_dump_path, verbose=verbose)
-
-        else:
-            raise AssertionError("X must be an ndarray with 3 or 4 dimensions")
-
-    def predict(self, X, normalized=True):
-        """
-        Computes Fisher Vectors of provided X
-        :param X: either a ndarray with 4 dimensions (n_videos, n_frames, n_descriptors_per_image, n_dim_descriptor) or with 3 dimensions (n_images, n_descriptors_per_image, n_dim_descriptor)
-        :param normalized: boolean that indicated whether the fisher vectors shall be normalized --> improved fisher vector (https://www.robots.ox.ac.uk/~vgg/rg/papers/peronnin_etal_ECCV10.pdf)
-        :returns fv: fisher vectors
-                    if X.ndim is 4 then returns ndarray of shape (n_videos, n_frames, 2*n_kernels, n_feature_dim)
-                    if X.ndim is 3 then returns ndarray of shape (n_images, 2*n_kernels, n_feature_dim)
-        """
-        if X.ndim == 4:
-            return self._predict(X, normalized=normalized)
-
-        elif X.ndim == 3:
-            orig_shape = X.shape
-            X = np.reshape(X, [1] + list(X.shape))
-            result = self._predict(X, normalized=normalized)
-            return np.reshape(result, (orig_shape[0], 2 * self.n_kernels, orig_shape[-1]))
-
-        else:
-            raise AssertionError("X must be an ndarray with 3 or 4 dimensions")
-
-    def _fit(self, X, model_dump_path=None, verbose=True):
-        """
-        :param X: shape (n_videos, n_frames, n_descriptors_per_image, n_dim_descriptor)
-        :param model_dump_path: (optional) path where the fitted model shall be dumped
-        :param verbose - boolean that controls the verbosity
-        :return: fitted Fisher vector object
-        """
-        assert X.ndim == 4
+    def fit(self, X, verbose=0):
+        # para X: shape [n_videos, n_frames, n_features, n_feature_dim]
         self.feature_dim = X.shape[-1]
-
         X = X.reshape(-1, X.shape[-1])
 
-        # fit GMM and store params of fitted model
-        self.gmm = gmm = GaussianMixture(n_components=self.n_kernels, covariance_type=self.covariance_type, max_iter=1000).fit(X)
-        self.covars = gmm.covariances_
-        self.means = gmm.means_
-        self.weights = gmm.weights_
+        if not self.use_bayesian:
+            self.gmm = GaussianMixture(
+                        n_components=self.n_kernels,
+                        covariance_type=self.convars_type,
+                        max_iter=1000,
+                        verbose=verbose)
+        else:
+            self.gmm = BayesianGaussianMixture(
+                        n_components=self.n_kernels,
+                        covariance_type=self.convars_type,
+                        max_iter=1000,
+                        verbose=verbose)
+        
+        self.gmm.fit(X)
+        self.means = self.gmm.means_
+        self.covars = self.gmm.covariances_
+        self.weights = self.gmm.weights_
 
         # if cov_type is diagonal - make sure that covars holds a diagonal matrix
         if self.covariance_type == 'diag':
@@ -107,102 +89,91 @@ class FisherVectorGMM:
             self.covars = cov_matrices
 
         assert self.covars.ndim == 3
-        self.fitted = True
-        if verbose:
-            print('fitted GMM with %i kernels'%self.n_kernels)
+        self.save()
 
-        if model_dump_path:
-            with open(model_dump_path, 'wb') as f:
-                pickle.dump(self,f, protocol=4)
-            if verbose:
-                print('Dumped fitted model to', model_dump_path)
+    def predict(self, X, normalized=True):
+        # para X: shape [n_frames, n_feature_dim]
+        assert X.ndim == 2
+        assert self.feature_dim == X.shape[-1]
 
-        return self
-
-    def _fit_by_bic(self, X, choices_n_kernels=N_Kernel_Choices, model_dump_path=None, verbose=True):
-        """
-        Fits the GMM with various n_kernels and selects the model with the lowest BIC
-        :param X: shape (n_videos, n_frames, n_descriptors_per_image, n_dim_descriptor)
-        :param choices_n_kernels: array of positive integers that specify with how many kernels the GMM shall be trained default: [20, 60, 100, 200, 500]
-        :param model_dump_path: (optional) path where the fitted model shall be dumped
-        :param verbose - boolean that controls the verbosity
-        :return: fitted Fisher vector object
-        """
-
-        bic_scores = []
-        for n_kernels in choices_n_kernels:
-            self.n_kernels = n_kernels
-            bic_score = self.fit(X, verbose=False).score(X)
-            bic_scores.append(bic_score)
-
-        if verbose:
-            print('fitted GMM with %i kernels - BIC = %.4f'%(n_kernels, bic_score))
-
-        best_n_kernels = choices_n_kernels[np.argmin(bic_scores)]
-
-        self.n_kernels = best_n_kernels
-        if verbose:
-            print('Selected GMM with %i kernels' % best_n_kernels)
-
-        return self.fit(X, model_dump_path=model_dump_path, verbose=True)
-
-    def _predict(self, X, normalized=True):
-        """
-        Computes Fisher Vectors of provided X
-        :param X: features - ndarray of shape (n_videos, n_frames, n_features, n_feature_dim)
-        :param normalized: boolean that indicated whether the fisher vectors shall be normalized --> improved fisher vector
-        :returns fv: fisher vectors - ndarray of shape (n_videos, n_frames, 2*n_kernels, n_feature_dim)
-        """
-        assert self.fitted, "Model (GMM) must be fitted"
-        assert self.feature_dim == X.shape[-1], "Features must have same dimensionality as fitted GMM"
-        assert X.ndim == 4
-
-        n_videos, n_frames = X.shape[0], X.shape[1]
-
-        X = X.reshape((-1, X.shape[-2], X.shape[-1])) #(n_images, n_features, n_feature_dim)
-        X_matrix = X.reshape(-1, X.shape[-1])
-
+        X_matrix = X.reshape(-1, X.shape[-1]) # [n_frames, n_feature_dim]
+        
         # set equal weights to predict likelihood ratio
         self.gmm.weights_ = np.ones(self.n_kernels) / self.n_kernels
-        likelihood_ratio = self.gmm.predict_proba(X_matrix).reshape(X.shape[0], X.shape[1], self.n_kernels)
+        likelihood_ratio = self.gmm.predict_proba(X_matrix).reshape(X.shape[0], self.n_kernels) # [n_frames, n_kernels]
 
-        var = np.diagonal(self.covars, axis1=1, axis2=2)
+        var = np.diagonal(self.covars, axis1=1, axis2=2) # [n_kernels, n_feature_dim]
 
-        norm_dev_from_modes = ((X[:,:, None, :] - self.means[None, None, :, :])/ var[None, None, :, :]) # (n_images, n_features, n_kernels, n_featur_dim)
+        # decrease the memory use
+        norm_dev_from_modes = np.tile(X[:,None,:],(1,self.n_kernels,1)) 
+        np.subtract(norm_dev_from_modes, self.means[None, :], out=norm_dev_from_modes)
+        np.divide(norm_dev_from_modes, var[None, :], out=norm_dev_from_modes)
+        """
+        norm_dev_from_modes:
+            (X - mean) / var
+            [n_frames, n_kernels, n_feature_dim]
+        """
 
         # mean deviation
-        mean_dev = np.multiply(likelihood_ratio[:,:,:, None], norm_dev_from_modes).mean(axis=1) #(n_images, n_kernels, n_feature_dim)
-        mean_dev = np.multiply(1 / np.sqrt(self.weights[None, :,  None]), mean_dev) #(n_images, n_kernels, n_feature_dim)
+        mean_dev = np.multiply(likelihood_ratio[:,:,None], norm_dev_from_modes).mean(axis=0) # [n_kernels, n_feature_dim]
+        mean_dev = np.multiply(1 / np.sqrt(self.weights[:,None]), mean_dev) # [n_kernels, n_feature_dim]
 
         # covariance deviation
-        cov_dev = np.multiply(likelihood_ratio[:,:,:, None], norm_dev_from_modes**2 - 1).mean(axis=1)
-        cov_dev = np.multiply(1 / np.sqrt(2 * self.weights[None, :,  None]), cov_dev)
+        cov_dev = np.multiply(likelihood_ratio[:,:, None], norm_dev_from_modes**2 - 1).mean(axis=0) # [n_kernels, n_feature_dim]
+        cov_dev = np.multiply(1 / np.sqrt(2 * self.weights[:,  None]), cov_dev) # [n_kernels, n_feature_dim]
 
-        fisher_vectors = np.concatenate([mean_dev, cov_dev], axis=1)
-
-        # final reshape - separate frames and videos
-        assert fisher_vectors.ndim == 3
-        fisher_vectors = fisher_vectors.reshape((n_videos, n_frames, fisher_vectors.shape[1], fisher_vectors.shape[2]))
-
+        # stack vectors of mean and covariance
+        fisher_vector = np.concatenate([mean_dev, cov_dev], axis=1)
 
         if normalized:
-            fisher_vectors = np.sqrt(np.abs(fisher_vectors)) * np.sign(fisher_vectors) # power normalization
-            fisher_vectors = fisher_vectors / np.linalg.norm(fisher_vectors, axis=(2,3))[:,:,None,None]
+            fisher_vector = np.sqrt(np.abs(fisher_vector)) * np.sign(fisher_vector) # power normalization
+            fisher_vector = fisher_vector / np.linalg.norm(fisher_vector, axis=0) # L2 normalization
 
-        fisher_vectors[fisher_vectors < 10**-4] = 0
+        fisher_vector[fisher_vector < 10**-4] = 0 # threshold
 
-        assert fisher_vectors.ndim == 4
-        return fisher_vectors
+        assert fisher_vector.ndim == 2
+        return fisher_vector
 
-    @staticmethod
-    def load_from_pickle(pickle_path):
-        """
-        loads a previously dumped FisherVectorGMM instance
-        :param pickle_path: path to the pickle file
-        :return: loaded FisherVectorGMM object
-        """
-        assert os.path.isfile(pickle_path), 'pickle path must be an existing file'
-        with open(pickle_path, 'rb') as f:
-            fv_gmm = pickle.load(f)
-            assert isinstance(fv_gmm, FisherVectorGMM), 'pickled object must be an instance of FisherVectorGMM'
-        return fv_gmm
+    def predict_alternative(self, X, normalized=True):
+        X = np.atleast_2d(X)
+        N = X.shape[0]
+
+        # Compute posterior probabilities.
+        Q = self.gmm.predict_proba(X)  # NxK
+
+        # Compute the sufficient statistics of descriptors.
+        Q_sum = np.sum(Q, 0)[:, np.newaxis] / N
+        Q_X = np.dot(Q.T, X) / N
+        Q_XX_2 = np.dot(Q.T, X ** 2) / N
+
+        # compute derivatives with respect to mixing weights, means and variances.
+        d_pi = Q_sum.squeeze() - self.gmm.weights_
+        d_mu = Q_X - Q_sum * self.gmm.means_
+        d_sigma = (
+            - Q_XX_2
+            - Q_sum * self.gmm.means_ ** 2
+            + Q_sum * self.gmm.covariances_
+            + 2 * Q_X * self.gmm.means_)
+
+        # merge derivatives into a vector.
+        fisher_vector = np.hstack((d_pi, d_mu.flatten(), d_sigma.flatten()))
+
+        if normalized:
+            fisher_vector = np.sqrt(np.abs(fisher_vector)) * np.sign(fisher_vector) # power normalization
+            fisher_vector = fisher_vector / np.linalg.norm(fisher_vector, axis=0) # L2 norm
+
+        return fisher_vector
+
+    def save(self):
+        filename = 'kernel%d_%s_bayes%d.npz' % (self.n_kernels, self.covariance_type, self.use_bayesian)
+        np.savez(os.path.join(self.save_dir, filename), means=self.means, covars=self.covars, weights=self.weights)
+
+    def load(self):
+        filename = '%d_%s_bayes%d.npz' % (self.n_kernels, self.covariance_type, self.use_bayesian)
+        npzfile = np.load(os.path.join(self.save_dir, filename))
+
+        self.means = npzfile['means']
+        self.covars = npzfile['covars']
+        self.weights = npzfile['weights']
+        
+        self.gmm.weights_ = self.weights

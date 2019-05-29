@@ -1,12 +1,14 @@
 import os
 import json
 import numpy as np
+import scipy.sparse as sp
 
 from src.model.linear_svm import LinearSVM
 from src.model.random_forest import RandomForest
 from src.metric.uar import get_UAR, get_post_probability, get_late_fusion_UAR
 from src.utils.io import load_proc_baseline_feature, save_UAR_results
 from src.utils.io import save_post_probability, load_post_probability
+from src.utils.preprocess import upsample
 
 
 '''
@@ -79,6 +81,11 @@ class BaseLine():
         print("\nbuilding a classifier on MFCC features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
 
+        print("\nupsampling training data to address class imbalance")
+        X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
+        print("\nobtaining sparse matrix for better classification")
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
+
         if self.model_name == 'SVM':
             SVM_MFCC = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
             SVM_MFCC.run()
@@ -99,6 +106,11 @@ class BaseLine():
         print("\nbuilding a classifier on eGeMAPS features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('eGeMAPS', verbose=True)
         
+        print("\nupsampling training data to address class imbalance")
+        X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
+        print("\nobtaining sparse matrix for better classification")
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
+
         if self.model_name == 'SVM':
             SVM_eGeMAPS = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
             SVM_eGeMAPS.run()
@@ -118,6 +130,11 @@ class BaseLine():
         """
         print("\nbuilding a classifier on Deep features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('Deep', verbose=True)
+
+        print("\nupsampling training data to address class imbalance")
+        X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
+        print("\nobtaining sparse matrix for better classification")
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
 
         if self.model_name == 'SVM':
             SVM_Deep = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
@@ -139,6 +156,11 @@ class BaseLine():
         print("\nbuilding a classifier on BoAW features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoAW', verbose=True)
 
+        print("\nupsampling training data to address class imbalance")
+        X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
+        print("\nobtaining sparse matrix for better classification")
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
+
         if self.model_name == 'SVM':
             SVM_BoAW = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
             SVM_BoAW.run()
@@ -159,6 +181,11 @@ class BaseLine():
         print("\nbuilding a classifier on AU features (already session-level)")
         X_train, y_train, _, X_dev, y_dev, _ = load_proc_baseline_feature('AU', verbose=True)
 
+        print("\nupsampling training data to address class imbalance")
+        X_train, y_train, _ = upsample(X_train, y_train, np.array([]))
+        print("\nobtaining sparse matrix for better classification")
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
+        
         if self.model_name == 'SVM':
             SVM_AU = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
             SVM_AU.run()
@@ -181,6 +208,11 @@ class BaseLine():
         print("\nbuilding a classifier on BoVW features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoVW', verbose=True)
 
+        print("\nupsampling training data to address class imbalance")
+        X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
+        print("\nobtaining sparse matrix for better classification")
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
+        
         if self.model_name == 'SVM':
             SVM_BoVW = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
             SVM_BoVW.run()

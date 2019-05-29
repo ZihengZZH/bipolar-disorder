@@ -11,9 +11,34 @@ from src.model.autoencoder import AutoEncoder
 
 class AutoEncoderBimodal(AutoEncoder):
     """
+    Bimodal Stacked Denoising Autoencoder (SDAE) to encoder audio-visual data
+    ---
+    Attributes
+    -----------
+    name: str
+        model name
+    dimension_A/V: int
+        input A/V data dimensionality
+    noisy: bool
+        whether or not to involve denoising fashion
+    sparse: bool
+        whether or not to involve sparsity
+    decoder_A/V: keras.models.Model
+        keras Model mapping latent representation to A/V input
+    ---------------------------------------
+    Functions
+    -----------
+    build_model(): public
+        build bimodal stacked denoising autoencoder model
+    train_model(): public
+        train bimodal stacked denoising autoencoder model
+    encode(): public
+        encode A/V input to latent representation
+    decode(): public
+        decode latent representation to A/V input
     """
     def __init__(self, name, input_dim_A, input_dim_V, noisy=True, sparse=False):
-        # para name: name of bimodal AE
+        # para name: name of bimodal SDAE
         AutoEncoder.__init__(self, name, input_dim_A+input_dim_V, noisy=noisy, sparse=sparse)
         self.load_basic()
         self.dimension_A = input_dim_A

@@ -44,4 +44,29 @@ One of the drawbacks of grid search is that when it comes to dimensionality, it 
 
 ![](../images/literature/tuning_RandomSearch.png)
 
-As random values are selected at each instance, it is highly likely that the whole of action space has been reached because of randomness, which takes a huge amount of time to cover every aspect of the combination during grid search. This works better under the assumption that not all hyperparameters are equally important. In this search pattern, random combinations of hyperparameters are considered in every iteration. The chances of finding the optimal hyperparameters are comparatively higher in random search because of the random search pattern where the model might end up being trained on the optimized hyperparamters without any aliasing.
+As random values are selected at each instance, it is highly likely that the whole of action space has been reached because of randomness, which takes a huge amount of time to cover every aspect of the combination during grid search. This works better under the assumption that not all hyperparameters are equally important. In this search pattern, random combinations of hyperparameters are considered in every iteration. The chances of finding the optimal hyperparameters are comparatively higher in random search because of the random search pattern where the model might end up being trained on the optimized hyperparameers without any aliasing.
+
+
+## GMM
+
+### Gaussian Mixture Model
+
+Pros 
+* **speed**: it is the fastest algorithm for learning mixture models
+* **agnostic**: as this algorithm maximizes only the likelihood, it will not bias the means towards zero, or bias the cluster size to have specific strictures that might or might not apply
+
+Cons
+* **singularities**: when one has insufficiently many points per mixture, estimating the covariance matrices becomes difficult, and the algorithm is known to diverge and find solutions with infinite likelihood unless one regularizes the covariances artificially
+* **no of components**: this algorithm will always use all the components it has access to, needing held-out data or information theoretical criteria to decide how many components to use in the absence of external cues
+
+### Bayesian Gaussian Mixture Model
+
+Pros
+* **automatic selection**: when ```weight_concentration_prior``` is small enough and ```n_components``` is larger than what is found necessary by the model, the Variational Bayesian mixture model has a natural tendency to set some mixture weights values close to zero. This makes it possible to let the model choose a suitable number of effective components automatically. Only an upper bound of this number needs to be provided. Note however that the “ideal” number of active components is very application specific and is typically ill-defined in a data exploration setting.
+* **less sensitivity to no of parameters**: unlike finite models, which will almost always use all components as much as they can, and hence will produce wildly different solutions for different number of components, the variational inference with a Dirichlet process prior (```weight_concentration_prior_type='dirichlet_process'```) won’t change much with changes to the parameters, leading to more stability and less tuning.
+* **regularization**: due to the incorporation of prior information, variational solutions have less pathological special cases than expectation-maximization solutions.
+
+Cons:
+* **speed**: the extra parameterization necessary for variational inference make inference slower, although not by much
+* **hyperparameters**: this algorithm needs an extra hyperparameters that might need experimental tuning via cross-validation
+* **bias**: there are many implicit biases in the inference algorithms, and whenever there is a mismatch between these biases and the data is might be possible to fit better models using a finite mixture

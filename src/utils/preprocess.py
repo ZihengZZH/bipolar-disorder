@@ -3,6 +3,7 @@ import json
 import numpy as np
 import pandas as pd
 import xml.etree.ElementTree as etree
+from collections import Counter
 from smart_open import smart_open
 from gensim.corpora import WikiCorpus
 from gensim import utils
@@ -402,3 +403,34 @@ def preprocess_align(verbose=False):
 
             if verbose:
                 print("file %s processed & saved." % filename)
+
+
+def upsample(X_train, y_train, train_inst, verbose=False):
+    # para X_train: pd.DataFrame
+    # para y_train: np.ndarray
+    # para train_inst: np.ndarray
+    stats = Counter(y_train)
+    uplimit = max([stats[1], stats[2], stats[3]])
+    most_class = [stats[1], stats[2], stats[3]].index(uplimit) + 1
+
+    if verbose:
+        print("labels\t", stats)
+        print("most class\t%d\nmax number\t%d" % (most_class, uplimit))
+    
+    for c in [1, 2, 3]:
+        if c == most_class:
+            continue
+        else:
+            diff = uplimit - stats[c]
+            c_index = np.where(y_train == c)[0]
+            np.random.shuffle(c_index)
+            while diff > 1:
+                diff_index = c_index[:diff]
+                X_train = pd.concat((X_train, X_train.iloc[diff_index, :]), axis=0)
+                y_train = np.hstack((y_train, y_train[diff_index]))
+                if train_inst.any():
+                    train_inst = np.hstack((train_inst, train_inst[diff_index]))
+                diff -= stats[c]
+    
+    return X_train, y_train, train_inst
+
