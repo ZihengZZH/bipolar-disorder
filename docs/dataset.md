@@ -249,13 +249,13 @@ The alignment between BoAW features and BoVW features are conducted quite straig
 
 ### FAUs & MFCC
 
-Facial Action Units, are processed by retaining poses, gazes, and facial landmarks. It is noticeable that the tme interval in OpenFace feature extraction is 0.033s.
+Facial Action Units, are processed by retaining poses, gazes, and facial landmarks. It is noticeable that the time interval in OpenFace feature extraction is 0.033s. The alignment is matched on the interval of ~0.1s, which contains 1 openFace feature and 3 hstack MFCC features.
 
 | partition | A/V| no_sample | no_feature |
 | --        | -- | --        | --         |
-| train     | A  | 759679    | 118        |
-| train     | V  | 759679    | 184        |
-| dev       | A  | 317164    | 118        |
-| dev       | V  | 317164    | 184        |
+| train     | A  | 759675    | 118        |
+| train     | V  | 759675    | 184        |
+| dev       | A  | 317104    | 118        |
+| dev       | V  | 317104    | 184        |
 | test      | A  | 372788    | 118        |
 | test      | V  | 372788    | 184        |

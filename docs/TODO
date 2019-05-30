@@ -36,13 +36,14 @@ project:
     ✔ autoencoder.py @done(19-05-15 18:16)
       ☐ remove learning_rate
       ☐ config keras optimizers
+      ☐ save more information (log)
     ☐ autoencoder_lstm.py
     ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
       ✔ sparsity @done(19-05-23 22:37)
     ☐ fisher_encoder.py
-      ☐ temporary information
-      ☐ dimensionality
-      ☐ variable length
+      ✔ temporary information @done(19-05-29 23:50)
+      ✔ dimensionality @done(19-05-29 23:50)
+      ✔ variable length @done(19-05-29 23:50)
     ☐ dnn_classifier.py
       ✔ label & YMRS score @done(19-05-23 22:37)
       ☐ overfitting

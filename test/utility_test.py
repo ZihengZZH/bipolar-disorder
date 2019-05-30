@@ -10,6 +10,7 @@ from src.utils.preprocess import preprocess_AU
 from src.utils.preprocess import preprocess_BOXW
 from src.utils.preprocess import preprocess_align
 from src.utils.preprocess import upsample
+from src.utils.preprocess import frame2session
 from src.utils.vis import visualize_landmarks
 
 
@@ -65,12 +66,20 @@ class TestUtility(unittest.TestCase):
     # def test_load_aligned_features(self):
         # load_aligned_features(verbose=True)
 
-    def test_upsample(self):
-        X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
-        X_train, y_train, train_inst = upsample(X_train, y_train, train_inst, verbose=True)
-        print(X_train.shape, y_train.shape, train_inst.shape)
-        from collections import Counter
-        print(Counter(y_train))
+    # def test_upsample(self):
+    #     X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
+    #     X_train, y_train, train_inst = upsample(X_train, y_train, train_inst, verbose=True)
+    #     print(X_train.shape, y_train.shape, train_inst.shape)
+    #     from collections import Counter
+    #     print(Counter(y_train))
+    
+    def test_frame2session(self):
+        import numpy as np
+        X = np.random.random((60, 30))
+        y = np.ones((60, ))
+        inst = np.hstack((np.ones(5,), np.ones(25,)*2, np.ones(30,)*3))
+        X_sess, y_sess = frame2session(X, y, inst, verbose=True)
+        print(type(X_sess), type(y_sess))
 
 
 if __name__ == "__main__":

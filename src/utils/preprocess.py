@@ -406,6 +406,8 @@ def preprocess_align(verbose=False):
 
 
 def upsample(X_train, y_train, train_inst, verbose=False):
+    """upsample dataset to balance different classes
+    """
     # para X_train: pd.DataFrame
     # para y_train: np.ndarray
     # para train_inst: np.ndarray
@@ -434,3 +436,37 @@ def upsample(X_train, y_train, train_inst, verbose=False):
     
     return X_train, y_train, train_inst
 
+
+def get_dynamics(X_0th, time=0.1):
+    """compute dynamics for data (1st/2nd derivate)
+    """
+    X_1st = np.zeros((X_0th.shape[0]-1, X_0th.shape[1]))
+    X_2nd = np.zeros((X_0th.shape[0]-2, X_0th.shape[1]))
+    for i in range(X_0th.shape[0]-1):
+        X_1st[i] = (X_0th[i+1] - X_0th[i]) / time
+    for j in range(X_0th.shape[0]-2):
+        X_2nd[j] = (X_1st[j+1] - X_1st[j]) / time
+    return np.hstack((X_0th[2:], X_1st[1:], X_2nd))
+
+
+def frame2session(X, y, inst, verbose=False):
+    """transfer frame-level data/label/inst to session-level
+    """
+    # para X: data
+    # para y: label
+    # para inst: instance
+    assert X.shape[0] == y.shape[0] == inst.shape[0]
+    max_inst = int(max(inst))
+    min_inst = int(min(inst))
+    X_sess, y_sess = [], []
+    for i in range(min_inst, max_inst+1):
+        idx = np.where(inst == i)[0]
+        X_temp = X[idx]
+        y_temp = y[idx]
+        X_sess.append(X_temp)
+        if len(set(y_temp)) == 1:
+            y_sess.append(y_temp[0])
+        if verbose:
+            print("instance %d data shape" % i, X_temp.shape)
+    assert max_inst == len(X_sess) == len(y_sess)
+    return np.array(X_sess), np.array(y_sess)
