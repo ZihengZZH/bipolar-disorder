@@ -62,13 +62,7 @@ class Text2Vec():
         # para build_on_corpus: involve Turkish corpus in training or not
         self.model = None
         self.model_name = ''
-        self.dm = None
-        self.vector_size = None
-        self.negative = None
-        self.hs = None
-        self.min_count = None
-        self.sample = None
-        self.epochs = None
+        self.fitted = False
         self.all_docs = []
         self.save_dir = ''
         self.data_config = json.load(open('./config/data.json', 'r'))
@@ -128,6 +122,11 @@ class Text2Vec():
         self.model_name = str(self.model).replace('/','-')
         self.save_dir = os.path.join(self.model_config['doc2vec']['save_dir'], self.model_name)
         print("\ndoc2vec %s model initialized." % self.model_name)
+
+        if not os.path.isdir(self.save_dir):
+            self.fitted = False
+        else:
+            self.fitted = True
         
         print("\nbuilding vocabulary for doc2vec model ...")
         self.model.build_vocab(self.all_docs)
@@ -136,6 +135,11 @@ class Text2Vec():
     def train_model(self):
         """train doc2vec model
         """
+        if self.fitted:
+            print("\nmodel already trained ---", self.model_name)
+            self.load_model()
+            return 
+        
         print("\ntraining doc2vec %s model (with 8 threads) ..." % self.model_name)
         self.model.train(self.all_docs, 
                         total_examples=len(self.all_docs), 
@@ -206,17 +210,8 @@ class Text2Vec():
     def load_model(self):
         """load doc2vec model
         """
-        model_list = os.listdir(self.model_config['doc2vec']['save_dir'])
-        print("\npre-trained models as follows")
-        print("--" * 20)
-        for idx, name in enumerate(model_list):
-            print(idx, name)
-        print("--" * 20)
-        selection = int(input("please choose a doc2vec model "))
-        self.model_name = model_list[selection]
-        self.save_dir = os.path.join(self.model_config['doc2vec']['save_dir'], self.model_name)
         if os.path.isdir(self.save_dir):
             print("\nloading doc2vec %s model from file" % self.model_name)
             self.model = doc2vec.Doc2Vec.load(os.path.join(self.save_dir, 'doc2vec.model'))
         else:
-            print("\nwrong input or model does not exist")
+            print("\n%s model does not exist" % self.model_name)

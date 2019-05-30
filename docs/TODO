@@ -36,7 +36,8 @@ project:
     ✔ autoencoder.py @done(19-05-15 18:16)
       ☐ remove learning_rate
       ☐ config keras optimizers
-      ☐ save more information (log)
+      ✔ save more informat\pion (log) @done(19-05-30 23:36)
+      ✔ save checkpoint P @done(19-05-30 23:36)
     ☐ autoencoder_lstm.py
     ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
       ✔ sparsity @done(19-05-23 22:37)

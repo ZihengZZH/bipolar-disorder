@@ -6,6 +6,7 @@ from keras import regularizers
 from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense
+from keras.callbacks import CSVLogger, ModelCheckpoint
 from keras.utils import plot_model
 
 
@@ -31,18 +32,6 @@ class AutoEncoder():
         keras Model mapping latent representation to input
     dimension: list
         list of dimensionalities in hidden layers
-    hidden_ratio: float
-        ratio between hidden layers
-    learning_rate: float
-        learning rate
-    epochs: int
-        epochs 
-    noise: float
-        noise level
-    p: float
-        sparsity regularizer
-    beta: float
-        sparsity regularizer
     save_dir: str
         saving directory
     model_config: json.load()
@@ -67,7 +56,6 @@ class AutoEncoder():
     """
     def __init__(self, name, input_dim, noisy=True, sparse=False):
         # para name: name of SDAE
-        self.name = name
         self.noisy = noisy
         self.sparse = sparse
         # AE model
@@ -76,16 +64,10 @@ class AutoEncoder():
         self.decoder = None
 
         self.dimension = [input_dim] * 5
-        self.hidden_ratio = None
-        self.learning_rate = None
-        self.batch_size = None
-        self.epochs = None
-        self.noise = None
-        self.p = None
-        self.beta = None
-        self.save_dir = None
         self.model_config = json.load(open('./config/model.json', 'r'))['autoencoder']
+        self.fitted = False
         self.load_basic()
+        self.name = '%s_hidden%.2f_batch%d_epoch%d_noise%s' % (name, self.hidden_ratio, self.batch_size, self.epochs, self.noise)
         np.random.seed(1337)
 
     def load_basic(self):
@@ -103,6 +85,7 @@ class AutoEncoder():
         self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
         self.dimension[3] = self.dimension[1]
         self.dimension[4] = self.dimension[0]
+        print("\nSDAE initialized and configuration loaded")
 
     def _sparse_regularizer(self, activation_matrix):
         """define the custom regularizer function
@@ -116,6 +99,12 @@ class AutoEncoder():
     def build_model(self):
         """build stacked denoising autoencoder model
         """
+        if not os.path.isdir(os.path.join(self.save_dir, self.name)):
+            os.mkdir(os.path.join(self.save_dir, self.name))
+            self.fitted = False
+        else:
+            self.fitted = True
+        
         # input placeholder
         input_data = Input(shape=(self.dimension[0], ))
         # encoded input placeholder
@@ -151,9 +140,16 @@ class AutoEncoder():
         print("decoder")
         print(self.decoder.summary())
 
+        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'SDAE.png'))
+
     def train_model(self, X_train, X_dev):
         """train stacked denoising autoencoder model
         """
+        if self.fitted:
+            print("\nmodel already trained ---", self.name)
+            self.load_model()
+            return 
+        
         if self.noisy:
             X_train_noisy = X_train + np.random.normal(loc=0.5, scale=0.5, size=X_train.shape)
             X_dev_noisy = X_dev + np.random.normal(loc=0.5, scale=0.5, size=X_dev.shape)
@@ -164,11 +160,17 @@ class AutoEncoder():
         assert X_train_noisy.shape == X_train.shape
         assert X_dev_noisy.shape == X_dev.shape
 
+        csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+        callbacks_list = [csv_logger, checkpoint]
+
         self.autoencoder.fit(X_train_noisy, X_train, 
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=(X_dev_noisy, X_dev))
+                            validation_data=(X_dev_noisy, X_dev),
+                            callbacks=callbacks_list)
+        print("\nmodel trained and saved ---", self.name)
         self.save_model()
     
     def encode(self, X_1, X_2):
@@ -187,53 +189,36 @@ class AutoEncoder():
     def save_model(self):
         """save stacked denoising autoencoder model to external file
         """
-        filename = '%s-h%.2f-l%.2f-b%d-e%d-n%.1f-%s.h5' % (
-            self.name, self.hidden_ratio, self.learning_rate,
-            self.batch_size, self.epochs, self.noise, 
-            datetime.datetime.now().strftime('%d%m-%H%M')
-        )
-        self.autoencoder.save_weights(os.path.join(self.save_dir, filename))
+        self.autoencoder.save_weights(os.path.join(self.save_dir, self.name, 'SDAE.h5'))
+        print("\nsaving completed ---", self.name)
 
     def load_model(self):
         """load stacked denoising autoencoder model from external file
         """
-        weights_list = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
-        print("\nfull list of pre-trained models")
-        print("--"*20)
-        for idx, name in enumerate(weights_list):
-            print("no.%d model with name %s" % (idx, name))
-        print("--"*20)
-        choose_model = None
-        for _ in range(3):
-            try:
-                choose_model = input("\nmake your choice: ")
-                weights_name = weights_list[int(choose_model)]
-                self.autoencoder.load_weights(os.path.join(self.save_dir, weights_name))
-                break
-            except ValueError:
-                print("\nWrong input! Please start over")
+        self.autoencoder.load_weights(os.path.join(self.save_dir, self.name, 'SDAE.h5'))
+        print("\nloading completed ---", self.name)
 
     def save_representation(self, encoded_train, encoded_dev):
         """save encoded representation to external file
         """
-        encoded_dir = self.model_config['encoded_dir']
-        np.save(os.path.join(encoded_dir, 'encoded_train_%s' % self.name), encoded_train)
-        np.save(os.path.join(encoded_dir, 'encoded_dev_%s' % self.name), encoded_dev)
+        encoded_dir = os.path.join(self.save_dir, self.name)
+        np.save(os.path.join(encoded_dir, 'encoded_train'), encoded_train)
+        np.save(os.path.join(encoded_dir, 'encoded_dev'), encoded_dev)
     
     def load_presentation(self):
         """load encoded representation from external file
         """
-        encoded_dir = self.model_config['encoded_dir']
-        encoded_train = np.load(os.path.join(encoded_dir, 'encoded_train_%s.npy' % self.name))
-        encoded_dev = np.load(os.path.join(encoded_dir, 'encoded_dev_%s.npy' % self.name))
+        encoded_dir = os.path.join(self.save_dir, self.name)
+        encoded_train = np.load(os.path.join(encoded_dir, 'encoded_train.npy'))
+        encoded_dev = np.load(os.path.join(encoded_dir, 'encoded_dev.npy'))
         return encoded_train, encoded_dev
 
     def save_reconstruction(self, decoded_input_A, decoded_input_V):
         """save reconstructed input
         """
-        decoded_dir = self.model_config['decoded_dir']
-        np.save(os.path.join(decoded_dir, 'decoded_A_%s' % self.name), decoded_input_A)
-        np.save(os.path.join(decoded_dir, 'decoded_V_%s' % self.name), decoded_input_V)
+        decoded_dir = os.path.join(self.save_dir, self.name)
+        np.save(os.path.join(decoded_dir, 'decoded_A'), decoded_input_A)
+        np.save(os.path.join(decoded_dir, 'decoded_V'), decoded_input_V)
 
     def vis_model(self):
         pass

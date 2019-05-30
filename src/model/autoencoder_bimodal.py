@@ -5,6 +5,7 @@ from keras import regularizers
 from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense, Concatenate
+from keras.callbacks import CSVLogger, ModelCheckpoint
 from keras.utils import plot_model
 from src.model.autoencoder import AutoEncoder
 
@@ -41,6 +42,7 @@ class AutoEncoderBimodal(AutoEncoder):
         # para name: name of bimodal SDAE
         AutoEncoder.__init__(self, name, input_dim_A+input_dim_V, noisy=noisy, sparse=sparse)
         self.load_basic()
+        self.name = '%s_hidden%.2f_batch%d_epoch%d_noise%s' % (name, self.hidden_ratio, self.batch_size, self.epochs, self.noise)
         self.dimension_A = input_dim_A
         self.dimension_V = input_dim_V
         self.decoder_A = None
@@ -49,6 +51,12 @@ class AutoEncoderBimodal(AutoEncoder):
     def build_model(self):
         """build bimodal stacked deep autoencoder
         """
+        if not os.path.isdir(os.path.join(self.save_dir, self.name)):
+            os.mkdir(os.path.join(self.save_dir, self.name))
+            self.fitted = False
+        else:
+            self.fitted = True
+        
         hidden_dim = int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4)
 
         input_data_A = Input(shape=(self.dimension_A, ), name='audio_input')
@@ -107,11 +115,16 @@ class AutoEncoderBimodal(AutoEncoder):
         print("decoder (V)")
         print(self.decoder_V.summary())
 
-        plot_model(self.autoencoder, show_shapes=True, to_file='./images/models/autoencoder_bimodal.png')
+        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'bimodal_SDAE.png'))
 
     def train_model(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
         """train bimodal stacked deep autoencoder
         """
+        if self.fitted:
+            print("\nmodel already trained ---", self.name)
+            self.load_model()
+            return 
+        
         if self.noisy:
             X_train_A_noisy = X_train_A + np.random.normal(loc=0.5, scale=0.5, size=X_train_A.shape)
             X_train_V_noisy = X_train_V + np.random.normal(loc=0.5, scale=0.5, size=X_train_V.shape)
@@ -128,14 +141,19 @@ class AutoEncoderBimodal(AutoEncoder):
         assert X_dev_A_noisy.shape == X_dev_A.shape
         assert X_dev_V_noisy.shape == X_dev_V.shape
 
+        csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+        callbacks_list = [csv_logger, checkpoint]
+
         self.autoencoder.fit([X_train_A_noisy, X_train_V_noisy],
                             [X_train_A, X_train_V],
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=(
-                                [X_dev_A_noisy, X_dev_V_noisy],
-                                [X_dev_A, X_dev_V]))
+                            validation_data=([X_dev_A_noisy, X_dev_V_noisy],
+                                            [X_dev_A, X_dev_V]),
+                            callbacks=callbacks_list)
+        print("\nmodel trained and saved ---", self.name)
         self.save_model()
 
     def encode(self, X_1_A, X_1_V, X_2_A, X_2_V):

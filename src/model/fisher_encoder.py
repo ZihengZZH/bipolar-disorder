@@ -47,20 +47,26 @@ class FisherVectorGMM:
         assert convars_type in ['diag', 'full']
         assert n_kernels > 0
 
+        self.name = 'kernels%d_convars%s_bayes%d' % (n_kernels, convars_type, use_bayesian)
         self.n_kernels = n_kernels
         self.convars_type = convars_type
         self.use_bayesian = use_bayesian
-        self.gmm = None
-        self.means = None
-        self.covars = None
-        self.weights = None
-        self.feature_dim = 0
+        self.fitted = False
         self.config = json.load(open('./config/model.json', 'r'))['fisher_vector']
         self.save_dir = self.config['save_dir']
-        self.save_dir_vec = self.config['save_dir_vector']
+        if not os.path.isdir(os.path.join(self.save_dir, self.name)):
+            os.mkdir(os.path.join(self.save_dir, self.name))
+            self.fitted = False
+        else:
+            self.fitted = True
 
     def fit(self, X, verbose=0):
         # para X: shape [n_videos, n_frames, n_features, n_feature_dim]
+        if self.fitted:
+            print("\nmodel already trained ---", self.name)
+            self.load()
+            return 
+        
         self.feature_dim = X.shape[-1]
         X = X.reshape(-1, X.shape[-1])
         print("\nfitting data into GMM with %d kernels" % self.n_kernels)
@@ -92,6 +98,7 @@ class FisherVectorGMM:
             self.covars = cov_matrices
 
         assert self.covars.ndim == 3
+        print("\nmodel trained and saved ---", self.name)
         self.save()
 
     def predict(self, X, normalized=True, partition='train'):
@@ -169,12 +176,10 @@ class FisherVectorGMM:
         return fisher_vector
 
     def save(self):
-        filename = 'kernel%d_%s_bayes%d.npz' % (self.n_kernels, self.convars_type, self.use_bayesian)
-        np.savez(os.path.join(self.save_dir, filename), means=self.means, covars=self.covars, weights=self.weights)
+        np.savez(os.path.join(self.save_dir, self.name, 'fv_gmm.npz'), means=self.means, covars=self.covars, weights=self.weights)
 
     def load(self):
-        filename = '%d_%s_bayes%d.npz' % (self.n_kernels, self.convars_type, self.use_bayesian)
-        npzfile = np.load(os.path.join(self.save_dir, filename))
+        npzfile = np.load(os.path.join(self.save_dir, self.name, 'fv_gmm.npz'))
 
         self.means = npzfile['means']
         self.covars = npzfile['covars']
@@ -182,9 +187,11 @@ class FisherVectorGMM:
         
         self.gmm.weights_ = self.weights
 
-    def save_vector(self, fisher_vector, partition):
-        np.save(os.path.join(self.save_dir_vec, 'vector_%s' % partition), fisher_vector)
+    def save_vector(self, fisher_vector, partition, dynamics=False):
+        filename = 'vector_%s' % partition if dynamics else 'fisher_vector_%s' % partition
+        np.save(os.path.join(self.save_dir, self.name, filename), fisher_vector)
 
-    def load_vector(self, partition):
-        fisher_vector = np.load(os.path.join(self.save_dir_vec, 'vector_%s.npy' % partition))
+    def load_vector(self, partition, dynamics=False):
+        filename = 'vector_%s.npy' % partition if dynamics else 'fisher_vector_%s.npy' % partition
+        fisher_vector = np.load(os.path.join(self.save_dir, self.name, filename))
         return fisher_vector

@@ -10,18 +10,6 @@
             "C": [0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10, 100, 1000, 10000, 100000, 1000000]
         }
     },
-    "autoencoder": {
-        "hidden_ratio": 0.4,
-        "learning_rate": 0.01,
-        "batch_size": 16,
-        "epochs": 20,
-        "noise": 0.2,
-        "p": 0.01,
-        "beta": 3,
-        "save_dir": "./pre-trained/SDAE",
-        "encoded_dir": "./pre-trained/SDAE_encoded",
-        "decoded_dir": "./pre-trained/SDAE_decoded"
-    },
     "autoencoder-lstm": {
         "hidden_ratio": 0.35,
         "learning_rate": 0.01,
@@ -29,6 +17,16 @@
         "epochs": 30,
         "noise": 0.2,
         "save_dir": "./pre-trained/LSTMAE" 
+    },
+    "autoencoder": {
+        "hidden_ratio": 0.4,
+        "learning_rate": 0.01,
+        "batch_size": 64,
+        "epochs": 50,
+        "noise": "gaussian",
+        "p": 0.01,
+        "beta": 3,
+        "save_dir": "./pre-trained/SDAE"
     },
     "doc2vec": {
         "dm": 1,
@@ -52,11 +50,11 @@
         "hidden_ratio": 2.0,
         "learning_rate": 0.01,
         "batch_size": 32,
+        "dropout": 0.25,
         "epochs": 30,
         "save_dir": "./pre-trained/DNN_multitask"
     },
     "fisher_vector":{
-        "save_dir": "./pre-trained/FV_GMM",
-        "save_dir_vector": "./pre-trained/fisher_vector"
+        "save_dir": "./pre-trained/FV_GMM"
     }
 }
