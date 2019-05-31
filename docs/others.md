@@ -18,6 +18,14 @@ e.g.
 scp zz362@dev-gpu-0.cl.cam.ac.uk:~/workspace/bipolar-disorder/pre-trained/SDAE/xxx.zip ~/Downloads/
 ```
 
+### upload/download a folder
+```
+scp -r <local_folder> user@remote_host:<remote_folder>
+scp -r user@remote_host:<remote_folder> <local_folder>
+```
+
+```-r``` recursively copy entire directories
+
 ### unzip
 ```
 unzip <filename>.zip -d <destination_folder>
@@ -70,3 +78,16 @@ Cons:
 * **speed**: the extra parameterization necessary for variational inference make inference slower, although not by much
 * **hyperparameters**: this algorithm needs an extra hyperparameters that might need experimental tuning via cross-validation
 * **bias**: there are many implicit biases in the inference algorithms, and whenever there is a mismatch between these biases and the data is might be possible to fit better models using a finite mixture
+
+
+### Loss function is SDAE
+
+Loss function describing the amount of information loss between the compressed and decompressed representations of the data examples and the decompressed representation.
+
+The encoding/decoding functions are typically parametric neural nets and are differentiable with respect to the distance function. The differentiable part enables optimizing the parameters of the encoding/decoding functions to minimize the reconstruction loss.
+
+In neural networks tasked with binary classification, **sigmoid** activation is the last / output layer and **binary cross-entropy** as the loss function are standard fare.
+
+If we fit a model to perform this classification, it will predict a probability of being one of the given classes. Given the knowledge about the dataset, we can evaluate how good are the predicted probabilities. This is the whole purpose of the loss function. It should return **high values** for bad predictions and **low values** for good predictions.
+
+

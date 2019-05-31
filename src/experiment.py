@@ -1,5 +1,6 @@
 from src.model.autoencoder import AutoEncoder
 from src.model.autoencoder_bimodal import AutoEncoderBimodal
+from src.model.autoencoder_bimodal import AutoEncoderBimodalV
 from src.model.fisher_encoder import FisherVectorGMM
 from src.model.text2vec import Text2Vec
 from src.model.random_forest import RandomForest
@@ -118,7 +119,7 @@ class Experiment():
         print("\nrunning BiModal AE on aligned Audio / Video features")
         X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-        bae = AutoEncoderBimodal('bimodal_aligned', X_train_A.shape[1], X_train_V.shape[1])
+        bae = AutoEncoderBimodalV('bimodalV_aligned', 118, 136, 6, 6, 35)
         bae.build_model()
 
         bae.train_model(pd.concat([X_train_A, X_dev_A]), 

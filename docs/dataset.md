@@ -259,3 +259,5 @@ Facial Action Units, are processed by retaining poses, gazes, and facial landmar
 | dev       | V  | 317104    | 184        |
 | test      | A  | 372788    | 118        |
 | test      | V  | 372788    | 184        |
+
+> For V, 184 == 1 + (68 * 2) + 6 + 6 + 35, and for A, 118 == 1 + (39 * 3)

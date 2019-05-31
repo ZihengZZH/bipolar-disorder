@@ -378,7 +378,7 @@ def load_aligned_features(no_data=False, verbose=False):
         X_train_A = pd.read_csv(output_dir['train_data_A'], header=None) 
         X_dev_A = pd.read_csv(output_dir['dev_data_A'], header=None) 
         X_test_A = pd.read_csv(output_dir['test_data_A'], header=None)
-        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None, low_memory=False) 
+        X_train_V = pd.read_csv(output_dir['train_data_V'], header=None, low_memory=False)
         X_dev_V = pd.read_csv(output_dir['dev_data_V'], header=None, low_memory=False) 
         X_test_V = pd.read_csv(output_dir['test_data_V'], header=None, low_memory=False)
         y_train = pd.read_csv(output_dir['train_label'], header=None) 

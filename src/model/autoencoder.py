@@ -151,8 +151,8 @@ class AutoEncoder():
             return 
         
         if self.noisy:
-            X_train_noisy = X_train + np.random.normal(loc=0.5, scale=0.5, size=X_train.shape)
-            X_dev_noisy = X_dev + np.random.normal(loc=0.5, scale=0.5, size=X_dev.shape)
+            X_train_noisy = self._add_noise(X_train)
+            X_dev_noisy = self._add_noise(X_dev)
         else:
             X_train_noisy = X_train
             X_dev_noisy = X_dev
@@ -220,5 +220,7 @@ class AutoEncoder():
         np.save(os.path.join(decoded_dir, 'decoded_A'), decoded_input_A)
         np.save(os.path.join(decoded_dir, 'decoded_V'), decoded_input_V)
 
-    def vis_model(self):
-        pass
+    def _add_noise(self, X):
+        """add noise (gaussian)
+        """
+        return X + np.random.normal(loc=0.0, scale=0.5, size=X.shape)
