@@ -119,7 +119,7 @@ class RandomForest():
         print("\nrunning the Grid Search for Random Forest classifier ...")
         clf = RandomizedSearchCV(RandomForestClassifier(), 
                                 parameters, 
-                                cv=10, 
+                                cv=5, 
                                 n_jobs=-1, 
                                 verbose=3, 
                                 n_iter=50,

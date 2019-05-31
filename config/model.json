@@ -21,8 +21,8 @@
     "autoencoder": {
         "hidden_ratio": 0.4,
         "learning_rate": 0.01,
-        "batch_size": 64,
-        "epochs": 50,
+        "batch_size": 32,
+        "epochs": 30,
         "noise": "gaussian",
         "p": 0.01,
         "beta": 3,
@@ -32,10 +32,10 @@
         "dm": 1,
         "vector_size": 100,
         "negative": 5,
-        "hs": 0,
+        "hs": 1,
         "min_count": 2,
         "sample": 0,
-        "epochs": 20,
+        "epochs": 30,
         "save_dir": "./pre-trained/doc2vec"
     },
     "singleDNN": {

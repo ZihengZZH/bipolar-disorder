@@ -4,18 +4,33 @@ All results in this page, unless indicated, are based on UAR.
 
 ## single modality
 
-### audio 
+### audio-visual
 
-### video
+biSDAE
+
+hidden_ratio: {0.2, 0.25, 0.3, 0.35, 0.4}
+
+batch_size: {32, 64}
+
+epochs: {30, 50}
+
+noise: {gaussian, 0.1, 0.2, 0.4}
+
 
 ### text (with Turkish corpus)
 
 doc2vec embeddings 
 
-| model name        | UAR (train / dev)| Acc (train / dev) | 
-| --                | --        | --      |
-| dm_d100_n5_mc2    |  |   |
-| dbow_d100_n5_mc2  |  |   | 
+model: {dm, dbow}
+
+vector_size: {25, 50, 100}
+
+negative: {5, 10}
+
+hs: {0, 1}
+
+epochs: {30, 50}
+
 
 MOST SIMILAR WORDS (iyi / good)
 
@@ -74,22 +89,12 @@ The classification results show a better performance on the recall in Mania symp
 
 ## Challenge results
 
-| Paper     | Features          | UAR (dev / test)      | Acc (dev / test) | 
-| --        | --                | --                    | --               |
-| Yang2018  | decision fusion   | 0.783 / 0.407         | 0.783 / NA       |
-| Yang2018  | model fusion      | 0.714 / **0.574**     | 0.717 / NA       |
-| Du2018    | IncepLSTM {32,64} | 0.651 / NA            | 0.650 / NA       |
-| Xing2018  | Hierarchical      | **0.868** / **0.574** | NA / NA          |
-| Syed2018  | V                 | NA / **0.574**        | NA / NA          |
-| Syed2018  | A+V               | NA / 0.518            | NA / NA          |
+| Paper         | Features          | UAR (dev / test)      | Acc (dev / test) | 
+| --            | --                | --                    | --               |
+| Yang2018      | decision fusion   | 0.783 / 0.407         | 0.783 / NA       |
+| Yang2018      | model fusion      | 0.714 / **0.574**     | 0.717 / NA       |
+| Du2018        | IncepLSTM {32,64} | 0.651 / NA            | 0.650 / NA       |
+| Xing2018      | Hierarchical      | **0.868** / **0.574** | NA / NA          |
+| Syed2018      | V                 | NA / **0.574**        | NA / NA          |
+| Syed2018      | A+V               | NA / 0.518            | NA / NA          |
 | **Zhang2019** | SDAE+FV+DNN       | 0.55 / NA             | 0.53 / NA        |
-
-Training set
-* avg accuracy: 0.87
-* avg recall: 0.84
-* mean_squared_error: 31.67
-
-Dev set
-* avg accuracy: 0.53
-* avg recall: 0.55
-* mean_squared_error: 128.95

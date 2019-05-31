@@ -171,16 +171,7 @@ class Experiment():
     def TEXT(self):
         print("\nrunning doc2vec embeddings on text modality")
         text2vec = Text2Vec(build_on_corpus=True)
+        text2vec.build_model()
         text2vec.train_model()
-        feature_name = text2vec.model_name[8:12]
-        X_train, y_train = text2vec.load_embedding('train')
-        X_dev, y_dev = text2vec.load_embedding('dev')
-        rf = RandomForest(feature_name, X_train, y_train, X_dev, y_dev)
-        rf.run()
-        y_pred_train, y_pred_dev = rf.evaluate()
-
-        y_train = np.reshape(y_train, (len(y_train), ))
-        y_dev = np.reshape(y_dev, (len(y_dev), ))
-
-        get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature_name, 'single', train_set=True, test=False)
-        get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single')
+        text2vec.infer_embedding('train')
+        text2vec.infer_embedding('dev')

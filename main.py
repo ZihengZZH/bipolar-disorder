@@ -35,7 +35,7 @@ def run_baseline_system():
 
 def run_experiment_system():
     from src.experiment import Experiment
-    exp = Experiment(train=False)
+    exp = Experiment()
     exp.run()
 
 
