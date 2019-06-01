@@ -313,8 +313,8 @@ class AutoEncoderBimodalV(AutoEncoder):
             self.load_model()
             return 
         
-        X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self._separat_V(X_train_A)
-        X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self._separat_V(X_dev_A)
+        X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self._separat_V(X_train_V)
+        X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self._separat_V(X_dev_V)
 
         # normalization to [0,1]
         X_train_A = minmax_scale(X_train_A)
