@@ -50,6 +50,7 @@ project:
       ✔ label & YMRS score @done(19-05-23 22:37)
       ☐ overfitting
       ✔ regression work @done(19-05-24 10:49)
+      ☐ visualize traninig process
     ✔ speech2text.py @done(19-05-15 18:16)
     ✔ text2vec.py @done(19-05-15 18:16)
   ☐ metric
@@ -60,6 +61,7 @@ project:
     ✔ preprocess.py @done(19-05-15 18:16)
     ✔ vis.py @done(19-05-15 18:16)
       ☐ visualize reconstructed facial landmarks
+      ✔ visualize pose along with landmarks @done(19-06-03 21:59)
 
 dissertation:
   (starts from 29 April)
