@@ -1,5 +1,6 @@
 import os
 import json
+import pickle
 import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.mixture import BayesianGaussianMixture
@@ -54,35 +55,36 @@ class FisherVectorGMM:
         self.fitted = False
         self.config = json.load(open('./config/model.json', 'r'))['fisher_vector']
         self.save_dir = self.config['save_dir']
-        if not os.path.isdir(os.path.join(self.save_dir, self.name)):
-            os.mkdir(os.path.join(self.save_dir, self.name))
-            self.fitted = False
-        else:
-            self.fitted = True
-
-    def fit(self, X, verbose=0):
-        # para X: shape [n_videos, n_frames, n_features, n_feature_dim]
-        if self.fitted:
-            print("\nmodel already trained ---", self.name)
-            self.load()
-            return 
-        
-        self.feature_dim = X.shape[-1]
-        X = X.reshape(-1, X.shape[-1])
-        print("\nfitting data into GMM with %d kernels" % self.n_kernels)
+        self.data_dir = self.config['data_dir']
+        self.means = None
+        self.covars = None
+        self.weights = None
 
         if not self.use_bayesian:
             self.gmm = GaussianMixture(
                         n_components=self.n_kernels,
                         covariance_type=self.convars_type,
                         max_iter=1000,
-                        verbose=verbose)
+                        verbose=2)
         else:
             self.gmm = BayesianGaussianMixture(
                         n_components=self.n_kernels,
                         covariance_type=self.convars_type,
                         max_iter=1000,
-                        verbose=verbose)
+                        verbose=2)
+
+    def fit(self, X):
+        # para X: shape [n_frames, n_features, n_feature_dim]
+        if os.path.isfile(os.path.join(self.save_dir, self.name, 'gmm.model')):
+            print("\nmodel already trained ---", self.name)
+            self.load()
+            return 
+        elif not os.path.isdir(os.path.join(self.save_dir, self.name)):
+            os.mkdir(os.path.join(self.save_dir, self.name))
+        
+        self.feature_dim = X.shape[-1]
+        # X = X.reshape(-1, X.shape[-1])
+        print("\nfitting data into GMM with %d kernels" % self.n_kernels)
         
         self.gmm.fit(X)
         self.means = self.gmm.means_
@@ -98,13 +100,16 @@ class FisherVectorGMM:
             self.covars = cov_matrices
 
         assert self.covars.ndim == 3
-        print("\nmodel trained and saved ---", self.name)
+        print("\nmodel trained ---", self.name)
         self.save()
+    
+    def score(self, X):
+        return self.gmm.score(X.reshape(-1, X.shape[-1]))
 
-    def predict(self, X, normalized=True, partition='train'):
+    def predict(self, X, normalized=True):
         # para X: shape [n_frames, n_feature_dim]
         assert X.ndim == 2
-        assert self.feature_dim == X.shape[-1]
+        assert X.shape[0] >= self.n_kernels, 'n_frames should be greater than n_kernels'
 
         X_matrix = X.reshape(-1, X.shape[-1]) # [n_frames, n_feature_dim]
         
@@ -142,7 +147,6 @@ class FisherVectorGMM:
         fisher_vector[fisher_vector < 10**-4] = 0 # threshold
 
         assert fisher_vector.ndim == 2
-        self.save_vector(fisher_vector, partition)
         return fisher_vector
 
     def predict_alternative(self, X, normalized=True):
@@ -176,22 +180,78 @@ class FisherVectorGMM:
         return fisher_vector
 
     def save(self):
-        np.savez(os.path.join(self.save_dir, self.name, 'fv_gmm.npz'), means=self.means, covars=self.covars, weights=self.weights)
+        with open(os.path.join(self.save_dir, self.name, 'gmm.model'), 'wb') as out_gmm:
+            pickle.dump(self.gmm, out_gmm, protocol=3)
+        with open(os.path.join(self.save_dir, self.name, 'covars.data'), 'wb') as out_covars:
+            pickle.dump(self.covars, out_covars, protocol=3)
+        out_gmm.close()
+        out_covars.close()
+        print("\nmodel saved. --- ", self.name)
 
     def load(self):
-        npzfile = np.load(os.path.join(self.save_dir, self.name, 'fv_gmm.npz'))
+        with open(os.path.join(self.save_dir, self.name, 'gmm.model'), 'rb') as in_gmm:
+            self.gmm = pickle.load(in_gmm)
+        with open(os.path.join(self.save_dir, self.name, 'covars.data'), 'rb') as in_covars:
+            self.covars = pickle.load(in_covars)
+        in_gmm.close()
+        in_covars.close()
+        if not self.use_bayesian:
+            assert isinstance(self.gmm, GaussianMixture)
+        else:
+            assert isinstance(self.gmm, BayesianGaussianMixture)
+        self.means = self.gmm.means_
+        self.weights = self.gmm.weights_
+        print("\nmodel loaded. --- ", self.name)
 
-        self.means = npzfile['means']
-        self.covars = npzfile['covars']
-        self.weights = npzfile['weights']
+    def save_vector(self, fisher_vector, partition, dynamics=False, label=False):
+        if not label:
+            filename = 'vector_%s' % partition if dynamics else 'fisher_vector_%s' % partition
+            np.save(os.path.join(self.data_dir, filename), fisher_vector)
+        else:
+            filename = 'label_%s' % partition
+            np.save(os.path.join(self.data_dir, filename), fisher_vector)
+
+    def load_vector(self, partition, dynamics=False, label=False):
+        if not label:
+            filename = 'vector_%s.npy' % partition if dynamics else 'fisher_vector_%s.npy' % partition
+            fisher_vector = np.load(os.path.join(self.data_dir, filename), allow_pickle=True)
+            return fisher_vector
+        else:
+            filename = 'label_%s.npy' % partition
+            label = np.load(os.path.join(self.data_dir, filename))
+            return label
+
+
+class FisherVectorGMM_BIC():
+    def __init__(self):
+        self.config = json.load(open('./config/model.json', 'r'))['fisher_vector']
+    
+    def prepare_data(self, data_train, data_dev):
+        fv_gmm = FisherVectorGMM()
+        fv_gmm.save_vector(data_train, 'train', dynamics=True)
+        fv_gmm.save_vector(data_dev, 'dev', dynamics=True)
+    
+    def train_model(self):
+        kernels = self.config['kernels']
+        bic_scores = []
+        output = open(os.path.join(self.config['save_dir'], 'best_kernel.txt'), 'w+')
+        for kernel in kernels:
+            fv_gmm = FisherVectorGMM(n_kernels=kernel)
+            X_train = fv_gmm.load_vector('train', dynamics=True)
+            X_dev = fv_gmm.load_vector('dev', dynamics=True)
+            X = np.vstack((np.vstack(X_train), np.vstack(X_dev)))
+            fv_gmm.fit(X)
+
+            bic_score = fv_gmm.score(X)
+            bic_scores.append(bic_score)
+
+            print("\nBIC score for kernels %d is --- %.4f" % (kernel, bic_score))
+            output.write("\nBIC score for kernels %d is --- %.4f\n" % (kernel, bic_score))
         
-        self.gmm.weights_ = self.weights
-
-    def save_vector(self, fisher_vector, partition, dynamics=False):
-        filename = 'vector_%s' % partition if dynamics else 'fisher_vector_%s' % partition
-        np.save(os.path.join(self.save_dir, self.name, filename), fisher_vector)
-
-    def load_vector(self, partition, dynamics=False):
-        filename = 'vector_%s.npy' % partition if dynamics else 'fisher_vector_%s.npy' % partition
-        fisher_vector = np.load(os.path.join(self.save_dir, self.name, filename))
-        return fisher_vector
+        best_bic_score = min(bic_scores)
+        best_kernel = kernels[np.argmin(bic_scores)]
+        print("\nselected GMM with %d kernels" % best_kernel)
+        output.write("\nbest kernel is %d\nbest BIC score is %.4f" % (best_kernel, best_bic_score))
+        
+        output.close()
+        

@@ -19,7 +19,7 @@ visualize_landmarks(partition, index=None, verbose=False)
 data_config = json.load(open('./config/data.json', 'r'))
 
 
-def visualize_landmarks(partition, index=None, verbose=False):
+def visualize_landmarks(partition, index=None, no_frame=False):
     """visualize facial landmarks in interview videos
     -----
     # para partition: train/dev/test set
@@ -49,6 +49,8 @@ def visualize_landmarks(partition, index=None, verbose=False):
 
     while video.isOpened():
         _, frame = video.read()
+        if no_frame:
+            frame = np.zeros(shape=frame.shape)
         focal_length = frame.shape[1]
         camera_centre = (frame.shape[1] / 2, frame.shape[0] / 2)
         camera_matrix = np.array(

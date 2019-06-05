@@ -455,7 +455,13 @@ def frame2session(X, y, inst, verbose=False):
     # para X: data
     # para y: label
     # para inst: instance
+    print(X.shape, y.shape, inst.shape)
     assert X.shape[0] == y.shape[0] == inst.shape[0]
+    if y.shape[1] == 1:
+        y = y[:,0]
+    if inst.shape[1] == 1:
+        inst = inst[:,0]
+    
     max_inst = int(max(inst))
     min_inst = int(min(inst))
     X_sess, y_sess = [], []

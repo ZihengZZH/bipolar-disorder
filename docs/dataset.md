@@ -229,6 +229,8 @@ Extracted *openFace* features have 469 dimensions:
 * AU[01,02,04,05,06,07,09,10,12,14,15,17,20,23,25,26,45]_r
 * AU[01,02,04,05,06,07,09,10,12,14,15,17,20,23,25,26,28,45]_c
 
+The visual features used in the project includes **Facial Landmarks**, **Head Pose**, **Eye Gaze**, and **Action Units (Facial Expression)**.
+
 ### BoVW
 
 Bags-of-Words (BoW) represents the distribution of LLDs according to a dictionary learned from them. To generate the XBoW-representations, both the acoustic and the visual features are processed and summarised over a block of a fixed length duration, for each step of 100ms or 400ms. 

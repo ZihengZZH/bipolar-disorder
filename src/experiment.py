@@ -2,6 +2,7 @@ from src.model.autoencoder import AutoEncoder
 from src.model.autoencoder_bimodal import AutoEncoderBimodal
 from src.model.autoencoder_bimodal import AutoEncoderBimodalV
 from src.model.fisher_encoder import FisherVectorGMM
+from src.model.fisher_encoder import FisherVectorGMM_BIC
 from src.model.text2vec import Text2Vec
 from src.model.random_forest import RandomForest
 from src.model.dnn_classifier import MultiTaskDNN
@@ -77,13 +78,13 @@ class Experiment():
         fv_gmm.save_vector(X_dev_frame, 'dev', dynamics=True)
         
         # fit GMM with 64 kernels
-        fv_gmm.fit(np.vstack((X_train_frame, X_dev_frame)), verbose=2)
+        fv_gmm.fit(np.vstack((X_train_frame, X_dev_frame)))
 
         X_train, y_train = frame2session(X_train_frame, y_train_frame, inst_train, verbose=True)
         X_dev, y_dev = frame2session(X_dev_frame, y_dev_frame, inst_dev, verbose=True)
         # produce FV for train/dev data
-        fv_train = fv_gmm.predict(X_train, partition='train')
-        fv_dev = fv_gmm.predict(X_dev, partition='dev')
+        fv_train = fv_gmm.predict(X_train)
+        fv_dev = fv_gmm.predict(X_dev)
         # prepare regression data
         ymrs_dev, ymrs_train, _, _ = load_label()
         num_classes = 3
@@ -131,23 +132,31 @@ class Experiment():
 
     def FV_GMM(self):
         print("\nrunning Fisher Encoder using GMM on learnt representations")
-        y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
-        bae = AutoEncoderBimodal('bimodal_aligned', 118, 184)
-        encoded_train, encoded_dev = bae.load_presentation()
-        assert len(y_train_frame) == len(inst_train) == len(encoded_train)
-        assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
+        # y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
+        # bae = AutoEncoderBimodalV('bimodalV_aligned', 117, 136, 6, 6, 35)
+        # encoded_train, encoded_dev = bae.load_presentation()
+        # assert len(y_train_frame) == len(inst_train) == len(encoded_train)
+        # assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
 
-        fv_gmm = FisherVectorGMM(n_kernels=64)
-        X_train_frame, X_dev_frame = get_dynamics(encoded_train), get_dynamics(encoded_dev)
-        fv_gmm.save_vector(X_train_frame, 'train', dynamics=True)
-        fv_gmm.save_vector(X_dev_frame, 'dev', dynamics=True)
-        X_train_frame = fv_gmm.load_vector('train', dynamics=True)
-        X_dev_frame = fv_gmm.load_vector('dev', dynamics=True)
-        fv_gmm.fit(np.vstack((X_train_frame, X_dev_frame)), verbose=2)
-        X_train, y_train = frame2session(X_train_frame, y_train_frame, inst_train, verbose=True)
-        X_dev, y_dev = frame2session(X_dev_frame, y_dev_frame, inst_dev, verbose=True)
-        fv_train = fv_gmm.predict(X_train, partition='train')
-        fv_dev = fv_gmm.predict(X_dev, partition='dev')
+        fv_BIC = FisherVectorGMM_BIC()
+
+        # X_train, y_train = frame2session(encoded_train, y_train_frame, inst_train, verbose=True)
+        # X_dev, y_dev = frame2session(encoded_dev, y_dev_frame, inst_dev, verbose=True)
+        # print(y_train.shape, y_dev.shape)
+
+        # X_train_session = [get_dynamics(train) for train in X_train]
+        # X_dev_session = [get_dynamics(dev) for dev in X_dev]
+
+        # fv_BIC.prepare_data(X_train_session, X_dev_session)
+        fv_BIC.train_model()
+        
+        # after n_kernels is determined
+        # fv_train = np.array([fv_gmm.predict(train) for train in X_train_session])
+        # fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev_session])
+
+        # fv_gmm.save_vector(fv_train, 'train', dynamics=False)
+        # fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
+
 
     def DNN(self):
         y_train, inst_train, y_dev, inst_dev = load_aligned_features(no_data=True, verbose=True)

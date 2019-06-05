@@ -93,6 +93,7 @@ To sum up, for each audio, 16-dimensional normalized feature vectors were formed
 ![](../images/literature/Du2018_pipeline.png)
 
 
+
 ### Multi-modality Hierarchical Recall based on GBDTs for Bipolar Disorder Classification
 #### Xing2018
 
@@ -111,6 +112,8 @@ One intuition of theirs was to perform different decision strategies for differe
 > the predictions of patients are made layer-by-layer, where patients with high confidence level were first recalled while those with low confidence level were delivered to next layer to perform further judgement.
 
 1002 dimensional audio features were extracted that included $R^{248}$ global features ((23 eGeMAPS + 39 MFCCs) $\times$ 4 statistic functions), $R^{248\times3}$ topic-level features (3 topics in total) and $10$ timing of speech features. 3607 dimensional visual features were extracted, including AUs MHH features $R^{17\times5\times10\times3}$, AUs statistics $R^{(17\times16)\times3}$, eyesight feature $R^{17\times3}$, emotion feature $R^{(11+13\times2+24)\times3}$ and body movement feature $R^7$. 786 dimensional text features were extracted that included 14 linguistic features and 8 kinds of sentiment indices. In total, the dimension of feature in each interview was 5395. The following feature selection was completed by Analysis of Variance algorithm.
+
+![](../images/literature/Xing2018_pipeline.png)
 
 
 
