@@ -123,7 +123,7 @@ One intuition of theirs was to perform different decision strategies for differe
 > Syed et al. have conducted research in this areas for a long time, and their paper in AVEC 2017 is still worthy reading.
 
 The **contributions** of their work are as follows:
-* The proposed 'turbulence features' to capture suddent, erratic changes in feature contours;
+* The proposed 'turbulence features' to capture sudden, erratic changes in feature contours;
 * Fisher vector encoding of Computational Paralinguistics Challenge (ComParE) low level descriptors that were demonstrated to be viable for predicting the severity of mania;
 * Four feature sets from OpenSmile toolkit, namely Prosody, IS10-Paralinguistics, ComParE functionals and eGeMAPS features were most useful for automated screening of bipolar disorder;
 * Greedy Ensembles of Weighted Extreme Learning Machines (GEWELMs) classifier for the task of predicting the severity of mania.

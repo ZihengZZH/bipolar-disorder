@@ -80,6 +80,22 @@ Cons:
 * **bias**: there are many implicit biases in the inference algorithms, and whenever there is a mismatch between these biases and the data is might be possible to fit better models using a finite mixture
 
 
+### BIC
+
+> How many clusters should we use in GMM?
+
+One approach is called BIC or the Bayesian Information Criterion.
+
+Select the model *M* with the highest probability given the data *D*. We assume that every model *M* has a unique set of parameters $\theta$ which would need to be estimated. Consider the negative log the model probability $-\log p(M|D) = BIC(M|D)$
+
+* BIC gives us a way to choose between two different models with different numbers of parameters by selecting the one which gives us the **lowest** BIC score.
+* More complex models are almost always likely to fit the data better (and there have a lower BIC value). BIC gives us a relatively principal way to penalize these extra parameter in the form of the term $K_M / 2 * \log N$
+* Beyond basic model selection, BIC can give us some clue as to whether the differences between models are meaningful. For instance, define $\alpha = BIC(M_1|D) - BIC(M_2|D)$ 
+  * if $|\alpha| \in [0,1]$ insignificant
+  * if $|\alpha| \in [1,3]$ meaningful
+  * if $|\alpha| \in [3,5]$ strong
+  * if $|\alpha| \in [5,]$  very strong
+
 ### Loss function is SDAE
 
 Loss function describing the amount of information loss between the compressed and decompressed representations of the data examples and the decompressed representation.
@@ -89,5 +105,4 @@ The encoding/decoding functions are typically parametric neural nets and are dif
 In neural networks tasked with binary classification, **sigmoid** activation is the last / output layer and **binary cross-entropy** as the loss function are standard fare.
 
 If we fit a model to perform this classification, it will predict a probability of being one of the given classes. Given the knowledge about the dataset, we can evaluate how good are the predicted probabilities. This is the whole purpose of the loss function. It should return **high values** for bad predictions and **low values** for good predictions.
-
 

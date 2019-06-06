@@ -349,12 +349,12 @@ def load_post_probability(model_name, feature_name):
     return prob_dev
 
 
-def load_aligned_features(no_data=False, verbose=False):
+def load_aligned_features(no_data=False, eGeMAPS=False, verbose=False):
     """load preprocessed visual and acoustic features 
     """
-    visual_dir = data_config['baseline_preproc']['AU_landmarks']
-    acoustic_dir = data_config['baseline_preproc']['MFCC_aligned']
-    output_dir = data_config['baseline_preproc']['aligned_AV']
+    visual_dir = data_config['baseline_preproc']['AU_landmarks'] 
+    acoustic_dir = data_config['baseline_preproc']['MFCC_aligned'] if not eGeMAPS else data_config['baseline_preproc']['eGeMAPS_aligned']
+    output_dir = data_config['baseline_preproc']['aligned_AV'] if not eGeMAPS else data_config['baseline_preproc']['aligned_EAV']
 
     if no_data:
         print("\nprocessed files exist, starting loading (w/o raw data) ...")

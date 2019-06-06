@@ -114,6 +114,7 @@
         },
         "AU_landmarks": "./dataset/baseline_features_proc/AU_landmarks",
         "MFCC_aligned": "./dataset/baseline_features_proc/MFCC_aligned",
+        "eGeMAPS_aligned": "./dataset/baseline_features_proc/eGeMAPS_aligned",
         "BoAW": {
             "train_data": "./dataset/baseline_features_proc/BoAW_train_1.csv",
             "train_label": "./dataset/baseline_features_proc/BoAW_label_1.csv",
@@ -143,7 +144,18 @@
             "train_inst": "./dataset/baseline_features_proc/aligned_inst_1.csv",
             "dev_label": "./dataset/baseline_features_proc/aligned_label_2.csv",
             "dev_inst": "./dataset/baseline_features_proc/aligned_inst_2.csv"
-            
+        },
+        "aligned_EAV": {
+            "train_data_A": "./dataset/baseline_features_proc/aligned_EA_data_1.csv",
+            "dev_data_A": "./dataset/baseline_features_proc/aligned_EA_data_2.csv",
+            "test_data_A": "./dataset/baseline_features_proc/aligned_EA_data_3.csv",
+            "train_data_V": "./dataset/baseline_features_proc/aligned_V_data_1.csv",
+            "dev_data_V": "./dataset/baseline_features_proc/aligned_V_data_2.csv",
+            "test_data_V": "./dataset/baseline_features_proc/aligned_V_data_3.csv",
+            "train_label": "./dataset/baseline_features_proc/aligned_label_1.csv",
+            "train_inst": "./dataset/baseline_features_proc/aligned_inst_1.csv",
+            "dev_label": "./dataset/baseline_features_proc/aligned_label_2.csv",
+            "dev_inst": "./dataset/baseline_features_proc/aligned_inst_2.csv"
         }
     },
     "transcript": "./dataset/transcripts/",

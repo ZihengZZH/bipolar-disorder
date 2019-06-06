@@ -347,12 +347,12 @@ def preprocess_BOXW(verbose=False):
         V_inst_f.close()
 
 
-def preprocess_align(verbose=False):
-    """preprocess MFCC data to align Audio / Video data
+def preprocess_align(eGeMAPS=False, verbose=False):
+    """preprocess MFCC / eGeMAPS data to align Audio / Video data
     """
-    input_dir_A = data_config['data_path_local']['baseline']['MFCC']
+    input_dir_A = data_config['data_path_local']['baseline']['MFCC'] if not eGeMAPS else data_config['data_path_700']['LLD']['eGeMAPS']
     input_dir_V = data_config['baseline_preproc']['AU_landmarks']
-    output_dir_A = data_config['baseline_preproc']['MFCC_aligned']
+    output_dir_A = data_config['baseline_preproc']['MFCC_aligned'] if not eGeMAPS else data_config['baseline_preproc']['eGeMAPS_aligned']
 
     length = dict()
     length['train'] = data_config['length']['train']

@@ -38,6 +38,7 @@ project:
       ☐ config keras optimizers
       ✔ save more informat\pion (log) @done(19-05-30 23:36)
       ✔ save checkpoint P @done(19-05-30 23:36)
+      ☐ train on aligned features of eGeMAPS and visual features
     ☐ autoencoder_lstm.py
     ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
       ✔ sparsity @done(19-05-23 22:37)
@@ -59,6 +60,7 @@ project:
   ☐ utils
     ✔ io.py @done(19-05-08 22:44)
     ✔ preprocess.py @done(19-05-15 18:16)
+      ☐ align eGeMAPS with visual features
     ✔ vis.py @done(19-05-15 18:16)
       ☐ visualize reconstructed facial landmarks
       ✔ visualize pose along with landmarks @done(19-06-03 21:59)
