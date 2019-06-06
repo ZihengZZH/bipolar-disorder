@@ -106,10 +106,12 @@ class FisherVectorGMM:
     def score(self, X):
         return self.gmm.score(X.reshape(-1, X.shape[-1]))
 
-    def predict(self, X, normalized=True):
+    def predict(self, X, normalized=False):
         # para X: shape [n_frames, n_feature_dim]
         assert X.ndim == 2
         assert X.shape[0] >= self.n_kernels, 'n_frames should be greater than n_kernels'
+
+        print("\ninferring fisher vectors with given GMM ...")
 
         X_matrix = X.reshape(-1, X.shape[-1]) # [n_frames, n_feature_dim]
         
@@ -144,8 +146,9 @@ class FisherVectorGMM:
             fisher_vector = np.sqrt(np.abs(fisher_vector)) * np.sign(fisher_vector) # power normalization
             fisher_vector = fisher_vector / np.linalg.norm(fisher_vector, axis=0) # L2 normalization
 
-        fisher_vector[fisher_vector < 10**-4] = 0 # threshold
-
+        # fisher_vector[fisher_vector < 10**-4] = 0 # threshold
+        print("\ninferring completed.")
+        
         assert fisher_vector.ndim == 2
         return fisher_vector
 

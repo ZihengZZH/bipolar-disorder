@@ -405,7 +405,7 @@ def preprocess_align(eGeMAPS=False, verbose=False):
                 print("file %s processed & saved." % filename)
 
 
-def upsample(X_train, y_train, train_inst, verbose=False):
+def upsample(X_train, y_train, train_inst, regression=False, verbose=False):
     """upsample dataset to balance different classes
     """
     # para X_train: pd.DataFrame
@@ -428,9 +428,13 @@ def upsample(X_train, y_train, train_inst, verbose=False):
             np.random.shuffle(c_index)
             while diff > 1:
                 diff_index = c_index[:diff]
-                X_train = pd.concat((X_train, X_train.iloc[diff_index, :]), axis=0)
-                y_train = np.hstack((y_train, y_train[diff_index]))
-                if train_inst.any():
+                if train_inst.any() and not regression:
+                    X_train = pd.concat((X_train, X_train.iloc[diff_index, :]), axis=0)
+                    y_train = np.hstack((y_train, y_train[diff_index]))
+                    train_inst = np.hstack((train_inst, train_inst[diff_index]))
+                elif regression:
+                    X_train = np.vstack((X_train, X_train[diff_index, :]))
+                    y_train = np.hstack((y_train, y_train[diff_index]))
                     train_inst = np.hstack((train_inst, train_inst[diff_index]))
                 diff -= stats[c]
     

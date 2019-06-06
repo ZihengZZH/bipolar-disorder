@@ -39,23 +39,23 @@
         "save_dir": "./pre-trained/doc2vec"
     },
     "singleDNN": {
-        "hidden_ratio": 2.0,
+        "hidden_ratio": 1.5,
         "learning_rate": 0.01,
-        "batch_size": 32,
-        "dropout": 0.25,
+        "batch_size": 16,
+        "dropout": 0.2,
         "epochs": 30,
         "save_dir": "./pre-trained/DNN_single"
     },
     "multiDNN": {
-        "hidden_ratio": 2.0,
+        "hidden_ratio": 1.5,
         "learning_rate": 0.01,
         "batch_size": 32,
-        "dropout": 0.25,
-        "epochs": 30,
+        "dropout": 0.2,
+        "epochs": 100,
         "save_dir": "./pre-trained/DNN_multitask"
     },
     "fisher_vector":{
-        "kernels": [20, 50, 80, 100, 150],
+        "kernels": [4, 8, 16, 32, 64],
         "data_dir": "./pre-trained/FV_GMM/shared",
         "save_dir": "./pre-trained/FV_GMM"
     }

@@ -166,7 +166,7 @@ def load_label(partition=True, verbose=False):
         ymrs_train = ymrs_score.iloc[60:, :]
         level_dev = mania_level.iloc[:60, :]
         level_train = mania_level.iloc[60:, :]
-        return ymrs_dev, ymrs_train, level_dev, level_train
+        return ymrs_dev.values[:, 1], ymrs_train.values[:, 1], level_dev.values[:, 1], level_train.values[:, 1]
     else:
         return ymrs_score, mania_level, 0, 0
 

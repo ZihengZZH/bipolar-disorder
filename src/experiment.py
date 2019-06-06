@@ -5,14 +5,17 @@ from src.model.fisher_encoder import FisherVectorGMM
 from src.model.fisher_encoder import FisherVectorGMM_BIC
 from src.model.text2vec import Text2Vec
 from src.model.random_forest import RandomForest
+from src.model.dnn_classifier import SingleTaskDNN
 from src.model.dnn_classifier import MultiTaskDNN
 from src.utils.io import load_proc_baseline_feature
 from src.utils.io import load_aligned_features
 from src.utils.io import load_bags_of_words
 from src.utils.io import load_label
+from src.utils.preprocess import upsample
 from src.utils.preprocess import get_dynamics
 from src.utils.preprocess import frame2session
 from src.metric.uar import get_UAR
+from imblearn.over_sampling import SMOTENC
 
 import numpy as np
 import pandas as pd
@@ -47,7 +50,7 @@ class Experiment():
         elif choice == 3:
             self.FV_GMM()
         elif choice == 4:
-            self.DNN()
+            self.RF()
         elif choice == 5:
             self.TEXT()
     
@@ -138,7 +141,8 @@ class Experiment():
         # assert len(y_train_frame) == len(inst_train) == len(encoded_train)
         # assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
 
-        fv_BIC = FisherVectorGMM_BIC()
+        # fv_BIC = FisherVectorGMM_BIC()
+        fv_gmm = FisherVectorGMM(n_kernels=32)
 
         # X_train, y_train = frame2session(encoded_train, y_train_frame, inst_train, verbose=True)
         # X_dev, y_dev = frame2session(encoded_dev, y_dev_frame, inst_dev, verbose=True)
@@ -148,35 +152,45 @@ class Experiment():
         # X_dev_session = [get_dynamics(dev) for dev in X_dev]
 
         # fv_BIC.prepare_data(X_train_session, X_dev_session)
-        fv_BIC.train_model()
+        # fv_BIC.train_model()
+        fv_gmm.load()
+
+        X_train = fv_gmm.load_vector('train', dynamics=True)
+        X_dev = fv_gmm.load_vector('dev', dynamics=True)
         
         # after n_kernels is determined
-        # fv_train = np.array([fv_gmm.predict(train) for train in X_train_session])
-        # fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev_session])
+        fv_train = np.array([fv_gmm.predict(train) for train in X_train])
+        fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
 
-        # fv_gmm.save_vector(fv_train, 'train', dynamics=False)
-        # fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
+        fv_gmm.save_vector(fv_train, 'train', dynamics=False)
+        fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
 
 
     def DNN(self):
-        y_train, inst_train, y_dev, inst_dev = load_aligned_features(no_data=True, verbose=True)
+        fv_gmm = FisherVectorGMM(n_kernels=32)
+        fv_gmm.load()
 
-        bae = AutoEncoderBimodal('bimodal_aligned', 1000, 1000)
-        encoded_train, encoded_dev = bae.load_presentation()
+        X_train = fv_gmm.load_vector('train', dynamics=False)
+        X_dev = fv_gmm.load_vector('dev', dynamics=False)
+        print(X_train.shape, X_dev.shape)
+        X_train = X_train.reshape((X_train.shape[0], np.prod(X_train.shape[1:])))
+        X_dev = X_dev.reshape((X_dev.shape[0], np.prod(X_dev.shape[1:])))
+        print(X_train.shape, X_dev.shape)
 
-        ymrs_dev, ymrs_train, _, _ = load_label()
+        y_dev_r, y_train_r, y_dev, y_train = load_label()
+        y_train = y_train.astype('int')
+        y_dev = y_dev.astype('int')
         num_classes = 3
 
-        test_dnn = MultiTaskDNN('bimodal_aligned', encoded_train.shape[1], num_classes)
-        y_dev_r = test_dnn.prepare_regression_label(ymrs_dev.values[:, 1], inst_dev)
-        y_train_r = test_dnn.prepare_regression_label(ymrs_train.values[:, 1], inst_train)
-
-        assert len(y_train) == len(y_train_r)
-        assert len(y_dev) == len(y_dev_r)
+        test_dnn = MultiTaskDNN('fv_gmm', X_train.shape[1], num_classes)
+        
+        assert len(y_train) == len(y_train_r) == X_train.shape[0]
+        assert len(y_dev) == len(y_dev_r) == X_dev.shape[0]
         
         test_dnn.build_model()
-        test_dnn.train_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
-        test_dnn.evaluate_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
+        test_dnn.train_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
+        test_dnn.evaluate_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
+
 
     def TEXT(self):
         print("\nrunning doc2vec embeddings on text modality")
@@ -185,3 +199,26 @@ class Experiment():
         text2vec.train_model()
         text2vec.infer_embedding('train')
         text2vec.infer_embedding('dev')
+
+
+    def RF(self):
+        fv_gmm = FisherVectorGMM(n_kernels=32)
+        fv_gmm.load()
+
+        X_train = fv_gmm.load_vector('train', dynamics=False)
+        X_dev = fv_gmm.load_vector('dev', dynamics=False)
+        print(X_train.shape, X_dev.shape)
+        X_train = X_train.reshape((X_train.shape[0], np.prod(X_train.shape[1:])))
+        X_dev = X_dev.reshape((X_dev.shape[0], np.prod(X_dev.shape[1:])))
+        print(X_train.shape, X_dev.shape)
+
+        y_dev_r, y_train_r, y_dev, y_train = load_label()
+        y_train = y_train.astype('int')
+        y_dev = y_dev.astype('int')
+
+        rf = RandomForest('fv_gmm', X_train, y_train, X_dev, y_dev, test=True)
+        rf.run()
+        y_pred_train, y_pred_dev = rf.evaluate()
+        
+        get_UAR(y_pred_train, y_train, np.array([]), 'fv_gmm', 'fv_gmm', 'multi', train_set=True, test=True)
+        get_UAR(y_pred_dev, y_dev, np.array([]), 'fv_gmm', 'fv_gmm', 'multi', test=True)
