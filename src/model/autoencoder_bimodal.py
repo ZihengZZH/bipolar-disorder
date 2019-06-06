@@ -286,7 +286,8 @@ class AutoEncoderBimodalV(AutoEncoder):
                                 encoded_input)))
 
         # configure model
-        self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+        # two combo ['adam' + 'mse] ['adadelta', 'binary_crossentropy']
+        self.autoencoder.compile(optimizer='adam', loss='mse')
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
@@ -316,17 +317,17 @@ class AutoEncoderBimodalV(AutoEncoder):
         X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self._separat_V(X_train_V)
         X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self._separat_V(X_dev_V)
 
-        # normalization to [0,1]
-        X_train_A = minmax_scale(X_train_A)
-        X_train_V1 = minmax_scale(X_train_V1)
-        X_train_V2 = minmax_scale(X_train_V2)
-        X_train_V3 = minmax_scale(X_train_V3)
-        X_train_V4 = minmax_scale(X_train_V4)
-        X_dev_A = minmax_scale(X_dev_A)
-        X_dev_V1 = minmax_scale(X_dev_V1)
-        X_dev_V2 = minmax_scale(X_dev_V2)
-        X_dev_V3 = minmax_scale(X_dev_V3)
-        X_dev_V4 = minmax_scale(X_dev_V4)
+        # normalization to [0,1] for binary_crossentropy
+        # X_train_A = minmax_scale(X_train_A)
+        # X_train_V1 = minmax_scale(X_train_V1)
+        # X_train_V2 = minmax_scale(X_train_V2)
+        # X_train_V3 = minmax_scale(X_train_V3)
+        # X_train_V4 = minmax_scale(X_train_V4)
+        # X_dev_A = minmax_scale(X_dev_A)
+        # X_dev_V1 = minmax_scale(X_dev_V1)
+        # X_dev_V2 = minmax_scale(X_dev_V2)
+        # X_dev_V3 = minmax_scale(X_dev_V3)
+        # X_dev_V4 = minmax_scale(X_dev_V4)
 
         if self.noisy:
             X_train_A_noisy = self._add_noise(X_train_A)

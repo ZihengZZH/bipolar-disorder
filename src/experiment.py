@@ -15,7 +15,6 @@ from src.utils.preprocess import upsample
 from src.utils.preprocess import get_dynamics
 from src.utils.preprocess import frame2session
 from src.metric.uar import get_UAR
-from imblearn.over_sampling import SMOTENC
 
 import numpy as np
 import pandas as pd
