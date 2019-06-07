@@ -210,6 +210,10 @@ class AutoEncoder():
         if self.visual:
             X_1, _, _, _ = self.separate_V(X_1)
             X_2, _, _, _ = self.separate_V(X_2)
+        else:
+            X_1 = minmax_scale(X_1)
+            X_2 = minmax_scale(X_2)
+        
         encoded_train = self.encoder.predict(X_1)
         encoded_dev = self.encoder.predict(X_2)
         self.save_representation(encoded_train, encoded_dev)

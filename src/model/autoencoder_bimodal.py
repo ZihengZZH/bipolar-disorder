@@ -174,8 +174,11 @@ class AutoEncoderBimodal(AutoEncoder):
     def encode(self, X_1_A, X_1_V, X_2_A, X_2_V):
         """encode bimodal input to latent representation
         """
+        X_1_A = minmax_scale(X_1_A)
+        X_2_A = minmax_scale(X_2_A)
         X_1_V, _, _, _ = self.separate_V(X_1_V)
         X_2_V, _, _, _ = self.separate_V(X_2_V)
+        
         encoded_train = self.encoder.predict([X_1_A, X_1_V])
         encoded_dev = self.encoder.predict([X_2_A, X_2_V])
         self.save_representation(encoded_train, encoded_dev)
