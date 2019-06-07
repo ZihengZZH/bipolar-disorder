@@ -112,7 +112,7 @@ class AutoEncoder():
         return X_noisy
 
     def separate_V(self, X):
-        X1 = X.iloc[:, :136]        # facial 
+        X1 = X.iloc[:, :136] / 1000 # facial 
         X2 = X.iloc[:, 136:142]     # gaze
         X3 = X.iloc[:, 142:148]     # pose
         X4 = X.iloc[:, 148:]        # action
@@ -151,9 +151,7 @@ class AutoEncoder():
         self.decoder = Model(encoded_input, decoder_2(decoder_1(encoded_input)))
 
         # configure model
-        # self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
-        opt = SGD(lr=0.1, momentum=0.9, decay=1e-6)
-        self.autoencoder.compile(optimizer=opt, loss='mean_squared_error')
+        self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())

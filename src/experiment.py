@@ -126,9 +126,23 @@ class Experiment():
         ae.build_model()
         ae.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
         ae.encode(X_train_V, X_dev_V)
-
+    
     def BAE(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features")
+        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
+
+        bae = AutoEncoderBimodal('bimodal_aligned', 117, 136, noisy=False)
+        bae.build_model()
+
+        bae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                        pd.concat([X_train_V, X_dev_V]), 
+                        X_test_A, X_test_V)
+        
+        bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+        encoded_train, encoded_dev = bae.load_presentation()
+
+    def BAEV(self):
+        print("\nrunning BiModal SDAE on aligned Audio / Video features (gaze / pose / AUs)")
         X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
         bae = AutoEncoderBimodalV('bimodalV_aligned', 117, 136, 6, 6, 35, noisy=False)

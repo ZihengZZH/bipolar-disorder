@@ -66,25 +66,31 @@ class AutoEncoderBimodal(AutoEncoder):
         encoded_input = Input(shape=(hidden_dim, ))
         
         encoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
-                        activation='relu', name='audio_encoded')(input_data_A)
+                        activation='relu', kernel_initializer='he_uniform', 
+                        name='audio_encoded')(input_data_A)
         encoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
-                        activation='relu', name='video_encoded')(input_data_V)
+                        activation='relu', kernel_initializer='he_uniform', 
+                        name='video_encoded')(input_data_V)
 
         shared = Concatenate(axis=1, name='concat')([encoded_A, encoded_V])
         if self.sparse:
             encoded = Dense(hidden_dim, 
                         activation='relu',
                         activity_regularizer=self._sparse_regularizer,
+                        kernel_initializer='he_uniform', 
                         name='shared_repres')(shared)
         else:
             encoded = Dense(hidden_dim, 
                         activation='relu',
+                        kernel_initializer='he_uniform', 
                         name='shared_repres')(shared)
         
         decoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
-                        activation='relu', name='audio_decoded')(encoded)
+                        activation='relu', kernel_initializer='he_uniform', 
+                        name='audio_decoded')(encoded)
         decoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
-                        activation='relu', name='video_decoded')(encoded)
+                        activation='relu', kernel_initializer='he_uniform', 
+                        name='video_decoded')(encoded)
 
         decoded_A = Dense(self.dimension_A, activation='sigmoid',
                         name='audio_recon')(decoded_A)
@@ -130,15 +136,15 @@ class AutoEncoderBimodal(AutoEncoder):
         
         # normalization to [0,1]
         X_train_A = minmax_scale(X_train_A)
-        X_train_V = minmax_scale(X_train_V)
         X_dev_A = minmax_scale(X_dev_A)
-        X_dev_V = minmax_scale(X_dev_V)
+        X_train_V, _, _, _ = self.separate_V(X_train_V)
+        X_dev_V, _, _, _ = self.separate_V(X_dev_V)
         
         if self.noisy:
-            X_train_A_noisy = self._add_noise(X_train_A)
-            X_train_V_noisy = self._add_noise(X_train_V)
-            X_dev_A_noisy = self._add_noise(X_dev_A)
-            X_dev_V_noisy = self._add_noise(X_dev_V)
+            X_train_A_noisy = self._add_noise(X_train_A, self.noise)
+            X_train_V_noisy = self._add_noise(X_train_V, self.noise)
+            X_dev_A_noisy = self._add_noise(X_dev_A, self.noise)
+            X_dev_V_noisy = self._add_noise(X_dev_V, self.noise)
         else:
             X_train_A_noisy = X_train_A
             X_train_V_noisy = X_train_V
@@ -214,15 +220,20 @@ class AutoEncoderBimodalV(AutoEncoder):
         encoded_input = Input(shape=(hidden_dim, ))
         
         encoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
-                        activation='relu', name='audio_encoded')(input_data_A)
+                        activation='relu', kernel_initializer='he_uniform',
+                        name='audio_encoded')(input_data_A)
         encoded_V1 = Dense(int(self.dimension_V1 * self.hidden_ratio), 
-                        activation='relu', name='facial_encoded')(input_data_V1)
+                        activation='relu', kernel_initializer='he_uniform',
+                        name='facial_encoded')(input_data_V1)
         encoded_V2 = Dense(int(self.dimension_V2 * self.hidden_ratio), 
-                        activation='relu', name='gaze_encoded')(input_data_V2)
+                        activation='relu', kernel_initializer='he_uniform',
+                        name='gaze_encoded')(input_data_V2)
         encoded_V3 = Dense(int(self.dimension_V3 * self.hidden_ratio),
-                        activation='relu', name='pose_encoded')(input_data_V3)
+                        activation='relu', kernel_initializer='he_uniform',
+                        name='pose_encoded')(input_data_V3)
         encoded_V4 = Dense(int(self.dimension_V4 * self.hidden_ratio), 
-                        activation='relu', name='action_encoded')(input_data_V4)
+                        activation='relu', kernel_initializer='he_uniform',
+                        name='action_encoded')(input_data_V4)
 
         shared = Concatenate(axis=1, name='concat')([encoded_A, encoded_V1, encoded_V2, encoded_V3, encoded_V4])
         if self.sparse:
@@ -310,17 +321,15 @@ class AutoEncoderBimodalV(AutoEncoder):
         X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self.separate_V(X_train_V)
         X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self.separate_V(X_dev_V)
 
-        # normalization to [0,1] for binary_crossentropy
-        # X_train_A = minmax_scale(X_train_A)
-        # X_train_V1 = minmax_scale(X_train_V1)
-        # X_train_V2 = minmax_scale(X_train_V2)
-        # X_train_V3 = minmax_scale(X_train_V3)
-        # X_train_V4 = minmax_scale(X_train_V4)
-        # X_dev_A = minmax_scale(X_dev_A)
-        # X_dev_V1 = minmax_scale(X_dev_V1)
-        # X_dev_V2 = minmax_scale(X_dev_V2)
-        # X_dev_V3 = minmax_scale(X_dev_V3)
-        # X_dev_V4 = minmax_scale(X_dev_V4)
+        # normalization to [0,1] for sigmoid
+        X_train_A = minmax_scale(X_train_A)
+        X_train_V2 = minmax_scale(X_train_V2)
+        X_train_V3 = minmax_scale(X_train_V3)
+        X_train_V4 = minmax_scale(X_train_V4)
+        X_dev_A = minmax_scale(X_dev_A)
+        X_dev_V2 = minmax_scale(X_dev_V2)
+        X_dev_V3 = minmax_scale(X_dev_V3)
+        X_dev_V4 = minmax_scale(X_dev_V4)
 
         if self.noisy:
             X_train_A_noisy = self._add_noise(X_train_A, self.noise)
