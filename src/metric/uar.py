@@ -92,7 +92,7 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
             # get recalls for three classes
             recall = [0] * 3
             _, _, level_dev, _ = load_label()
-            labels = level_dev.iloc[:, 1].tolist()
+            labels = level_dev
             labels = np.array(labels, dtype=np.int8)
             for i in range(3):
                 index, = np.where(labels == (i+1))

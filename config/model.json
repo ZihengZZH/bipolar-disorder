@@ -3,7 +3,7 @@
         "random_forest": {
             "n_estimators": [100, 200, 400, 800],
             "max_features": [0.1, 0.2, 0.4],
-            "max_depth": [2, 4, 8],
+            "max_depth": [2, 4, 6, 8],
             "criterion": ["entropy"]
         },
         "SVM": {
@@ -31,7 +31,7 @@
     "doc2vec": {
         "dm": 0,
         "vector_size": 25,
-        "negative": 5,
+        "negative": 10,
         "hs": 1,
         "min_count": 2,
         "sample": 0,

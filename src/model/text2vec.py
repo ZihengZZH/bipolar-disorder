@@ -76,8 +76,8 @@ class Text2Vec():
         """
         labels = dict()
         _, _, level_dev, level_train = load_label()
-        labels['train'] = level_train.iloc[:, 1].tolist()
-        labels['dev'] = level_dev.iloc[:, 1].tolist()
+        labels['train'] = level_train
+        labels['dev'] = level_dev
 
         for partition in ['train', 'dev', 'test']:
             with smart_open(self.data_config['transcript_preproc'][partition], 'rb', encoding='utf-8') as all_data:
@@ -154,8 +154,8 @@ class Text2Vec():
 
         labels = dict()
         _, _, level_dev, level_train = load_label()
-        labels['train'] = level_train.iloc[:, 1].tolist()
-        labels['dev'] = level_dev.iloc[:, 1].tolist()
+        labels['train'] = level_train
+        labels['dev'] = level_dev
         
         with smart_open(self.data_config['transcript_preproc'][partition], 'rb', encoding='utf-8') as all_data:
                 for line_no, line in enumerate(all_data):

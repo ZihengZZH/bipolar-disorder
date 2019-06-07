@@ -19,7 +19,7 @@ def display_help():
 def run_baseline_system():
     from src.baseline import BaseLine
     models = ['SVM', 'RF']
-    features = ['MFCC', 'eGeMAPS', 'Deep', 'BoAW', 'AU', 'BoVW']
+    features = ['ALL', 'MFCC', 'eGeMAPS', 'BoAW', 'AU', 'BoVW']
     print("--" * 20)
     print("Available models:")
     for idx, m in enumerate(models):
@@ -29,9 +29,15 @@ def run_baseline_system():
     for idx, f in enumerate(features):
         print(idx, f)
     feature_id = int(input("choose a feature: "))
-    baseline = BaseLine(models[model_id], features[feature_id])
-    baseline.run()
-
+    if feature_id != 0:
+        baseline = BaseLine(models[model_id], features[feature_id])
+        baseline.run()
+    else:
+        print("\nrunning baseline on all available features", features[1:])
+        for i in range(1, 6):
+            baseline = BaseLine(models[model_id], features[i])
+            baseline.run()
+            del baseline
 
 def run_experiment_system():
     from src.experiment import Experiment

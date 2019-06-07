@@ -92,7 +92,7 @@ class AutoEncoder():
         self.dimension[4] = self.dimension[0]
         print("\nSDAE initialized and configuration loaded")
 
-    def _sparse_regularizer(self, activation_matrix):
+    def sparse_regularizer(self, activation_matrix):
         """define the custom regularizer function
         """
         p = 0.01
@@ -101,7 +101,7 @@ class AutoEncoder():
         KLD = p*(K.log(p/p_hat)) + (1-p)*(K.log(1-p/1-p_hat))
         return beta*K.sum(KLD)
 
-    def _add_noise(self, X, noise, gaussian=False):
+    def add_noise(self, X, noise, gaussian=False):
         """add noise (zeros or gaussian)
         """
         if gaussian:
@@ -110,7 +110,10 @@ class AutoEncoder():
             assert noise <= 0.4, "noise should be not be greater than 0.4"
             idx = np.random.choice(X.shape[1], size=int(X.shape[1] * noise))
             X_noisy = X
-            X_noisy.iloc[:, idx] = 0.0
+            if self.visual:
+                X_noisy.iloc[:, idx] = 0.0
+            else:
+                X_noisy[:, idx] = 0.0
         return X_noisy
 
     def separate_V(self, X):
@@ -136,7 +139,7 @@ class AutoEncoder():
 
         # encoder part
         encoded = Dense(self.dimension[1], activation='relu', kernel_initializer='he_uniform')(input_data)
-        encoded = Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform', activity_regularizer=self._sparse_regularizer)(encoded) if self.sparse else Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform')(encoded)
+        encoded = Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform', activity_regularizer=self.sparse_regularizer)(encoded) if self.sparse else Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform')(encoded)
         # decoder part
         decoded = Dense(self.dimension[3], activation='relu', kernel_initializer='he_uniform')(encoded)
         decoded = Dense(self.dimension[4], activation='sigmoid')(decoded)
@@ -182,8 +185,8 @@ class AutoEncoder():
             X_dev = minmax_scale(X_dev)
         
         if self.noisy:
-            X_train_noisy = self._add_noise(X_train, self.noise)
-            X_dev_noisy = self._add_noise(X_dev, self.noise)
+            X_train_noisy = self.add_noise(X_train, self.noise)
+            X_dev_noisy = self.add_noise(X_dev, self.noise)
         else:
             X_train_noisy = X_train
             X_dev_noisy = X_dev

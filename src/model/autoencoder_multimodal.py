@@ -65,7 +65,7 @@ class AutoEncoderMultimodal(AutoEncoder):
         if self.sparse:
             encoded = Dense(hidden_dim, 
                         activation='relu',
-                        activity_regularizer=self._sparse_regularizer,
+                        activity_regularizer=self.sparse_regularizer,
                         name='shared_repres')(shared)
         else:
             encoded = Dense(hidden_dim, 
@@ -158,16 +158,16 @@ class AutoEncoderMultimodal(AutoEncoder):
         X_dev_V4 = minmax_scale(X_dev_V4)
 
         if self.noisy:
-            X_train_A_noisy = self._add_noise(X_train_A, self.noise)
-            X_train_V1_noisy = self._add_noise(X_train_V1, self.noise)
-            X_train_V2_noisy = self._add_noise(X_train_V2, self.noise)
-            X_train_V3_noisy = self._add_noise(X_train_V3, self.noise)
-            X_train_V4_noisy = self._add_noise(X_train_V4, self.noise)
-            X_dev_A_noisy = self._add_noise(X_dev_A, self.noise)
-            X_dev_V1_noisy = self._add_noise(X_dev_V1, self.noise)
-            X_dev_V2_noisy = self._add_noise(X_dev_V2, self.noise)
-            X_dev_V3_noisy = self._add_noise(X_dev_V3, self.noise)
-            X_dev_V4_noisy = self._add_noise(X_dev_V4, self.noise)
+            X_train_A_noisy = self.add_noise(X_train_A, self.noise)
+            X_train_V1_noisy = self.add_noise(X_train_V1, self.noise)
+            X_train_V2_noisy = self.add_noise(X_train_V2, self.noise)
+            X_train_V3_noisy = self.add_noise(X_train_V3, self.noise)
+            X_train_V4_noisy = self.add_noise(X_train_V4, self.noise)
+            X_dev_A_noisy = self.add_noise(X_dev_A, self.noise)
+            X_dev_V1_noisy = self.add_noise(X_dev_V1, self.noise)
+            X_dev_V2_noisy = self.add_noise(X_dev_V2, self.noise)
+            X_dev_V3_noisy = self.add_noise(X_dev_V3, self.noise)
+            X_dev_V4_noisy = self.add_noise(X_dev_V4, self.noise)
         else:
             X_train_A_noisy = X_train_A
             X_train_V1_noisy = X_train_V1

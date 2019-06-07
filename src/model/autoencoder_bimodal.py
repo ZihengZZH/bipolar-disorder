@@ -76,7 +76,7 @@ class AutoEncoderBimodal(AutoEncoder):
         if self.sparse:
             encoded = Dense(hidden_dim, 
                         activation='relu',
-                        activity_regularizer=self._sparse_regularizer,
+                        activity_regularizer=self.sparse_regularizer,
                         kernel_initializer='he_uniform', 
                         name='shared_repres')(shared)
         else:
@@ -141,10 +141,10 @@ class AutoEncoderBimodal(AutoEncoder):
         X_dev_V, _, _, _ = self.separate_V(X_dev_V)
         
         if self.noisy:
-            X_train_A_noisy = self._add_noise(X_train_A, self.noise)
-            X_train_V_noisy = self._add_noise(X_train_V, self.noise)
-            X_dev_A_noisy = self._add_noise(X_dev_A, self.noise)
-            X_dev_V_noisy = self._add_noise(X_dev_V, self.noise)
+            X_train_A_noisy = self.add_noise(X_train_A, self.noise)
+            X_train_V_noisy = self.add_noise(X_train_V, self.noise)
+            X_dev_A_noisy = self.add_noise(X_dev_A, self.noise)
+            X_dev_V_noisy = self.add_noise(X_dev_V, self.noise)
         else:
             X_train_A_noisy = X_train_A
             X_train_V_noisy = X_train_V
