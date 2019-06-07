@@ -6,6 +6,7 @@ from keras import regularizers
 from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense
+from keras.optimizers import SGD
 from keras.callbacks import CSVLogger, ModelCheckpoint
 from keras.utils import plot_model
 
@@ -130,10 +131,10 @@ class AutoEncoder():
         encoded_input = Input(shape=(self.dimension[2], ))
 
         # encoder part
-        encoded = Dense(self.dimension[1], activation='relu')(input_data)
-        encoded = Dense(self.dimension[2], activation='relu', activity_regularizer=self._sparse_regularizer)(encoded) if self.sparse else Dense(self.dimension[2], activation='relu')(encoded)
+        encoded = Dense(self.dimension[1], activation='relu', kernel_initializer='he_uniform')(input_data)
+        encoded = Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform', activity_regularizer=self._sparse_regularizer)(encoded) if self.sparse else Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform')(encoded)
         # decoder part
-        decoded = Dense(self.dimension[3], activation='relu')(encoded)
+        decoded = Dense(self.dimension[3], activation='relu', kernel_initializer='he_uniform')(encoded)
         decoded = Dense(self.dimension[4], activation='sigmoid')(decoded)
 
         # maps input to reconstruction
@@ -149,7 +150,8 @@ class AutoEncoder():
 
         # configure model
         # self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
-        self.autoencoder.compile(optimizer='adam', loss='mse')
+        opt = SGD(lr=0.01, momentum=0.9)
+        self.autoencoder.compile(optimizer=opt, loss='mse')
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
