@@ -56,10 +56,11 @@ class AutoEncoder():
     load_model(): public
         load stacked denoising autoencoder model from external file
     """
-    def __init__(self, name, input_dim, noisy=True, sparse=False):
+    def __init__(self, name, input_dim, noisy=True, sparse=False, visual=True):
         # para name: name of SDAE
         self.noisy = noisy
         self.sparse = sparse
+        self.visual = visual
         # AE model
         self.autoencoder = None
         self.encoder = None
@@ -172,8 +173,9 @@ class AutoEncoder():
             self.load_model()
             return 
         
-        X_train, _, _, _ = self.separate_V(X_train)
-        X_dev, _, _, _ = self.separate_V(X_dev)
+        if self.visual:
+            X_train, _, _, _ = self.separate_V(X_train)
+            X_dev, _, _, _ = self.separate_V(X_dev)
         
         if self.noisy:
             X_train_noisy = self._add_noise(X_train, self.noise)
@@ -201,8 +203,9 @@ class AutoEncoder():
     def encode(self, X_1, X_2):
         """encode raw input to latent representation
         """
-        X_1, _, _, _ = self.separate_V(X_1)
-        X_2, _, _, _ = self.separate_V(X_2)
+        if self.visual:
+            X_1, _, _, _ = self.separate_V(X_1)
+            X_2, _, _, _ = self.separate_V(X_2)
         encoded_train = self.encoder.predict(X_1)
         encoded_dev = self.encoder.predict(X_2)
         self.save_representation(encoded_train, encoded_dev)

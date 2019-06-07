@@ -85,7 +85,7 @@ class RandomForest():
         
         # build RF model
         self.model = RandomForestClassifier(
-            n_estimators=self.parameters['n_estimators'], max_features=self.parameters['max_features'], max_depth=self.parameters['max_depth'] , criterion=self.parameters['criterion'], 
+            n_estimators=self.parameters['n_estimators'], max_features=self.parameters['max_features'], max_depth=self.parameters['max_depth'], criterion=self.parameters['criterion'], 
             verbose=1, n_jobs=-1)
         self.train()
 
@@ -111,20 +111,19 @@ class RandomForest():
         """
         import scipy.stats as stats
         parameters = {
-            "n_estimators": stats.randint(100, 800),
-            "max_features": np.arange(2, 9) / 10,
-            "max_depth": stats.randint(1, 11),
+            "n_estimators": self.parameters['n_estimators'],
+            "max_features": self.parameters['max_features'],
+            "max_depth": self.parameters['max_depth'],
             "criterion": ["entropy"]
         }
         print("\nrunning the Grid Search for Random Forest classifier ...")
-        clf = RandomizedSearchCV(RandomForestClassifier(), 
-                                parameters, 
-                                cv=5, 
-                                n_jobs=-1, 
-                                verbose=3, 
-                                n_iter=50,
-                                scoring='recall_macro',
-                                pre_dispatch='2*n_jobs')
+        clf = GridSearchCV(RandomForestClassifier(), 
+                        parameters, 
+                        cv=5, 
+                        n_jobs=-1, 
+                        verbose=3, 
+                        scoring='recall_macro',
+                        pre_dispatch='2*n_jobs')
 
         clf.fit(self.X_train, self.y_train)
         print("\nfinal score for the tuned model\n", clf.score(self.X_train, self.y_train))

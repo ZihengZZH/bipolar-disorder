@@ -8,13 +8,13 @@ All results in this page, unless indicated, are based on UAR.
 
 biSDAE
 
-hidden_ratio: {0.2, 0.25, 0.3, 0.35, 0.4}
+hidden_ratio: {0.4, 0.5, 0.6}
 
-batch_size: {32, 64}
+batch_size: {256, 512}
 
 epochs: {30, 50}
 
-noise: {gaussian, 0.1, 0.2, 0.4}
+noise: {0.1, 0.2, 0.4}
 
 
 ### text (with Turkish corpus)

@@ -26,7 +26,8 @@ class Experiment():
 
     def display_help(self):
         self.func_list = ['proposed architecture',
-                    'SDAE on LK', 'BiSDAE on aligned A/V',
+                    'SDAE on unimodality', 'BiSDAE on aligned A/V',
+                    'BiSDAE on aligned A/V',
                     'FV using GMM on latent repres', 
                     'DNN as classifier', 'doc2vec on text']
         print("--" * 20)
@@ -43,65 +44,20 @@ class Experiment():
         if choice == 0:
             self.main_system()
         elif choice == 1:
-            self.AE_LK()
+            self.AE_single()
         elif choice == 2:
-            self.BAE()
+            self.BAE_bimodal()
         elif choice == 3:
-            self.FV_GMM()
+            self.BAEV_multimodal()
         elif choice == 4:
-            self.RF()
+            self.FV_GMM()
         elif choice == 5:
+            self.RF()
+        elif choice == 6:
             self.TEXT()
     
     def main_system(self):
         print("\nrunning the proposed architecture (BiSDAE + FV + DNN)")
-        # load features [FRAME-LEVEL]
-        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(verbose=True)
-        # BiSDAE model to learn audio-visual features
-        bae = AutoEncoderBimodal('proposed_arch', X_train_A.shape[1], X_train_V.shape[1])
-        bae.build_model()
-
-        # train BiSDAE model
-        bae.train_model(pd.concat([X_train_A, X_dev_A]), 
-                        pd.concat([X_train_V, X_dev_V]), 
-                        X_test_A, X_test_V)
-        
-        # encode with pre-trained model
-        bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-        encoded_train, encoded_dev = bae.load_presentation()
-        assert len(y_train_frame) == len(inst_train) == len(encoded_train)
-        assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
-
-        # FV GMM model to captures temporary information
-        fv_gmm = FisherVectorGMM(n_kernels=64)
-        X_train_frame, X_dev_frame = get_dynamics(encoded_train), get_dynamics(encoded_dev)
-        # save data along with dynamics 
-        fv_gmm.save_vector(X_train_frame, 'train', dynamics=True)
-        fv_gmm.save_vector(X_dev_frame, 'dev', dynamics=True)
-        
-        # fit GMM with 64 kernels
-        fv_gmm.fit(np.vstack((X_train_frame, X_dev_frame)))
-
-        X_train, y_train = frame2session(X_train_frame, y_train_frame, inst_train, verbose=True)
-        X_dev, y_dev = frame2session(X_dev_frame, y_dev_frame, inst_dev, verbose=True)
-        # produce FV for train/dev data
-        fv_train = fv_gmm.predict(X_train)
-        fv_dev = fv_gmm.predict(X_dev)
-        # prepare regression data
-        ymrs_dev, ymrs_train, _, _ = load_label()
-        num_classes = 3
-
-        # multi-task DNN to classify learned features
-        multi_dnn = MultiTaskDNN('proposed_arch', fv_train.shape[1], num_classes)
-        multi_dnn.build_model()
-        # prepare labels for regression task
-        y_dev_r = multi_dnn.prepare_regression_label(ymrs_dev.values[:, 1], inst_dev)
-        y_train_r = multi_dnn.prepare_regression_label(ymrs_train.values[:, 1], inst_train)
-        assert len(y_train) == len(y_train_r)
-        assert len(y_dev) == len(y_dev_r)
-
-        multi_dnn.train_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
-        multi_dnn.evaluate_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
 
     def BAE_BOXW(self):
         print("\nrunning BiModal SDAE on XBoW representations")
@@ -118,20 +74,25 @@ class Experiment():
         bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
         encoded_train, encoded_dev = bae.load_presentation()
 
-    def AE_LK(self):
-        print("\nrunning SDAE on Video features (facial landmarks only)")
-        _, _, _, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
+    def AE_single(self):
+        print("\nrunning SDAE on unimodal features (facial landmarks and MFCC/eGeMAPS)")
+        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-        ae = AutoEncoder('facial_landmark', 136)
-        ae.build_model()
-        ae.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
-        ae.encode(X_train_V, X_dev_V)
+        ae_lk = AutoEncoder('unimodal_landmark', 136)
+        ae_lk.build_model()
+        ae_lk.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
+        ae_lk.encode(X_train_V, X_dev_V)
+
+        ae_mfcc = AutoEncoder('unimodal_mfcc', X_train_A.shape[1], visual=False)
+        ae_mfcc.build_model()
+        ae_mfcc.train_model(pd.concat([X_train_A, X_dev_A]), X_test_A)
+        ae_mfcc.encode(X_train_A, X_dev_A)
     
-    def BAE(self):
+    def BAE_bimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features")
         X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-        bae = AutoEncoderBimodal('bimodal_aligned', 117, 136, noisy=False)
+        bae = AutoEncoderBimodal('bimodal_aligned_mfcc', X_train_A.shape[1], 136, noisy=False)
         bae.build_model()
 
         bae.train_model(pd.concat([X_train_A, X_dev_A]), 
@@ -141,11 +102,11 @@ class Experiment():
         bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
         encoded_train, encoded_dev = bae.load_presentation()
 
-    def BAEV(self):
+    def BAEV_multimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features (gaze / pose / AUs)")
         X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-        bae = AutoEncoderBimodalV('bimodalV_aligned', 117, 136, 6, 6, 35, noisy=False)
+        bae = AutoEncoderBimodalV('multimodal_aligned_mfcc', X_train_A.shape[1], 136, 6, 6, 35, noisy=False)
         bae.build_model()
 
         bae.train_model(pd.concat([X_train_A, X_dev_A]), 
@@ -157,35 +118,37 @@ class Experiment():
 
     def FV_GMM(self):
         print("\nrunning Fisher Encoder using GMM on learnt representations")
-        # y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
-        # bae = AutoEncoderBimodalV('bimodalV_aligned', 117, 136, 6, 6, 35)
-        # encoded_train, encoded_dev = bae.load_presentation()
-        # assert len(y_train_frame) == len(inst_train) == len(encoded_train)
-        # assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
+        y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
+        bae = AutoEncoderBimodal('bimodal_aligned', 117, 136)
+        encoded_train, encoded_dev = bae.load_presentation()
+        assert len(y_train_frame) == len(inst_train) == len(encoded_train)
+        assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
 
-        # fv_BIC = FisherVectorGMM_BIC()
-        fv_gmm = FisherVectorGMM(n_kernels=32)
-
-        # X_train, y_train = frame2session(encoded_train, y_train_frame, inst_train, verbose=True)
-        # X_dev, y_dev = frame2session(encoded_dev, y_dev_frame, inst_dev, verbose=True)
-        # print(y_train.shape, y_dev.shape)
-
-        # X_train_session = [get_dynamics(train) for train in X_train]
-        # X_dev_session = [get_dynamics(dev) for dev in X_dev]
-
-        # fv_BIC.prepare_data(X_train_session, X_dev_session)
-        # fv_BIC.train_model()
-        fv_gmm.load()
-
-        X_train = fv_gmm.load_vector('train', dynamics=True)
-        X_dev = fv_gmm.load_vector('dev', dynamics=True)
+        fv_BIC = FisherVectorGMM_BIC()
         
-        # after n_kernels is determined
-        fv_train = np.array([fv_gmm.predict(train) for train in X_train])
-        fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
+        X_train, y_train = frame2session(encoded_train, y_train_frame, inst_train, verbose=True)
+        X_dev, y_dev = frame2session(encoded_dev, y_dev_frame, inst_dev, verbose=True)
+        print(y_train.shape, y_dev.shape)
 
-        fv_gmm.save_vector(fv_train, 'train', dynamics=False)
-        fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
+        X_train_session = [get_dynamics(train) for train in X_train]
+        X_dev_session = [get_dynamics(dev) for dev in X_dev]
+
+        fv_BIC.prepare_data(X_train_session, X_dev_session)
+        fv_BIC.train_model()
+
+        if False:
+            fv_gmm = FisherVectorGMM(n_kernels=32)
+            fv_gmm.load()
+
+            X_train = fv_gmm.load_vector('train', dynamics=True)
+            X_dev = fv_gmm.load_vector('dev', dynamics=True)
+            
+            after n_kernels is determined
+            fv_train = np.array([fv_gmm.predict(train) for train in X_train])
+            fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
+
+            fv_gmm.save_vector(fv_train, 'train', dynamics=False)
+            fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
 
 
     def DNN(self):

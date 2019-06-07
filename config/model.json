@@ -1,9 +1,9 @@
 {
     "baseline": {
         "random_forest": {
-            "n_estimators": [100, 200, 300, 400, 500, 600, 700, 800],
-            "max_features": [0.1, 0.2, 0.3, 0.4, 0.5],
-            "max_depth": [2, 4, 6, 8],
+            "n_estimators": [100, 200, 400, 800],
+            "max_features": [0.1, 0.2, 0.4],
+            "max_depth": [2, 4, 8],
             "criterion": ["entropy"]
         },
         "SVM": {
