@@ -23,7 +23,7 @@
         "learning_rate": 0.01,
         "batch_size": 128,
         "epochs": 30,
-        "noise": 0.0,
+        "noise": 0.1,
         "p": 0.01,
         "beta": 3,
         "save_dir": "./pre-trained/SDAE"

@@ -96,6 +96,25 @@ class AutoEncoder():
         KLD = p*(K.log(p/p_hat)) + (1-p)*(K.log(1-p/1-p_hat))
         return beta*K.sum(KLD)
 
+    def _add_noise(self, X, noise, gaussian=False):
+        """add noise (zeros or gaussian)
+        """
+        if gaussian:
+            X_noisy = X + np.random.normal(loc=0.0, scale=0.5, size=X.shape)
+        else:
+            assert noise <= 0.4, "noise should be not be greater than 0.4"
+            idx = np.random.choice(X.shape[1], size=int(X.shape[1] * noise))
+            X_noisy = X
+            X_noisy.iloc[:, idx] = 0.0
+        return X_noisy
+
+    def separate_V(self, X):
+        X1 = X.iloc[:, :136]        # facial 
+        X2 = X.iloc[:, 136:142]     # gaze
+        X3 = X.iloc[:, 142:148]     # pose
+        X4 = X.iloc[:, 148:]        # action
+        return X1, X2, X3, X4
+
     def build_model(self):
         """build stacked denoising autoencoder model
         """
@@ -129,7 +148,8 @@ class AutoEncoder():
         self.decoder = Model(encoded_input, decoder_2(decoder_1(encoded_input)))
 
         # configure model
-        self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+        # self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+        self.autoencoder.compile(optimizer='adam', loss='mse')
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
@@ -150,9 +170,12 @@ class AutoEncoder():
             self.load_model()
             return 
         
+        X_train, _, _, _ = self.separate_V(X_train)
+        X_dev, _, _, _ = self.separate_V(X_dev)
+        
         if self.noisy:
-            X_train_noisy = self._add_noise(X_train)
-            X_dev_noisy = self._add_noise(X_dev)
+            X_train_noisy = self._add_noise(X_train, self.noise)
+            X_dev_noisy = self._add_noise(X_dev, self.noise)
         else:
             X_train_noisy = X_train
             X_dev_noisy = X_dev
@@ -176,6 +199,8 @@ class AutoEncoder():
     def encode(self, X_1, X_2):
         """encode raw input to latent representation
         """
+        X_1, _, _, _ = self.separate_V(X_1)
+        X_2, _, _, _ = self.separate_V(X_2)
         encoded_train = self.encoder.predict(X_1)
         encoded_dev = self.encoder.predict(X_2)
         self.save_representation(encoded_train, encoded_dev)
@@ -219,8 +244,3 @@ class AutoEncoder():
         decoded_dir = os.path.join(self.save_dir, self.name)
         np.save(os.path.join(decoded_dir, 'decoded_A'), decoded_input_A)
         np.save(os.path.join(decoded_dir, 'decoded_V'), decoded_input_V)
-
-    def _add_noise(self, X):
-        """add noise (gaussian)
-        """
-        return X + np.random.normal(loc=0.0, scale=0.5, size=X.shape)

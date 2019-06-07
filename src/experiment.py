@@ -26,7 +26,7 @@ class Experiment():
 
     def display_help(self):
         self.func_list = ['proposed architecture',
-                    'BiSDAE on BoXW', 'BiSDAE on aligned A/V',
+                    'SDAE on LK', 'BiSDAE on aligned A/V',
                     'FV using GMM on latent repres', 
                     'DNN as classifier', 'doc2vec on text']
         print("--" * 20)
@@ -43,7 +43,7 @@ class Experiment():
         if choice == 0:
             self.main_system()
         elif choice == 1:
-            self.BAE_BOXW()
+            self.AE_LK()
         elif choice == 2:
             self.BAE()
         elif choice == 3:
@@ -104,7 +104,7 @@ class Experiment():
         multi_dnn.evaluate_model(encoded_train, y_train, y_train_r, encoded_dev, y_dev, y_dev_r)
 
     def BAE_BOXW(self):
-        print("\nrunning BiModal AE on XBoW representations")
+        print("\nrunning BiModal SDAE on XBoW representations")
         X_train_A, X_dev_A, X_test_A, y_train_A, inst_train_A, y_dev_A, inst_dev_A = load_bags_of_words('BoAW', verbose=True)
         X_train_V, X_dev_V, X_test_V, y_train_V, inst_train_V, y_dev_V, inst_dev_V = load_bags_of_words('BoVW', verbose=True)
 
@@ -118,8 +118,17 @@ class Experiment():
         bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
         encoded_train, encoded_dev = bae.load_presentation()
 
+    def AE_LK(self):
+        print("\nrunning SDAE on Video features (facial landmarks only)")
+        _, _, _, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
+
+        ae = AutoEncoder('facial_landmark', 136)
+        ae.build_model()
+        ae.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
+        ae.encode(X_train_V, X_dev_V)
+
     def BAE(self):
-        print("\nrunning BiModal AE on aligned Audio / Video features")
+        print("\nrunning BiModal SDAE on aligned Audio / Video features")
         X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
         bae = AutoEncoderBimodalV('bimodalV_aligned', 117, 136, 6, 6, 35, noisy=False)

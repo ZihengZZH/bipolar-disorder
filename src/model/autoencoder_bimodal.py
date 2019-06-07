@@ -301,21 +301,14 @@ class AutoEncoderBimodalV(AutoEncoder):
 
         plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'bimodalV_SDAE.png'))
 
-    def _separat_V(self, X):
-        X1 = X.iloc[:, :136]        # facial 
-        X2 = X.iloc[:, 136:142]     # gaze
-        X3 = X.iloc[:, 142:148]     # pose
-        X4 = X.iloc[:, 148:]        # action
-        return X1, X2, X3, X4
-
     def train_model(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
         if self.fitted:
             print("\nmodel already trained ---", self.name)
             self.load_model()
             return 
         
-        X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self._separat_V(X_train_V)
-        X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self._separat_V(X_dev_V)
+        X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self.separate_V(X_train_V)
+        X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self.separate_V(X_dev_V)
 
         # normalization to [0,1] for binary_crossentropy
         # X_train_A = minmax_scale(X_train_A)
@@ -330,16 +323,16 @@ class AutoEncoderBimodalV(AutoEncoder):
         # X_dev_V4 = minmax_scale(X_dev_V4)
 
         if self.noisy:
-            X_train_A_noisy = self._add_noise(X_train_A)
-            X_train_V1_noisy = self._add_noise(X_train_V1)
-            X_train_V2_noisy = self._add_noise(X_train_V2)
-            X_train_V3_noisy = self._add_noise(X_train_V3)
-            X_train_V4_noisy = self._add_noise(X_train_V4)
-            X_dev_A_noisy = self._add_noise(X_dev_A)
-            X_dev_V1_noisy = self._add_noise(X_dev_V1)
-            X_dev_V2_noisy = self._add_noise(X_dev_V2)
-            X_dev_V3_noisy = self._add_noise(X_dev_V3)
-            X_dev_V4_noisy = self._add_noise(X_dev_V4)
+            X_train_A_noisy = self._add_noise(X_train_A, self.noise)
+            X_train_V1_noisy = self._add_noise(X_train_V1, self.noise)
+            X_train_V2_noisy = self._add_noise(X_train_V2, self.noise)
+            X_train_V3_noisy = self._add_noise(X_train_V3, self.noise)
+            X_train_V4_noisy = self._add_noise(X_train_V4, self.noise)
+            X_dev_A_noisy = self._add_noise(X_dev_A, self.noise)
+            X_dev_V1_noisy = self._add_noise(X_dev_V1, self.noise)
+            X_dev_V2_noisy = self._add_noise(X_dev_V2, self.noise)
+            X_dev_V3_noisy = self._add_noise(X_dev_V3, self.noise)
+            X_dev_V4_noisy = self._add_noise(X_dev_V4, self.noise)
         else:
             X_train_A_noisy = X_train_A
             X_train_V1_noisy = X_train_V1
@@ -387,8 +380,8 @@ class AutoEncoderBimodalV(AutoEncoder):
     def encode(self, X_1_A, X_1_V, X_2_A, X_2_V):
         """encode bimodal input to latent representation
         """
-        X_1_V1, X_1_V2, X_1_V3, X_1_V4 = self._separat_V(X_1_V)
-        X_2_V1, X_2_V2, X_2_V3, X_2_V4 = self._separat_V(X_1_V)
+        X_1_V1, X_1_V2, X_1_V3, X_1_V4 = self.separate_V(X_1_V)
+        X_2_V1, X_2_V2, X_2_V3, X_2_V4 = self.separate_V(X_1_V)
         encoded_train = self.encoder.predict([X_1_A, X_1_V1, X_1_V2, X_1_V3, X_1_V4])
         encoded_dev = self.encoder.predict([X_2_A, X_2_V1, X_2_V2, X_2_V3, X_2_V4])
         self.save_representation(encoded_train, encoded_dev)
