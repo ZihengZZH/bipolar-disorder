@@ -3,6 +3,7 @@ import json
 import datetime
 import numpy as np
 import tensorflow as tf
+from sklearn.preprocessing import minmax_scale
 from keras import regularizers
 from keras import backend as K
 from keras.models import Model
@@ -176,6 +177,9 @@ class AutoEncoder():
         if self.visual:
             X_train, _, _, _ = self.separate_V(X_train)
             X_dev, _, _, _ = self.separate_V(X_dev)
+        else:
+            X_train = minmax_scale(X_train)
+            X_dev = minmax_scale(X_dev)
         
         if self.noisy:
             X_train_noisy = self._add_noise(X_train, self.noise)

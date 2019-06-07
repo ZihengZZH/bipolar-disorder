@@ -4,7 +4,7 @@ import pandas as pd
 from src.model.autoencoder import AutoEncoder
 from src.model.autoencoder_lstm import AutoEncoderLSTM
 from src.model.autoencoder_bimodal import AutoEncoderBimodal
-from src.model.autoencoder_bimodal import AutoEncoderBimodalV
+from src.model.autoencoder_multimodal import AutoEncoderMultimodal
 from src.utils.io import load_bags_of_words
 from src.utils.io import load_proc_baseline_feature
 
@@ -34,7 +34,7 @@ class TestAutoEncoder(unittest.TestCase):
         encoded_train, encoded_dev = bae.load_presentation()
 
     def test_bimodal_autoencoderV(self):
-        baeV = AutoEncoderBimodalV('test', 118, 136, 6, 6, 35)
+        baeV = AutoEncoderMultimodal('test', 118, 136, 6, 6, 35)
         baeV.build_model()
 
 if __name__ == "__main__":

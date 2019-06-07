@@ -107,7 +107,6 @@ class LinearSVM():
     def tune(self):
         """fine tune hyperparameters for the model
         """
-        import scipy.stats as stats
         parameters = {
             "kernel": ['linear'],
             "C": 10. ** np.arange(-5, 1)

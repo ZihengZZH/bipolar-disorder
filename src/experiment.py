@@ -1,6 +1,6 @@
 from src.model.autoencoder import AutoEncoder
 from src.model.autoencoder_bimodal import AutoEncoderBimodal
-from src.model.autoencoder_bimodal import AutoEncoderBimodalV
+from src.model.autoencoder_multimodal import AutoEncoderMultimodal
 from src.model.fisher_encoder import FisherVectorGMM
 from src.model.fisher_encoder import FisherVectorGMM_BIC
 from src.model.text2vec import Text2Vec
@@ -76,21 +76,30 @@ class Experiment():
 
     def AE_single(self):
         print("\nrunning SDAE on unimodal features (facial landmarks and MFCC/eGeMAPS)")
-        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
-
-        ae_lk = AutoEncoder('unimodal_landmark', 136)
-        ae_lk.build_model()
-        ae_lk.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
-        ae_lk.encode(X_train_V, X_dev_V)
-
-        ae_mfcc = AutoEncoder('unimodal_mfcc', X_train_A.shape[1], visual=False)
-        ae_mfcc.build_model()
-        ae_mfcc.train_model(pd.concat([X_train_A, X_dev_A]), X_test_A)
-        ae_mfcc.encode(X_train_A, X_dev_A)
+        print("\nchoose a modality\n0.facial landmarks\n1.MFCC\n2.eGeMAPS")
+        choice = int(input("choose a function "))
+        if choice == 0:
+            _, _, _, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
+            ae = AutoEncoder('unimodal_landmark', 136)
+            ae.build_model()
+            ae.train_model(pd.concat([X_train_V, X_dev_V]), X_test_V)
+            ae.encode(X_train_V, X_dev_V)
+        elif choice == 1:
+            X_train_A, X_dev_A, X_test_A, _, _, _, _, _, _, _ = load_aligned_features(verbose=True)
+            ae = AutoEncoder('unimodal_mfcc', X_train_A.shape[1], visual=False)
+            ae.build_model()
+            ae.train_model(pd.concat([X_train_A, X_dev_A]), X_test_A)
+            ae.encode(X_train_A, X_dev_A)
+        elif choice == 2:
+            X_train_A, X_dev_A, X_test_A, _, _, _, _, _, _, _ = load_aligned_features(eGeMAPS=True, verbose=True)
+            ae = AutoEncoder('unimodal_egemaps', X_train_A.shape[1])
+            ae.build_model()
+            ae.train_model(pd.concat([X_train_A, X_dev_A]), X_test_A)
+            ae.encode(X_train_A, X_dev_A)
     
     def BAE_bimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features")
-        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
+        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
 
         bae = AutoEncoderBimodal('bimodal_aligned_mfcc', X_train_A.shape[1], 136, noisy=False)
         bae.build_model()
@@ -106,15 +115,15 @@ class Experiment():
         print("\nrunning BiModal SDAE on aligned Audio / Video features (gaze / pose / AUs)")
         X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
 
-        bae = AutoEncoderBimodalV('multimodal_aligned_mfcc', X_train_A.shape[1], 136, 6, 6, 35, noisy=False)
-        bae.build_model()
+        mae = AutoEncoderMultimodal('multimodal_aligned_mfcc', X_train_A.shape[1], 136, 6, 6, 35, noisy=False)
+        mae.build_model()
 
-        bae.train_model(pd.concat([X_train_A, X_dev_A]), 
+        mae.train_model(pd.concat([X_train_A, X_dev_A]), 
                         pd.concat([X_train_V, X_dev_V]), 
                         X_test_A, X_test_V)
         
-        bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-        encoded_train, encoded_dev = bae.load_presentation()
+        mae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+        encoded_train, encoded_dev = mae.load_presentation()
 
     def FV_GMM(self):
         print("\nrunning Fisher Encoder using GMM on learnt representations")
@@ -143,7 +152,7 @@ class Experiment():
             X_train = fv_gmm.load_vector('train', dynamics=True)
             X_dev = fv_gmm.load_vector('dev', dynamics=True)
             
-            after n_kernels is determined
+            # after n_kernels is determined
             fv_train = np.array([fv_gmm.predict(train) for train in X_train])
             fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
 

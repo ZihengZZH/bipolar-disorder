@@ -111,9 +111,9 @@ class RandomForest():
         """
         import scipy.stats as stats
         parameters = {
-            "n_estimators": self.parameters['n_estimators'],
-            "max_features": self.parameters['max_features'],
-            "max_depth": self.parameters['max_depth'],
+            "n_estimators": self.config['baseline']['random_forest']['n_estimators'],
+            "max_features": self.config['baseline']['random_forest']['max_features'],
+            "max_depth": self.config['baseline']['random_forest']['max_depth'],
             "criterion": ["entropy"]
         }
         print("\nrunning the Grid Search for Random Forest classifier ...")
@@ -122,8 +122,7 @@ class RandomForest():
                         cv=5, 
                         n_jobs=-1, 
                         verbose=3, 
-                        scoring='recall_macro',
-                        pre_dispatch='2*n_jobs')
+                        scoring='recall_macro')
 
         clf.fit(self.X_train, self.y_train)
         print("\nfinal score for the tuned model\n", clf.score(self.X_train, self.y_train))
