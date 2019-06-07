@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import numpy as np
+import tensorflow as tf
 from keras import regularizers
 from keras import backend as K
 from keras.models import Model
@@ -70,6 +71,7 @@ class AutoEncoder():
         self.load_basic()
         self.name = '%s_hidden%.2f_batch%d_epoch%d_noise%s' % (name, self.hidden_ratio, self.batch_size, self.epochs, self.noise)
         np.random.seed(1337)
+        tf.reset_default_graph()
 
     def load_basic(self):
         """load basic data and configuration for model
@@ -150,8 +152,8 @@ class AutoEncoder():
 
         # configure model
         # self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
-        opt = SGD(lr=0.01, momentum=0.9)
-        self.autoencoder.compile(optimizer=opt, loss='mse')
+        opt = SGD(lr=0.1, momentum=0.9, decay=1e-6)
+        self.autoencoder.compile(optimizer=opt, loss='mean_squared_error')
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
