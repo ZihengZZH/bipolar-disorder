@@ -43,6 +43,7 @@ project:
     ✔ autoencoder_bimodal.py @done(19-05-15 18:16)
       ✔ sparsity @done(19-05-23 22:37)
       ✔ separate visual feature @done(19-05-31 22:39)
+    ✔ autoencoder_multimodal.py @done(19-06-08 17:26)
     ☐ fisher_encoder.py
       ✔ temporary information @done(19-05-29 23:50)
       ✔ dimensionality @done(19-05-29 23:50)
@@ -60,7 +61,7 @@ project:
   ☐ utils
     ✔ io.py @done(19-05-08 22:44)
     ✔ preprocess.py @done(19-05-15 18:16)
-      ☐ align eGeMAPS with visual features
+      ✔ align eGeMAPS with visual features @done(19-06-08 17:26)
     ✔ vis.py @done(19-05-15 18:16)
       ☐ visualize reconstructed facial landmarks
       ✔ visualize pose along with landmarks @done(19-06-03 21:59)

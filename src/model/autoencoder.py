@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from sklearn.preprocessing import minmax_scale
 from keras import regularizers
@@ -110,7 +111,7 @@ class AutoEncoder():
             assert noise <= 0.4, "noise should be not be greater than 0.4"
             idx = np.random.choice(X.shape[1], size=int(X.shape[1] * noise))
             X_noisy = X
-            if self.visual:
+            if isinstance(X, pd.DataFrame):
                 X_noisy.iloc[:, idx] = 0.0
             else:
                 X_noisy[:, idx] = 0.0

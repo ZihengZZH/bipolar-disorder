@@ -29,10 +29,10 @@
         "save_dir": "./pre-trained/SDAE"
     },
     "doc2vec": {
-        "dm": 0,
+        "dm": 1,
         "vector_size": 25,
-        "negative": 10,
-        "hs": 1,
+        "negative": 5,
+        "hs": 0,
         "min_count": 2,
         "sample": 0,
         "epochs": 30,

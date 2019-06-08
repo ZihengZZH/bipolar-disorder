@@ -27,7 +27,7 @@ class Experiment():
     def display_help(self):
         self.func_list = ['proposed architecture',
                     'SDAE on unimodality', 'BiSDAE on aligned A/V',
-                    'BiSDAE on aligned A/V',
+                    'MultiSDAE on aligned A/V',
                     'FV using GMM on latent repres', 
                     'DNN as classifier', 'doc2vec on text']
         print("--" * 20)
@@ -61,8 +61,8 @@ class Experiment():
 
     def BAE_BOXW(self):
         print("\nrunning BiModal SDAE on XBoW representations")
-        X_train_A, X_dev_A, X_test_A, y_train_A, inst_train_A, y_dev_A, inst_dev_A = load_bags_of_words('BoAW', verbose=True)
-        X_train_V, X_dev_V, X_test_V, y_train_V, inst_train_V, y_dev_V, inst_dev_V = load_bags_of_words('BoVW', verbose=True)
+        X_train_A, X_dev_A, X_test_A, _, _, _, _ = load_bags_of_words('BoAW', verbose=True)
+        X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_bags_of_words('BoVW', verbose=True)
 
         bae = AutoEncoderBimodal('bimodal_boxw', X_train_A.shape[1], X_train_V.shape[1])
         bae.build_model()
@@ -99,31 +99,49 @@ class Experiment():
     
     def BAE_bimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features")
-        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
-
-        bae = AutoEncoderBimodal('bimodal_aligned_mfcc', X_train_A.shape[1], 136, noisy=False)
-        bae.build_model()
-
-        bae.train_model(pd.concat([X_train_A, X_dev_A]), 
-                        pd.concat([X_train_V, X_dev_V]), 
-                        X_test_A, X_test_V)
-        
-        bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-        encoded_train, encoded_dev = bae.load_presentation()
+        print("\nchoose a modality\n0.landmarks + MFCC\n1.landmarks + eGeMAPS")
+        choice = int(input("choose a function "))
+        if choice == 1:
+            X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
+            bae = AutoEncoderBimodal('bimodal_aligned_mfcc', X_train_A.shape[1], 136)
+            bae.build_model()
+            bae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                            pd.concat([X_train_V, X_dev_V]), 
+                            X_test_A, X_test_V)
+            bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+            encoded_train, encoded_dev = bae.load_presentation()
+        elif choice == 1:
+            X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(eGeMAPS=True, verbose=True)
+            bae = AutoEncoderBimodal('bimodal_aligned_egemaps', X_train_A.shape[1], 136)
+            bae.build_model()
+            bae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                            pd.concat([X_train_V, X_dev_V]), 
+                            X_test_A, X_test_V)
+            bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+            encoded_train, encoded_dev = bae.load_presentation()
 
     def BAEV_multimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features (gaze / pose / AUs)")
-        X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, y_train, inst_train, y_dev, inst_dev = load_aligned_features(verbose=True)
-
-        mae = AutoEncoderMultimodal('multimodal_aligned_mfcc', X_train_A.shape[1], 136, 6, 6, 35, noisy=False)
-        mae.build_model()
-
-        mae.train_model(pd.concat([X_train_A, X_dev_A]), 
-                        pd.concat([X_train_V, X_dev_V]), 
-                        X_test_A, X_test_V)
-        
-        mae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
-        encoded_train, encoded_dev = mae.load_presentation()
+        print("\nchoose a modality\n0.landmarks + MFCC\n1.landmarks + eGeMAPS")
+        choice = int(input("choose a function "))
+        if choice == 1:
+            X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
+            mae = AutoEncoderMultimodal('multimodal_aligned_mfcc', X_train_A.shape[1], 136, 6, 6, 35)
+            mae.build_model()
+            mae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                            pd.concat([X_train_V, X_dev_V]), 
+                            X_test_A, X_test_V)
+            mae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+            encoded_train, encoded_dev = mae.load_presentation()
+        if choice == 2:
+            X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(eGeMAPS=True, verbose=True)
+            mae = AutoEncoderMultimodal('multimodal_aligned_egemaps', X_train_A.shape[1], 136, 6, 6, 35)
+            mae.build_model()
+            mae.train_model(pd.concat([X_train_A, X_dev_A]), 
+                            pd.concat([X_train_V, X_dev_V]), 
+                            X_test_A, X_test_V)
+            mae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
+            encoded_train, encoded_dev = mae.load_presentation()
 
     def FV_GMM(self):
         print("\nrunning Fisher Encoder using GMM on learnt representations")
