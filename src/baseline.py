@@ -84,9 +84,10 @@ class BaseLine():
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
-        X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
-        X_dev = sp.csr_matrix(X_dev)
-        y_train = np.hstack((y_train, y_dev))
+        # X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
+        # X_dev = sp.csr_matrix(X_dev)
+        # y_train = np.hstack((y_train, y_dev))
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
 
         if self.model_name == 'SVM':
             SVM_MFCC = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
@@ -111,9 +112,10 @@ class BaseLine():
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
-        X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
-        X_dev = sp.csr_matrix(X_dev)
-        y_train = np.hstack((y_train, y_dev))
+        # X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
+        # X_dev = sp.csr_matrix(X_dev)
+        # y_train = np.hstack((y_train, y_dev))
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
 
         if self.model_name == 'SVM':
             SVM_eGeMAPS = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
@@ -138,9 +140,10 @@ class BaseLine():
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
-        X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
-        X_dev = sp.csr_matrix(X_dev)
-        y_train = np.hstack((y_train, y_dev))
+        # X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
+        # X_dev = sp.csr_matrix(X_dev)
+        # y_train = np.hstack((y_train, y_dev))
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
 
         if self.model_name == 'SVM':
             SVM_Deep = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
@@ -165,9 +168,10 @@ class BaseLine():
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
-        X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
-        X_dev = sp.csr_matrix(X_dev)
-        y_train = np.hstack((y_train, y_dev))
+        # X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
+        # X_dev = sp.csr_matrix(X_dev)
+        # y_train = np.hstack((y_train, y_dev))
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
 
         if self.model_name == 'SVM':
             SVM_BoAW = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
@@ -192,9 +196,10 @@ class BaseLine():
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, _ = upsample(X_train, y_train, np.array([]))
         print("\nobtaining sparse matrix for better classification")
-        X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
-        X_dev = sp.csr_matrix(X_dev)
-        y_train = np.hstack((y_train, y_dev))
+        # X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
+        # X_dev = sp.csr_matrix(X_dev)
+        # y_train = np.hstack((y_train, y_dev))
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
         
         if self.model_name == 'SVM':
             SVM_AU = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
@@ -221,9 +226,10 @@ class BaseLine():
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
-        X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
-        X_dev = sp.csr_matrix(X_dev)
-        y_train = np.hstack((y_train, y_dev))
+        # X_train = sp.csr_matrix(np.vstack((X_train, X_dev)))
+        # X_dev = sp.csr_matrix(X_dev)
+        # y_train = np.hstack((y_train, y_dev))
+        X_train, X_dev = sp.csr_matrix(X_train), sp.csr_matrix(X_dev)
         
         if self.model_name == 'SVM':
             SVM_BoVW = LinearSVM(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)

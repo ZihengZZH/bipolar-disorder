@@ -289,7 +289,7 @@ def load_proc_baseline_feature(feature_name, matlab=True, verbose=False):
     return train_data, np.ravel(train_label.T.values), np.ravel(train_inst), dev_data, np.ravel(dev_label.T.values), np.ravel(dev_inst)
 
 
-def save_UAR_results(frame_results, session_results, model_name, feature_name, modality, cv=False):
+def save_UAR_results(frame_results, session_results, precision, fscore, model_name, feature_name, modality, cv=False):
     """save UAR results to external files
     """
     # para frame_res: classification UAR for frame-level
@@ -303,25 +303,34 @@ def save_UAR_results(frame_results, session_results, model_name, feature_name, m
     if modality == 'single':
         filename = os.path.join(data_config['result_single'], '%s_%s_result.txt' % (model_name, feature_name)) if not cv else os.path.join(data_config['result_single'], 'cv_%s_%s_result.txt' % (model_name, feature_name))
 
-        with smart_open(filename, 'w', encoding='utf-8') as f:
+        with smart_open(filename, 'a+', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
             f.write("UAR on session-level: %.3f \n" % session_res)
+            f.write("Precision on session-level: %.3f \n" % precision)
+            f.write("F1 score on session-level: %.3f \n" % fscore)
+            f.write("\n")
         f.close()
         
     elif modality == 'multiple':
         filename = os.path.join(data_config['result_multi'], '%s_%s_result.txt' % (model_name, feature_name)) if not cv else os.path.join(data_config['result_multi'], 'cv_%s_%s_result.txt' % (model_name, feature_name))
 
-        with smart_open(filename, 'w', encoding='utf-8') as f:
+        with smart_open(filename, 'a+', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
             f.write("UAR on session-level: %.3f \n" % session_res)
+            f.write("Precision on session-level: %.3f \n" % precision)
+            f.write("F1 score on session-level: %.3f \n" % fscore)
+            f.write("\n")
         f.close()
 
     elif modality == 'baseline':
         filename = os.path.join(data_config['result_baseline'], '%s_%s_result.txt' % (model_name, feature_name)) if not cv else os.path.join(data_config['result_baseline'], 'cv_%s_%s_result.txt' % (model_name, feature_name))
 
-        with smart_open(filename, 'w', encoding='utf-8') as f:
+        with smart_open(filename, 'a+', encoding='utf-8') as f:
             f.write("UAR on frame-level: %.3f \n" % frame_res)
             f.write("UAR on session-level: %.3f \n" % session_res)
+            f.write("Precision on session-level: %.3f \n" % precision)
+            f.write("F1 score on session-level: %.3f \n" % fscore)
+            f.write("\n")
         f.close()
     
     else:

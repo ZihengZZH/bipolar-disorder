@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.metrics import recall_score, classification_report
+from sklearn.metrics import precision_recall_fscore_support
 from src.utils.io import load_label, save_UAR_results
 from src.utils.io import save_post_probability, load_post_probability
 
@@ -33,7 +34,7 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
     # para test: bool
         whether to save UAR results
     """
-    frame_res, session_res = 0.0, 0.0
+    frame_res, session_res, precision, fscore = 0.0, 0.0, 0.0, 0.0
     modality = 'baseline' if baseline else modality
 
     # UAR for session-level only (AU features)
@@ -52,14 +53,16 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
                 print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.3f and %.3f (sklearn)" % (feature_name, session_res, recall_score(y_dev, y_pred, average='macro')))
                 if not test:
                     session_res = recall_score(y_dev, y_pred, average='macro') 
-                    save_UAR_results(frame_res, session_res, model_name, feature_name, modality)
+                    precision, _, fscore, _ = precision_recall_fscore_support(y_dev, y_pred, average='macro')
+                    save_UAR_results(frame_res, session_res, precision, fscore, model_name, feature_name, modality)
             print(classification_report(y_dev, y_pred, target_names=['depression', 'hypo-mania', 'mania']))
         
         else:
             print("\nUAR (mean of recalls) using fusion based on session-level is %.3f and %.3f" % (session_res, recall_score(y_dev, y_pred, average='macro')))
             if not test:
                 session_res = recall_score(y_dev, y_pred, average='macro') 
-                save_UAR_results(frame_res, session_res, model_name, 'fusion', modality)
+                precision, _, fscore, _ = precision_recall_fscore_support(y_dev, y_pred, average='macro')
+                save_UAR_results(frame_res, session_res, precision, fscore, model_name, 'fusion', modality)
 
     else:
         # UAR for frame-level
@@ -106,7 +109,8 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
                 print("\nUAR (mean of recalls) using %s feature based on session-level (development set) is %.3f" % (feature_name, session_res))
         
         if not train_set and not test:
-            save_UAR_results(frame_res, session_res, model_name, feature_name, modality)
+            precision, _, fscore, _ = precision_recall_fscore_support(y_dev, y_pred, average='macro')
+            save_UAR_results(frame_res, session_res, precision, fscore, model_name, feature_name, modality)
 
     return frame_res, session_res
 
