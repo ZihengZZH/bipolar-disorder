@@ -102,6 +102,7 @@ class Text2Vec():
         """
         self.dm = self.model_config['doc2vec']['dm']
         self.vector_size = self.model_config['doc2vec']['vector_size']
+        self.window_size = self.model_config['doc2vec']['window_size']
         self.negative = self.model_config['doc2vec']['negative']
         self.hs = self.model_config['doc2vec']['hs']
         self.min_count = self.model_config['doc2vec']['min_count']
@@ -111,8 +112,10 @@ class Text2Vec():
     def build_model(self):
         """build doc2vec model
         """
+        assert self.dm == 1
         self.model = doc2vec.Doc2Vec(dm=self.dm, 
                                     vector_size=self.vector_size, 
+                                    window=self.window_size,
                                     negative=self.negative, 
                                     hs=self.hs, 
                                     min_count=self.min_count, 

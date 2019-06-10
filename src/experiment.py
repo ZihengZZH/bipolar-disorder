@@ -29,7 +29,8 @@ class Experiment():
                     'SDAE on unimodality', 'BiSDAE on aligned A/V',
                     'MultiSDAE on aligned A/V',
                     'FV using GMM on latent repres', 
-                    'DNN as classifier', 'doc2vec on text']
+                    'DNN as classifier', 'doc2vec on text',
+                    'RF on doc2vec']
         print("--" * 20)
         print("Experiment")
         print("--" * 20)
@@ -52,9 +53,11 @@ class Experiment():
         elif choice == 4:
             self.FV_GMM()
         elif choice == 5:
-            self.RF()
+            self.DNN()
         elif choice == 6:
             self.TEXT()
+        elif choice -- 7:
+            self.TEXT_RF()
     
     def main_system(self):
         print("\nrunning the proposed architecture (BiSDAE + FV + DNN)")
@@ -99,7 +102,7 @@ class Experiment():
     
     def BAE_bimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features")
-        print("\nchoose a modality\n0.landmarks + MFCC\n1.landmarks + eGeMAPS")
+        print("\nchoose a modality\n1.landmarks + MFCC\n2.landmarks + eGeMAPS")
         choice = int(input("choose a function "))
         if choice == 1:
             X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
@@ -110,7 +113,7 @@ class Experiment():
                             X_test_A, X_test_V)
             bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
             encoded_train, encoded_dev = bae.load_presentation()
-        elif choice == 1:
+        elif choice == 2:
             X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(eGeMAPS=True, verbose=True)
             bae = AutoEncoderBimodal('bimodal_aligned_egemaps', X_train_A.shape[1], 136)
             bae.build_model()
@@ -122,7 +125,7 @@ class Experiment():
 
     def BAEV_multimodal(self):
         print("\nrunning BiModal SDAE on aligned Audio / Video features (gaze / pose / AUs)")
-        print("\nchoose a modality\n0.landmarks + MFCC\n1.landmarks + eGeMAPS")
+        print("\nchoose a modality\n1.landmarks + MFCC\n2.landmarks + eGeMAPS")
         choice = int(input("choose a function "))
         if choice == 1:
             X_train_A, X_dev_A, X_test_A, X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_aligned_features(verbose=True)
@@ -177,7 +180,6 @@ class Experiment():
             fv_gmm.save_vector(fv_train, 'train', dynamics=False)
             fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
 
-
     def DNN(self):
         fv_gmm = FisherVectorGMM(n_kernels=32)
         fv_gmm.load()
@@ -203,7 +205,6 @@ class Experiment():
         test_dnn.train_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
         test_dnn.evaluate_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
 
-
     def TEXT(self):
         print("\nrunning doc2vec embeddings on text modality")
         text2vec = Text2Vec(build_on_corpus=True)
@@ -212,25 +213,22 @@ class Experiment():
         text2vec.infer_embedding('train')
         text2vec.infer_embedding('dev')
 
+    def TEXT_RF(self):
+        import os
+        from smart_open import smart_open
 
-    def RF(self):
-        fv_gmm = FisherVectorGMM(n_kernels=32)
-        fv_gmm.load()
-
-        X_train = fv_gmm.load_vector('train', dynamics=False)
-        X_dev = fv_gmm.load_vector('dev', dynamics=False)
-        print(X_train.shape, X_dev.shape)
-        X_train = X_train.reshape((X_train.shape[0], np.prod(X_train.shape[1:])))
-        X_dev = X_dev.reshape((X_dev.shape[0], np.prod(X_dev.shape[1:])))
-        print(X_train.shape, X_dev.shape)
-
-        y_dev_r, y_train_r, y_dev, y_train = load_label()
-        y_train = y_train.astype('int')
-        y_dev = y_dev.astype('int')
-
-        rf = RandomForest('fv_gmm', X_train, y_train, X_dev, y_dev, test=True)
-        rf.run()
-        y_pred_train, y_pred_dev = rf.evaluate()
-        
-        get_UAR(y_pred_train, y_train, np.array([]), 'fv_gmm', 'fv_gmm', 'multi', train_set=True, test=True)
-        get_UAR(y_pred_dev, y_dev, np.array([]), 'fv_gmm', 'fv_gmm', 'multi', test=True)
+        with smart_open('./pre-trained/doc2vec/model_list.txt', 'rb', encoding='utf-8') as model_path:
+            for line_no, line in enumerate(model_path):
+                line = str(line).replace('\n', '')
+                print(line_no, '\t', line[22:])
+                X_train = np.load(os.path.join(line, 'vectors_train.npy'))
+                X_dev = np.load(os.path.join(line, 'vectors_dev.npy'))
+                y_train = np.load(os.path.join(line, 'labels_train.npy'))
+                y_dev = np.load(os.path.join(line, 'labels_dev.npy'))
+                y_train = np.ravel(y_train)
+                y_dev = np.ravel(y_dev)
+                random_forest = RandomForest(line[22:], X_train, y_train, X_dev,y_dev, baseline=False)
+                random_forest.run()
+                y_pred_train, y_pred_dev = random_forest.evaluate()
+                get_UAR(y_pred_train, y_train, np.array([]), 'RF', line[22:], 'single', baseline=False, train_set=True)
+                get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', line[22:], 'single', baseline=False)

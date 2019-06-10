@@ -30,9 +30,10 @@
     },
     "doc2vec": {
         "dm": 1,
-        "vector_size": 25,
+        "vector_size": 100,
+        "window_size": 5,
         "negative": 5,
-        "hs": 0,
+        "hs": 1,
         "min_count": 2,
         "sample": 0,
         "epochs": 30,

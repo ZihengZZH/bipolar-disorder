@@ -31,6 +31,37 @@ hs: {0, 1}
 
 epochs: {30, 50}
 
+| model | vector | window | negative | hs | epochs | UAR | acc | 
+| --    | --     | --     | --       | -  | --     | --  | --  |
+| dm    | 25   | 5  | 5  | NA | 30 | 
+| dm    | 25   | 5  | 10 | NA | 30 |
+| dm    | 25   | 5  | NA | Y  | 30 |
+| dm    | 25   | 10 | 5  | NA | 30 | 
+| dm    | 25   | 10 | 10 | NA | 30 |
+| dm    | 25   | 10 | NA | Y  | 30 |
+| dm    | 50   | 5  | 5  | NA | 30 | 
+| dm    | 50   | 5  | 10 | NA | 30 |
+| dm    | 50   | 5  | NA | Y  | 30 |
+| dm    | 50   | 10 | 5  | NA | 30 | 
+| dm    | 50   | 10 | 10 | NA | 30 |
+| dm    | 50   | 10 | NA | Y  | 30 |
+| dm    | 100  | 5  | 5  | NA | 30 | 
+| dm    | 100  | 5  | 10 | NA | 30 |
+| dm    | 100  | 5  | NA | Y  | 30 |
+| dm    | 100  | 10 | 5  | NA | 30 | 
+| dm    | 100  | 10 | 10 | NA | 30 |
+| dm    | 100  | 10 | NA | Y  | 30 |
+| dbow  | 25   | NA | 5  | NA | 30 | 
+| dbow  | 25   | NA | 10 | NA | 30 |
+| dbow  | 25   | NA | NA | Y  | 30 |
+| dbow  | 50   | NA | 5  | NA | 30 | 
+| dbow  | 50   | NA | 10 | NA | 30 |
+| dbow  | 50   | NA | NA | Y  | 30 |
+| dbow  | 100  | NA | 5  | NA | 30 | 
+| dbow  | 100  | NA | 10 | NA | 30 |
+| dbow  | 100  | NA | NA | Y  | 30 |
+
+
 
 MOST SIMILAR WORDS (iyi / good)
 
