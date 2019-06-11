@@ -10,14 +10,6 @@
             "C": [0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10, 100, 1000, 10000, 100000, 1000000]
         }
     },
-    "autoencoder-lstm": {
-        "hidden_ratio": 0.35,
-        "learning_rate": 0.01,
-        "batch_size": 64,
-        "epochs": 30,
-        "noise": 0.2,
-        "save_dir": "./pre-trained/LSTMAE" 
-    },
     "autoencoder": {
         "hidden_ratio": 0.4,
         "learning_rate": 0.01,
@@ -26,7 +18,7 @@
         "noise": 0.1,
         "p": 0.01,
         "beta": 3,
-        "save_dir": "./pre-trained/SDAE"
+        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE"
     },
     "doc2vec": {
         "dm": 1,
@@ -37,7 +29,7 @@
         "min_count": 2,
         "sample": 0,
         "epochs": 30,
-        "save_dir": "./pre-trained/doc2vec"
+        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/doc2vec"
     },
     "singleDNN": {
         "hidden_ratio": 1.5,
@@ -45,7 +37,7 @@
         "batch_size": 16,
         "dropout": 0.2,
         "epochs": 30,
-        "save_dir": "./pre-trained/DNN_single"
+        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DNN_single"
     },
     "multiDNN": {
         "hidden_ratio": 1.5,
@@ -53,11 +45,11 @@
         "batch_size": 32,
         "dropout": 0.2,
         "epochs": 100,
-        "save_dir": "./pre-trained/DNN_multitask"
+        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DNN_multitask"
     },
     "fisher_vector":{
         "kernels": [4, 8, 16, 32, 64],
-        "data_dir": "./pre-trained/FV_GMM/shared",
-        "save_dir": "./pre-trained/FV_GMM"
+        "data_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/FV_GMM/shared",
+        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/FV_GMM"
     }
 }

@@ -214,8 +214,6 @@ class BaseLine():
         
         get_UAR(y_pred_train, y_train, np.array([]), self.model_name, self.feature_name, 'baseline', baseline=True, train_set=True, test=self.test)
         get_UAR(y_pred_dev, y_dev, np.array([]), self.model_name, self.feature_name, 'baseline', baseline=True, test=self.test)
-        if not self.test:
-            get_post_probability(y_pred_dev, y_dev, np.array([]), session_prob, self.model_name, self.feature_name)
 
     def run_BoVW(self):
         """run classifier on BoVW feature (single modality)

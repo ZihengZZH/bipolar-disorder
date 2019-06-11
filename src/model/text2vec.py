@@ -79,7 +79,8 @@ class Text2Vec():
         labels['train'] = level_train
         labels['dev'] = level_dev
 
-        for partition in ['train', 'dev', 'test']:
+        # evaluate without test partition as there is no label
+        for partition in ['train', 'dev']:
             with smart_open(self.data_config['transcript_preproc'][partition], 'rb', encoding='utf-8') as all_data:
                 for line_no, line in enumerate(all_data):
                     tokens = gensim.utils.to_unicode(line).split()
@@ -188,16 +189,39 @@ class Text2Vec():
         
         return infer_vecs, infer_labels
 
-    def evaluate_model(self, given_word):
+    def evaluate_model(self):
         """evaluate doc2vec model by finding similar words
         """
+        given_word = 'iyi'
+        given_doc_id = 0
+        output = smart_open(os.path.join(self.save_dir, 'evaluation.txt'), 'w', encoding='utf-8')
+
         similar_words = self.model.wv.most_similar(given_word, topn=20)
-        print("\nmost similar words to given word %s for doc2vec %s model are as follows" % (given_word, self.model_name))
         print("--" * 20)
-        output = smart_open(os.path.join(self.save_dir, 'similar_words_%s.txt' % given_word), 'w', encoding='utf-8')
+        print("\nmost similar words to given word %s for doc2vec %s model are as follows" % (given_word, self.model_name))
+        output.write("--\n")
+        output.write("\nmost similar words to given word %s for doc2vec %s model are as follows" % (given_word, self.model_name))
         for idx, word in enumerate(similar_words):
             print(idx, word)
             output.write("%d %s\n" % (idx, word))
+            output.write("--\n")
+        
+        inferred_doc_vec = self.model.infer_vector(self.all_docs[given_doc_id].words)
+        print("--" * 20)
+        print("\nmost similar transcripts in document embedding space:\n%s:\n%s" % (self.model, self.model.docvecs.most_similar([inferred_doc_vec], topn=3)))
+        output.write("\nmost similar transcripts in document embedding space:\n%s:\n%s" % (self.model, self.model.docvecs.most_similar([inferred_doc_vec], topn=3)))
+        output.write("--\n")
+        
+        sims = self.model.docvecs.most_similar(given_doc_id, topn=len(self.all_docs), clip_start=0, clip_end=len(self.all_docs))
+        print("--" * 20)
+        print("\nTarget: (%d): <<%s>>\n" % (given_doc_id, ' '.join(self.all_docs[given_doc_id].words)))
+        output.write("\nTarget: (%d): <<%s>>\n" % (given_doc_id, ' '.join(self.all_docs[given_doc_id].words)))
+        output.write("--\n")
+        
+        for label, index in [('MOST',0), ('MEDIAN',len(sims)//2), ('LEAST',len(sims)-1)]:
+            print("\nall the cosine similarity distance\n%s %s: <<%s>>\n" % (label, sims[index], ' '.join(self.all_docs[sims[index][0]].words)))
+            output.write("\nall the cosine similarity distance\n%s %s: <<%s>>\n" % (label, sims[index], ' '.join(self.all_docs[sims[index][0]].words)))
+            output.write("--\n")
         print("--" * 20)
         output.close()
 
@@ -218,3 +242,28 @@ class Text2Vec():
             self.model = doc2vec.Doc2Vec.load(os.path.join(self.save_dir, 'doc2vec.model'))
         else:
             print("\n%s model does not exist" % self.model_name)
+    
+    def process_metadata_tensorboard(self):
+        infer_vector_train, infer_label_train = self.load_embedding('train')
+        infer_vector_dev, infer_label_dev = self.load_embedding('dev')
+        length_train, length_dev = len(infer_label_train), len(infer_label_dev)
+
+        print("\nsaving embeddings to metadata file for tensorboard projector visualization")
+        with smart_open(os.path.join(self.save_dir, 'label.tsv', 'w', encoding='utf-8')) as label_f:
+            label_f.write("Index\tLabel\n")
+            for i in range(len(length_train)):
+                label_f.write("%d\t%d\n" % (i, infer_label_train[i]))
+            for j in range(len(length_dev)):
+                label_f.write("%d\t%d\n" % (j, infer_label_dev[j]))
+        
+        with smart_open(os.path.join(self.save_dir, 'metadata.tsv', 'w', encoding='utf-8')) as data_f:
+            for a in range(len(infer_vector_train)):
+                for b in range(len(infer_vector_train[a])):
+                    data_f.write("%f\t" % infer_vector_train[a][b])
+                data_f.write("\n")
+            for c in range(len(infer_vector_dev)):
+                for d in range(len(infer_vector_dev[c])):
+                    data_f.write("%f\t" % infer_vector_dev[c][d])
+                data_f.write("\n")
+        print("\nmetadata processing done\nplease upload the .tsv files onto projector.tensorflow.org to visualize embeddings")
+

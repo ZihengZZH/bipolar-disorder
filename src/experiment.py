@@ -26,8 +26,9 @@ class Experiment():
 
     def display_help(self):
         self.func_list = ['proposed architecture',
-                    'SDAE on unimodality', 'BiSDAE on aligned A/V',
-                    'MultiSDAE on aligned A/V',
+                    'DDAE on unimodality', 'BiDDAE on aligned A/V',
+                    'MultiDDAE on aligned A/V',
+                    'Dynamics on latent repres',
                     'FV using GMM on latent repres', 
                     'DNN as classifier', 'doc2vec on text',
                     'RF on doc2vec']
@@ -51,19 +52,21 @@ class Experiment():
         elif choice == 3:
             self.BAEV_multimodal()
         elif choice == 4:
-            self.FV_GMM()
+            self.DYNAMICS()
         elif choice == 5:
-            self.DNN()
+            self.FV_GMM()
         elif choice == 6:
+            self.DNN()
+        elif choice == 7:
             self.TEXT()
-        elif choice -- 7:
+        elif choice -- 8:
             self.TEXT_RF()
     
     def main_system(self):
-        print("\nrunning the proposed architecture (BiSDAE + FV + DNN)")
+        print("\nrunning the proposed architecture (BiDDAE + FV + DNN)")
 
     def BAE_BOXW(self):
-        print("\nrunning BiModal SDAE on XBoW representations")
+        print("\nrunning BiModal DDAE on XBoW representations")
         X_train_A, X_dev_A, X_test_A, _, _, _, _ = load_bags_of_words('BoAW', verbose=True)
         X_train_V, X_dev_V, X_test_V, _, _, _, _ = load_bags_of_words('BoVW', verbose=True)
 
@@ -78,7 +81,7 @@ class Experiment():
         encoded_train, encoded_dev = bae.load_presentation()
 
     def AE_single(self):
-        print("\nrunning SDAE on unimodal features (facial landmarks and MFCC/eGeMAPS)")
+        print("\nrunning DDAE on unimodal features (facial landmarks and MFCC/eGeMAPS)")
         print("\nchoose a modality\n0.facial landmarks\n1.MFCC\n2.eGeMAPS")
         choice = int(input("choose a function "))
         if choice == 0:
@@ -101,7 +104,7 @@ class Experiment():
             ae.encode(X_train_A, X_dev_A)
     
     def BAE_bimodal(self):
-        print("\nrunning BiModal SDAE on aligned Audio / Video features")
+        print("\nrunning BiModal DDAE on aligned Audio / Video features")
         print("\nchoose a modality\n1.landmarks + MFCC\n2.landmarks + eGeMAPS")
         choice = int(input("choose a function "))
         if choice == 1:
@@ -124,7 +127,7 @@ class Experiment():
             encoded_train, encoded_dev = bae.load_presentation()
 
     def BAEV_multimodal(self):
-        print("\nrunning BiModal SDAE on aligned Audio / Video features (gaze / pose / AUs)")
+        print("\nrunning BiModal DDAE on aligned Audio / Video features (gaze / pose / AUs)")
         print("\nchoose a modality\n1.landmarks + MFCC\n2.landmarks + eGeMAPS")
         choice = int(input("choose a function "))
         if choice == 1:
@@ -146,39 +149,50 @@ class Experiment():
             mae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
             encoded_train, encoded_dev = mae.load_presentation()
 
+    def DYNAMICS(self):
+        print("\nrunning computation of dynamics of latent reprsentation learned by DDAEs")
+        import os
+        from smart_open import smart_open
+        
+        fv_gmm = FisherVectorGMM(n_kernels=64)
+
+        with smart_open('/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE/model_list.txt', 'rb', encoding='utf-8') as model_path:
+            for line_no, line in enumerate(model_path):
+                line = str(line).replace('\n', '')
+                print(line_no, '\t', line)
+                
+                X_train = np.load(os.path.join(line, 'encoded_train.npy'))
+                X_dev = np.load(os.path.join(line, 'encoded_dev.npy'))
+                X_train_frame = get_dynamics(X_train)
+                X_dev_frame = get_dynamics(X_dev)
+
+                assert X_train_frame.shape[0] == X_train.shape[0] - 2
+                assert X_dev_frame.shape[0] == X_dev.shape[0] - 2
+
+                print("Shape of training data", X_train.shape)
+                print("Shape of development data", X_dev.shape)
+                print("Shape of training data with dynamics", X_train_frame.shape)
+                print("Shape of development data with dynamics", X_dev_frame.shape)
+
+                np.save(os.path.join(line, 'encoded_train_dynamics'), X_train_frame)
+                np.save(os.path.join(line, 'encoded_dev_dynamics'), X_dev_frame)
+
+                print("\ncomputing dynamics done\n")
+                del X_train, X_train_frame, X_dev, X_dev_frame
+
     def FV_GMM(self):
         print("\nrunning Fisher Encoder using GMM on learnt representations")
-        y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
-        bae = AutoEncoderBimodal('bimodal_aligned', 117, 136)
-        encoded_train, encoded_dev = bae.load_presentation()
-        assert len(y_train_frame) == len(inst_train) == len(encoded_train)
-        assert len(y_dev_frame) == len(inst_dev) == len(encoded_dev)
-
-        fv_BIC = FisherVectorGMM_BIC()
         
-        X_train, y_train = frame2session(encoded_train, y_train_frame, inst_train, verbose=True)
-        X_dev, y_dev = frame2session(encoded_dev, y_dev_frame, inst_dev, verbose=True)
-        print(y_train.shape, y_dev.shape)
+        fv_gmm = FisherVectorGMM(n_kernels=64)
+        X_train = fv_gmm.load_vector('train', dynamics=True)
+        X_dev = fv_gmm.load_vector('dev', dynamics=True)
+        
+        # after n_kernels is determined
+        fv_train = np.array([fv_gmm.predict(train) for train in X_train])
+        fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
 
-        X_train_session = [get_dynamics(train) for train in X_train]
-        X_dev_session = [get_dynamics(dev) for dev in X_dev]
-
-        fv_BIC.prepare_data(X_train_session, X_dev_session)
-        fv_BIC.train_model()
-
-        if False:
-            fv_gmm = FisherVectorGMM(n_kernels=32)
-            fv_gmm.load()
-
-            X_train = fv_gmm.load_vector('train', dynamics=True)
-            X_dev = fv_gmm.load_vector('dev', dynamics=True)
-            
-            # after n_kernels is determined
-            fv_train = np.array([fv_gmm.predict(train) for train in X_train])
-            fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
-
-            fv_gmm.save_vector(fv_train, 'train', dynamics=False)
-            fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
+        fv_gmm.save_vector(fv_train, 'train', dynamics=False)
+        fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
 
     def DNN(self):
         fv_gmm = FisherVectorGMM(n_kernels=32)
@@ -214,21 +228,22 @@ class Experiment():
         text2vec.infer_embedding('dev')
 
     def TEXT_RF(self):
+        print("\nrunning Random Forest on document embeddings")
         import os
         from smart_open import smart_open
 
-        with smart_open('./pre-trained/doc2vec/model_list.txt', 'rb', encoding='utf-8') as model_path:
+        with smart_open('/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/doc2vec/model_list.txt', 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
-                print(line_no, '\t', line[22:])
+                print(line_no, '\t', line[68:])
                 X_train = np.load(os.path.join(line, 'vectors_train.npy'))
                 X_dev = np.load(os.path.join(line, 'vectors_dev.npy'))
                 y_train = np.load(os.path.join(line, 'labels_train.npy'))
                 y_dev = np.load(os.path.join(line, 'labels_dev.npy'))
                 y_train = np.ravel(y_train)
                 y_dev = np.ravel(y_dev)
-                random_forest = RandomForest(line[22:], X_train, y_train, X_dev,y_dev, baseline=False)
+                random_forest = RandomForest(line[68:], X_train, y_train, X_dev,y_dev, baseline=False)
                 random_forest.run()
                 y_pred_train, y_pred_dev = random_forest.evaluate()
-                get_UAR(y_pred_train, y_train, np.array([]), 'RF', line[22:], 'single', baseline=False, train_set=True)
-                get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', line[22:], 'single', baseline=False)
+                get_UAR(y_pred_train, y_train, np.array([]), 'RF', line[68:], 'single', baseline=False, train_set=True)
+                get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', line[68:], 'single', baseline=False)

@@ -42,7 +42,7 @@ epochs: {30, 50}
 | dm    | 50   | 5  | 5  | NA | 30 | 0.429 | 0.496 | 0.419 |
 | dm    | 50   | 5  | 10 | NA | 30 | 0.384 | 0.405 | 0.374 |
 | dm    | 50   | 5  | NA | Y  | 30 | 0.373 | 0.376 | 0.361 |
-| dm    | 50   | 10 | 5  | NA | 30 | 0.492 | 0.481 | 0.482 |
+| dm    | 50   | 10 | 5  | NA | 30 | **0.492** | 0.481 | 0.482 |
 | dm    | 50   | 10 | 10 | NA | 30 | 0.426 | 0.455 | 0.401 |
 | dm    | 50   | 10 | NA | Y  | 30 | 0.402 | 0.598 | 0.355 |
 | dm    | 100  | 5  | 5  | NA | 30 | 0.429 | 0.480 | 0.421 |
@@ -54,7 +54,7 @@ epochs: {30, 50}
 | dbow  | 25   | NA | 5  | NA | 30 | 0.373 | 0.391 | 0.354 |
 | dbow  | 25   | NA | 10 | NA | 30 | 0.378 | 0.397 | 0.379 |
 | dbow  | 25   | NA | NA | Y  | 30 | 0.370 | 0.383 | 0.373 |
-| dbow  | 50   | NA | 5  | NA | 30 | 0.505 | 0.544 | 0.498 |
+| dbow  | 50   | NA | 5  | NA | 30 | **0.505** | 0.544 | 0.498 |
 | dbow  | 50   | NA | 10 | NA | 30 | 0.439 | 0.461 | 0.429 |
 | dbow  | 50   | NA | NA | Y  | 30 | 0.399 | 0.435 | 0.397 |
 | dbow  | 100  | NA | 5  | NA | 30 | 0.463 | 0.418 | 0.412 |
@@ -99,12 +99,10 @@ The classification results show a better performance on the recall in Mania symp
 
 ## BASELINE (self-implemented)
 
-| UAR (F\*/S\*) | MFCC        | eGeMAPS     | DeepSpectrum | BoAW        | FAU       | BoVW        |
-| --            | --          | --          | --           | --          | --        | --          |
-| SVM train     |  /  |  /  | NA           | NA          | NA / | NA          |
-| SVM dev       |  /  |  /  | NA           | NA          | NA / | NA          |
-| RF train      |  /  |  /  | NA           |  /  | NA /  |  /  |
-| RF dev        |  /  |  /  | NA           |  /  | NA /  |  /  |
+| UAR (F\*/S\*) | MFCC        | eGeMAPS     | BoAW        | FAU       | BoVW        |
+| --            | --          | --          | --          | --        | --          |
+| SVM dev       |      |
+| RF dev        | 0.414 / 0.413 | 0.396 / 0.455 | 0.443 / 0.489 | - / 0.481 | 0.448 / 0.452 |
 
 > F represents frame-level and S represents session-level (FAUs are extracted on session-level)
 
