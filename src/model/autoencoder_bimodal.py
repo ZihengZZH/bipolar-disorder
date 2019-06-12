@@ -1,7 +1,4 @@
 import os
-import json
-import numpy as np
-import pandas as pd
 from sklearn.preprocessing import minmax_scale
 from keras import regularizers
 from keras import backend as K
@@ -14,7 +11,7 @@ from src.model.autoencoder import AutoEncoder
 
 class AutoEncoderBimodal(AutoEncoder):
     """
-    Bimodal Stacked Denoising Autoencoder (SDAE) to encoder audio-visual data
+    Bimodal Deep Denoising Autoencoder (DDAE) to encoder audio-visual data
     ---
     Attributes
     -----------
@@ -32,16 +29,16 @@ class AutoEncoderBimodal(AutoEncoder):
     Functions
     -----------
     build_model(): public
-        build bimodal stacked denoising autoencoder model
+        build bimodal deep denoising autoencoder model
     train_model(): public
-        train bimodal stacked denoising autoencoder model
+        train bimodal deep denoising autoencoder model
     encode(): public
         encode A/V input to latent representation
     decode(): public
         decode latent representation to A/V input
     """
     def __init__(self, name, input_dim_A, input_dim_V, noisy=True, sparse=False):
-        # para name: name of bimodal SDAE
+        # para name: name of bimodal DDAE
         AutoEncoder.__init__(self, name, input_dim_A+input_dim_V, noisy=noisy, sparse=sparse)
         self.load_basic()
         self.name = '%s_hidden%.2f_batch%d_epoch%d_noise%s' % (name, self.hidden_ratio, self.batch_size, self.epochs, self.noise)
@@ -51,7 +48,7 @@ class AutoEncoderBimodal(AutoEncoder):
         self.decoder_V = None
 
     def build_model(self):
-        """build bimodal stacked deep autoencoder
+        """build bimodal deep deep autoencoder
         """
         if not os.path.isdir(os.path.join(self.save_dir, self.name)):
             os.mkdir(os.path.join(self.save_dir, self.name))
@@ -124,10 +121,10 @@ class AutoEncoderBimodal(AutoEncoder):
         print(self.decoder_V.summary())
         print("--" * 20)
 
-        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'bimodal_SDAE.png'))
+        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'bimodal_DDAE.png'))
 
     def train_model(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
-        """train bimodal stacked deep autoencoder
+        """train bimodal deep deep autoencoder
         """
         if self.fitted:
             print("\nmodel already trained ---", self.name)

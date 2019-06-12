@@ -75,12 +75,12 @@ class FisherVectorGMM:
 
     def fit(self, X):
         # para X: shape [n_frames, n_features, n_feature_dim]
-        if os.path.isfile(os.path.join(self.save_dir, self.name, 'gmm.model')):
-            print("\nmodel already trained ---", self.name)
-            self.load()
-            return 
-        elif not os.path.isdir(os.path.join(self.save_dir, self.name)):
-            os.mkdir(os.path.join(self.save_dir, self.name))
+        # if os.path.isfile(os.path.join(self.save_dir, self.name, 'gmm.model')):
+        #     print("\nmodel already trained ---", self.name)
+        #     self.load()
+        #     return 
+        # elif not os.path.isdir(os.path.join(self.save_dir, self.name)):
+        #     os.mkdir(os.path.join(self.save_dir, self.name))
         
         self.feature_dim = X.shape[-1]
         # X = X.reshape(-1, X.shape[-1])
@@ -101,12 +101,12 @@ class FisherVectorGMM:
 
         assert self.covars.ndim == 3
         print("\nmodel trained ---", self.name)
-        self.save()
+        # self.save()
     
     def score(self, X):
         return self.gmm.score(X.reshape(-1, X.shape[-1]))
 
-    def predict(self, X, normalized=False):
+    def predict(self, X, normalized=True):
         # para X: shape [n_frames, n_feature_dim]
         assert X.ndim == 2
         assert X.shape[0] >= self.n_kernels, 'n_frames should be greater than n_kernels'

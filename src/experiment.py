@@ -153,8 +153,6 @@ class Experiment():
         print("\nrunning computation of dynamics of latent reprsentation learned by DDAEs")
         import os
         from smart_open import smart_open
-        
-        fv_gmm = FisherVectorGMM(n_kernels=64)
 
         with smart_open('/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE/model_list.txt', 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
@@ -181,18 +179,43 @@ class Experiment():
                 del X_train, X_train_frame, X_dev, X_dev_frame
 
     def FV_GMM(self):
-        print("\nrunning Fisher Encoder using GMM on learnt representations")
-        
-        fv_gmm = FisherVectorGMM(n_kernels=64)
-        X_train = fv_gmm.load_vector('train', dynamics=True)
-        X_dev = fv_gmm.load_vector('dev', dynamics=True)
-        
-        # after n_kernels is determined
-        fv_train = np.array([fv_gmm.predict(train) for train in X_train])
-        fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev])
+        print("\nrunning Fisher Encoder using GMM on learnt representations with dynamics")
+        import os
+        from smart_open import smart_open
 
-        fv_gmm.save_vector(fv_train, 'train', dynamics=False)
-        fv_gmm.save_vector(fv_dev, 'dev', dynamics=False)
+        y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
+        y_train_frame, y_dev_frame = y_train_frame[2:,:], y_dev_frame[2:,:]
+        inst_train, inst_dev = inst_train[2:,:], inst_dev[2:,:]
+
+        ae = AutoEncoder('fv_gmm', 0)
+
+        with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
+            for line_no, line in enumerate(model_path):
+                line = str(line).replace('\n', '')
+                print(line_no, '\t', line[65:])
+
+                if os.path.isfile(os.path.join(line, 'fisher_vector_train_64_norm.npy')) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_64_norm.npy')):
+                    continue
+                
+                X_train_frame = np.load(os.path.join(line, 'encoded_train_dynamics.npy'))
+                X_dev_frame = np.load(os.path.join(line, 'encoded_dev_dynamics.npy'))
+
+                fv_gmm = FisherVectorGMM(n_kernels=64)
+                fv_gmm.fit(np.vstack((np.vstack(X_train_frame), np.vstack(X_dev_frame))))
+
+                X_train_session, y_train_session = frame2session(X_train_frame, y_train_frame, inst_train, verbose=True)
+                X_dev_session, y_dev_session = frame2session(X_dev_frame, y_dev_frame, inst_dev, verbose=True)
+
+                fv_train = np.array([fv_gmm.predict(train) for train in X_train_session])
+                fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev_session])
+
+                fv_gmm.data_dir = line
+
+                fv_gmm.save_vector(fv_train, 'train')
+                fv_gmm.save_vector(fv_dev, 'dev')
+                fv_gmm.save_vector(y_train_session, 'train', label=True)
+                fv_gmm.save_vector(y_dev_session, 'dev', label=True)
+                print("\nFV encoding for %s, done" % line[65:])
 
     def DNN(self):
         fv_gmm = FisherVectorGMM(n_kernels=32)
@@ -232,7 +255,9 @@ class Experiment():
         import os
         from smart_open import smart_open
 
-        with smart_open('/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/doc2vec/model_list.txt', 'rb', encoding='utf-8') as model_path:
+        text2vec = Text2Vec()
+
+        with smart_open(os.path.join(text2vec.model_config['doc2vec']['save_dir'], 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
                 print(line_no, '\t', line[68:])

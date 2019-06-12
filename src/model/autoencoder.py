@@ -16,7 +16,7 @@ from keras.utils import plot_model
 
 class AutoEncoder():
     """
-    Stacked Denoising Autoencoder (SDAE) to encode visual data
+    Deep Denoising Autoencoder (DDAE) to encode visual data
     ---
     Attributes
     -----------
@@ -46,20 +46,20 @@ class AutoEncoder():
     load_basic(): public
         load basic data and configuration for model
     build_model(): public
-        build stacked denoising autoencoder model
+        build deep denoising autoencoder model
     train_model(): public
-        train stacked denoising autoencoder model
+        train deep denoising autoencoder model
     encode(): public
         encode raw input to latent representation
     decode(): public
         decode latent representation to raw input
     save_model(): public
-        save stacked denoising autoencoder model to external file
+        save deep denoising autoencoder model to external file
     load_model(): public
-        load stacked denoising autoencoder model from external file
+        load deep denoising autoencoder model from external file
     """
     def __init__(self, name, input_dim, noisy=True, sparse=False, visual=True):
-        # para name: name of SDAE
+        # para name: name of DDAE
         self.noisy = noisy
         self.sparse = sparse
         self.visual = visual
@@ -91,7 +91,7 @@ class AutoEncoder():
         self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
         self.dimension[3] = self.dimension[1]
         self.dimension[4] = self.dimension[0]
-        print("\nSDAE initialized and configuration loaded")
+        print("\nDDAE initialized and configuration loaded")
 
     def sparse_regularizer(self, activation_matrix):
         """define the custom regularizer function
@@ -118,6 +118,8 @@ class AutoEncoder():
         return X_noisy
 
     def separate_V(self, X):
+        """separate visual features to FLK, HP, EG, FAU
+        """
         X1 = X.iloc[:, :136] / 1000 # facial 
         X2 = X.iloc[:, 136:142]     # gaze
         X3 = X.iloc[:, 142:148]     # pose
@@ -125,7 +127,7 @@ class AutoEncoder():
         return X1, X2, X3, X4
 
     def build_model(self):
-        """build stacked denoising autoencoder model
+        """build deep denoising autoencoder model
         """
         if not os.path.isdir(os.path.join(self.save_dir, self.name)):
             os.mkdir(os.path.join(self.save_dir, self.name))
@@ -168,10 +170,10 @@ class AutoEncoder():
         print("decoder")
         print(self.decoder.summary())
 
-        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'SDAE.png'))
+        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'DDAE.png'))
 
     def train_model(self, X_train, X_dev):
-        """train stacked denoising autoencoder model
+        """train deep denoising autoencoder model
         """
         if self.fitted:
             print("\nmodel already trained ---", self.name)
@@ -229,15 +231,15 @@ class AutoEncoder():
         return decoded_input
     
     def save_model(self):
-        """save stacked denoising autoencoder model to external file
+        """save deep denoising autoencoder model to external file
         """
-        self.autoencoder.save_weights(os.path.join(self.save_dir, self.name, 'SDAE.h5'))
+        self.autoencoder.save_weights(os.path.join(self.save_dir, self.name, 'DDAE.h5'))
         print("\nsaving completed ---", self.name)
 
     def load_model(self):
-        """load stacked denoising autoencoder model from external file
+        """load deep denoising autoencoder model from external file
         """
-        self.autoencoder.load_weights(os.path.join(self.save_dir, self.name, 'SDAE.h5'))
+        self.autoencoder.load_weights(os.path.join(self.save_dir, self.name, 'DDAE.h5'))
         print("\nloading completed ---", self.name)
 
     def save_representation(self, encoded_train, encoded_dev):

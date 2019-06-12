@@ -1,7 +1,5 @@
 import os
 import json
-import numpy as np
-import pandas as pd
 from sklearn.preprocessing import minmax_scale
 from keras import regularizers
 from keras import backend as K
@@ -13,6 +11,33 @@ from src.model.autoencoder import AutoEncoder
 
 
 class AutoEncoderMultimodal(AutoEncoder):
+    """
+    Multimodal Deep Denoising Autoencoder (DDAE) to encode audio-visual data
+    ---
+    Attributes:
+    -----------
+    name: str
+        model name
+    dimension_A/V1/V2/V3/V4: int
+        input A/V data dimensionality
+    noisy: bool
+        whether or not to involve denoising fashion
+    sparse: bool
+        whether or not to involve sparsity
+    decoder_A/V1/V2/V3/V4: keras.models.Model
+        keras Model mapping latent representation to A/V input
+    ---------------------------------------
+    Functions
+    -----------
+    build_model(): public
+        build multimodal deep denoising autoencoder model
+    train_model(): public
+        train multimodal deep denoising autoencoder model
+    encode(): public
+        encode A/V input to latent representation
+    decode(): public
+        decode latent representation to A/V input
+    """
     def __init__(self, name, input_dim_A, input_dim_V1, input_dim_V2, input_dim_V3, input_dim_V4, noisy=True, sparse=False):
         AutoEncoder.__init__(self, name, input_dim_A+input_dim_V1+input_dim_V2+input_dim_V3, noisy=noisy, sparse=sparse)
         self.load_basic()

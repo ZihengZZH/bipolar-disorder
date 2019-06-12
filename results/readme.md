@@ -6,13 +6,13 @@ All results in this page, unless indicated, are based on UAR.
 
 ### audio-visual
 
-biSDAE
+uniDDAE + biDDAE + multiDDAE
 
 hidden_ratio: {0.4, 0.5, 0.6}
 
-batch_size: {256, 512}
+batch_size: {512}
 
-epochs: {30, 50}
+epochs: {30}
 
 noise: {0.1, 0.2, 0.4}
 
@@ -29,7 +29,7 @@ negative: {5, 10}
 
 hs: {0, 1}
 
-epochs: {30, 50}
+epochs: {30}
 
 | model | vector | window | negative | hs | epochs | UAR | UAP | Fscore | 
 | --    | --     | --     | --       | -  | --     | --  | --  | -- |
@@ -63,46 +63,15 @@ epochs: {30, 50}
 
 
 
-MOST SIMILAR WORDS (iyi / good)
-
-| model | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-| --    | - | - | - | - | - | - | - | - |
-| dm    | başarılı | azından | ıyi | kötü | az | pahalıdan | gelişmişe | sağlıklısı | basitinden | 
-|       | successful | least | good | bad | little | from expensive | advanced to | healthiest | from simple | 
-| dbow  | kuyucu | özneden | iğneliyici | oynasaydı | hồng | kavrayışında | kümesinin | kirpiklerden |
-|       | kuyucu | the subject | the iğneliyic | NA | NA | in understanding | set of | the lash |
-
-> 9th May test performance (without involvement of Turkish corpus)
-
-## multiple modality
-
-Autoencoder (session-level) {trained on all available data}
-
-* accuracy on training set: 0.744
-* accuracy on development set: 0.381
-
-![](../images/models/structure_session.png)
-
-Autoencoder (frame-level) {trained on all available data}
-
-* accuracy on training set: 0.763
-* accuracy on development set: 0.402
-
-![](../images/models/structure_frame.png)
-
-## Single Task DNN
-
-The classification results show a better performance on the recall in Mania symptom (label 3, YMRS > 12)
-
-## Multitask DNN
-
 
 ## BASELINE (self-implemented)
 
-| UAR (F\*/S\*) | MFCC        | eGeMAPS     | BoAW        | FAU       | BoVW        |
-| --            | --          | --          | --          | --        | --          |
-| SVM dev       |      |
-| RF dev        | 0.414 / 0.413 | 0.396 / 0.455 | 0.443 / 0.489 | - / 0.481 | 0.448 / 0.452 |
+| RF dev | MFCC  | eGeMAPS | BoAW  | FAU   | BoVW  |
+| --     | --    | --      | --    | --    | --    |
+| UAR (F)| 0.414 | 0.396   | 0.443 | -     | 0.452 |
+| UAR (S)| 0.413 | 0.455   | 0.489 | 0.481 | 0.452 |
+| UAP    | 0.410 | 0.370   | 0.439 | 0.528 | 0.445 |
+| F1     | 0.339 | 0.379   | 0.385 | 0.490 | 0.438 |
 
 > F represents frame-level and S represents session-level (FAUs are extracted on session-level)
 
