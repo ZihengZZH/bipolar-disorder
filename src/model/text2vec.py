@@ -113,7 +113,6 @@ class Text2Vec():
     def build_model(self):
         """build doc2vec model
         """
-        assert self.dm == 1
         self.model = doc2vec.Doc2Vec(dm=self.dm, 
                                     vector_size=self.vector_size, 
                                     window=self.window_size,
@@ -208,8 +207,8 @@ class Text2Vec():
         
         inferred_doc_vec = self.model.infer_vector(self.all_docs[given_doc_id].words)
         print("--" * 20)
-        print("\nmost similar transcripts in document embedding space:\n%s:\n%s" % (self.model, self.model.docvecs.most_similar([inferred_doc_vec], topn=3)))
-        output.write("\nmost similar transcripts in document embedding space:\n%s:\n%s" % (self.model, self.model.docvecs.most_similar([inferred_doc_vec], topn=3)))
+        print("\nmost similar transcripts in document embedding space:\n%s:\n%s" % (self.model, self.model.docvecs.most_similar([inferred_doc_vec], topn=3, clip_start=0, clip_end=len(self.all_docs))))
+        output.write("\nmost similar transcripts in document embedding space:\n%s:\n%s" % (self.model, self.model.docvecs.most_similar([inferred_doc_vec], topn=3, clip_start=0, clip_end=len(self.all_docs))))
         output.write("--\n")
         
         sims = self.model.docvecs.most_similar(given_doc_id, topn=len(self.all_docs), clip_start=0, clip_end=len(self.all_docs))
@@ -249,14 +248,14 @@ class Text2Vec():
         length_train, length_dev = len(infer_label_train), len(infer_label_dev)
 
         print("\nsaving embeddings to metadata file for tensorboard projector visualization")
-        with smart_open(os.path.join(self.save_dir, 'label.tsv', 'w', encoding='utf-8')) as label_f:
+        with smart_open(os.path.join(self.save_dir, 'label.tsv'), 'wb', encoding='utf-8') as label_f:
             label_f.write("Index\tLabel\n")
-            for i in range(len(length_train)):
-                label_f.write("%d\t%d\n" % (i, infer_label_train[i]))
-            for j in range(len(length_dev)):
-                label_f.write("%d\t%d\n" % (j, infer_label_dev[j]))
+            for i in range(length_train):
+                label_f.write("train_%d\t%d\n" % (i+1, infer_label_train[i]))
+            for j in range(length_dev):
+                label_f.write("dev_%d\t%d\n" % (j+1, infer_label_dev[j]))
         
-        with smart_open(os.path.join(self.save_dir, 'metadata.tsv', 'w', encoding='utf-8')) as data_f:
+        with smart_open(os.path.join(self.save_dir, 'metadata.tsv'), 'wb', encoding='utf-8') as data_f:
             for a in range(len(infer_vector_train)):
                 for b in range(len(infer_vector_train[a])):
                     data_f.write("%f\t" % infer_vector_train[a][b])

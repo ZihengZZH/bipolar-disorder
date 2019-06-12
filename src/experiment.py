@@ -30,6 +30,7 @@ class Experiment():
                     'MultiDDAE on aligned A/V',
                     'Dynamics on latent repres',
                     'FV using GMM on latent repres', 
+                    'RF on FV',
                     'DNN as classifier', 'doc2vec on text',
                     'RF on doc2vec']
         print("--" * 20)
@@ -56,10 +57,12 @@ class Experiment():
         elif choice == 5:
             self.FV_GMM()
         elif choice == 6:
-            self.DNN()
+            self.FV_RF()
         elif choice == 7:
+            self.DNN()
+        elif choice == 8:
             self.TEXT()
-        elif choice -- 8:
+        elif choice == 9:
             self.TEXT_RF()
     
     def main_system(self):
@@ -216,6 +219,37 @@ class Experiment():
                 fv_gmm.save_vector(y_train_session, 'train', label=True)
                 fv_gmm.save_vector(y_dev_session, 'dev', label=True)
                 print("\nFV encoding for %s, done" % line[65:])
+    
+    def FV_RF(self):
+        print("\nrunning Random Forest on Fisher Vectors")
+        import os
+        from smart_open import smart_open
+
+        ae = AutoEncoder('fv_gmm', 0)
+
+        with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
+            for line_no, line in enumerate(model_path):
+                line = str(line).replace('\n', '')
+                print(line_no, '\t', line[65:])
+                feature_name = line[65:] + '_64_norm'
+
+                if os.path.isfile(os.path.join(line, 'fisher_vector_train_64_norm.npy')) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_64_norm.npy')):
+                    X_train = np.load(os.path.join(line, 'fisher_vector_train_64_norm.npy'))
+                    X_dev = np.load(os.path.join(line, 'fisher_vector_dev_64_norm.npy'))
+                    y_train = np.load(os.path.join(line, 'label_train.npy'))
+                    y_dev = np.load(os.path.join(line, 'label_dev.npy'))
+                    X_train = np.reshape(X_train, (-1, np.prod(X_train.shape[1:])))
+                    X_dev = np.reshape(X_dev, (-1, np.prod(X_dev.shape[1:])))
+                    X_train = np.nan_to_num(X_train)
+                    X_dev = np.nan_to_num(X_dev)
+
+                    X_train, y_train, _ = upsample(X_train, y_train, np.array([]))
+                    
+                    random_forest = RandomForest(feature_name, X_train, y_train, X_dev, y_dev, baseline=False)
+                    random_forest.run()
+                    y_pred_train, y_pred_dev = random_forest.evaluate()
+                    get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature_name, 'single', baseline=False, train_set=True)
+                    get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single', baseline=False)
 
     def DNN(self):
         fv_gmm = FisherVectorGMM(n_kernels=32)

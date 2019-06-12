@@ -124,7 +124,7 @@ class RandomForest():
                         verbose=3, 
                         scoring='recall_macro')
 
-        clf.fit(self.X_train, self.y_train)
+        clf.fit(np.vstack((self.X_train, self.X_dev)), np.hstack((self.y_train, self.y_dev)))
         print("\nfinal score for the tuned model\n", clf.score(self.X_dev, self.y_dev))
         print("\nbest hyperparameters for the tuned model\n", clf.best_params_)
         print("\ncross validation results (MEAN)\n", clf.cv_results_['mean_test_score'])
