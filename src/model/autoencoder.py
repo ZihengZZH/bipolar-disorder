@@ -87,10 +87,16 @@ class AutoEncoder():
         self.p = self.model_config['p']
         self.beta = self.model_config['beta']
         self.save_dir = self.model_config['save_dir']
-        self.dimension[1] = int(self.dimension[0] * self.hidden_ratio)
-        self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
-        self.dimension[3] = self.dimension[1]
-        self.dimension[4] = self.dimension[0]
+        if self.hidden_ratio == 1.0:
+            self.dimension[1] = int(self.dimension[0] * 0.75)
+            self.dimension[2] = int(self.dimension[0] * 0.5)
+            self.dimension[3] = self.dimension[1]
+            self.dimension[4] = self.dimension[0]
+        else:
+            self.dimension[1] = int(self.dimension[0] * self.hidden_ratio)
+            self.dimension[2] = int(self.dimension[1] * self.hidden_ratio)
+            self.dimension[3] = self.dimension[1]
+            self.dimension[4] = self.dimension[0]
         print("\nDDAE initialized and configuration loaded")
 
     def sparse_regularizer(self, activation_matrix):

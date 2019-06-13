@@ -68,7 +68,7 @@ def main(argv):
             from src.utils.vis import visualize_landmarks
             print("Visualize facial landmarks on videos")
             print("--" * 20)
-            visualize_landmarks(arg)
+            visualize_landmarks(arg, no_frame=True)
 
 
 if __name__ == "__main__":

@@ -61,7 +61,20 @@ class AutoEncoderMultimodal(AutoEncoder):
         else:
             self.fitted = True
         
-        hidden_dim = int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4)
+        if self.hidden_ratio != 1.0:
+            hidden_dim_A = int(self.dimension_A * self.hidden_ratio)
+            hidden_dim_V1 = int(self.dimension_V1 * self.hidden_ratio)
+            hidden_dim_V2 = int(self.dimension_V2 * self.hidden_ratio)
+            hidden_dim_V3 = int(self.dimension_V3 * self.hidden_ratio)
+            hidden_dim_V4 = int(self.dimension_V4 * self.hidden_ratio)
+            hidden_dim = int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4)
+        else:
+            hidden_dim_A = int(self.dimension_A * 0.75)
+            hidden_dim_V1 = int(self.dimension_V1 * 0.75)
+            hidden_dim_V2 = int(self.dimension_V2 * 0.75)
+            hidden_dim_V3 = int(self.dimension_V3 * 0.75)
+            hidden_dim_V4 = int(self.dimension_V4 * 0.75)
+            hidden_dim = int((self.dimension_A + self.dimension_V) * 0.5)
 
         input_data_A = Input(shape=(self.dimension_A, ), name='audio_input')
         input_data_V1 = Input(shape=(self.dimension_V1, ), name='facial_input')
@@ -70,19 +83,19 @@ class AutoEncoderMultimodal(AutoEncoder):
         input_data_V4 = Input(shape=(self.dimension_V4, ), name='action_input')
         encoded_input = Input(shape=(hidden_dim, ))
         
-        encoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
+        encoded_A = Dense(hidden_dim_A, 
                         activation='relu', kernel_initializer='he_uniform',
                         name='audio_encoded')(input_data_A)
-        encoded_V1 = Dense(int(self.dimension_V1 * self.hidden_ratio), 
+        encoded_V1 = Dense(hidden_dim_V1, 
                         activation='relu', kernel_initializer='he_uniform',
                         name='facial_encoded')(input_data_V1)
-        encoded_V2 = Dense(int(self.dimension_V2 * self.hidden_ratio), 
+        encoded_V2 = Dense(hidden_dim_V2, 
                         activation='relu', kernel_initializer='he_uniform',
                         name='gaze_encoded')(input_data_V2)
-        encoded_V3 = Dense(int(self.dimension_V3 * self.hidden_ratio),
+        encoded_V3 = Dense(hidden_dim_V3,
                         activation='relu', kernel_initializer='he_uniform',
                         name='pose_encoded')(input_data_V3)
-        encoded_V4 = Dense(int(self.dimension_V4 * self.hidden_ratio), 
+        encoded_V4 = Dense(hidden_dim_V4, 
                         activation='relu', kernel_initializer='he_uniform',
                         name='action_encoded')(input_data_V4)
 
@@ -97,15 +110,15 @@ class AutoEncoderMultimodal(AutoEncoder):
                         activation='relu',
                         name='shared_repres')(shared)
         
-        decoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
+        decoded_A = Dense(hidden_dim_A, 
                         activation='relu', name='audio_decoded')(encoded)
-        decoded_V1 = Dense(int(self.dimension_V1 * self.hidden_ratio), 
+        decoded_V1 = Dense(hidden_dim_V1, 
                         activation='relu', name='facial_decoded')(encoded)
-        decoded_V2 = Dense(int(self.dimension_V2 * self.hidden_ratio), 
+        decoded_V2 = Dense(hidden_dim_V2, 
                         activation='relu', name='gaze_decoded')(encoded)
-        decoded_V3 = Dense(int(self.dimension_V3 * self.hidden_ratio), 
+        decoded_V3 = Dense(hidden_dim_V3, 
                         activation='relu', name='pose_decoded')(encoded)
-        decoded_V4 = Dense(int(self.dimension_V4 * self.hidden_ratio), 
+        decoded_V4 = Dense(hidden_dim_V4, 
                         activation='relu', name='action_decoded')(encoded)
 
         decoded_A = Dense(self.dimension_A, activation='sigmoid',

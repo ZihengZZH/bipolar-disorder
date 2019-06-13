@@ -197,20 +197,20 @@ class Experiment():
                 line = str(line).replace('\n', '')
                 print(line_no, '\t', line[65:])
 
-                if os.path.isfile(os.path.join(line, 'fisher_vector_train_64_norm.npy')) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_64_norm.npy')):
+                if os.path.isfile(os.path.join(line, 'fisher_vector_train_32.npy')) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_32.npy')):
                     continue
                 
                 X_train_frame = np.load(os.path.join(line, 'encoded_train_dynamics.npy'))
                 X_dev_frame = np.load(os.path.join(line, 'encoded_dev_dynamics.npy'))
 
-                fv_gmm = FisherVectorGMM(n_kernels=64)
+                fv_gmm = FisherVectorGMM(n_kernels=32)
                 fv_gmm.fit(np.vstack((np.vstack(X_train_frame), np.vstack(X_dev_frame))))
 
                 X_train_session, y_train_session = frame2session(X_train_frame, y_train_frame, inst_train, verbose=True)
                 X_dev_session, y_dev_session = frame2session(X_dev_frame, y_dev_frame, inst_dev, verbose=True)
 
-                fv_train = np.array([fv_gmm.predict(train) for train in X_train_session])
-                fv_dev = np.array([fv_gmm.predict(dev) for dev in X_dev_session])
+                fv_train = np.array([fv_gmm.predict(train, normalized=False) for train in X_train_session])
+                fv_dev = np.array([fv_gmm.predict(dev, normalized=False) for dev in X_dev_session])
 
                 fv_gmm.data_dir = line
 
@@ -245,11 +245,11 @@ class Experiment():
 
                     X_train, y_train, _ = upsample(X_train, y_train, np.array([]))
                     
-                    random_forest = RandomForest(feature_name, X_train, y_train, X_dev, y_dev, baseline=False)
+                    random_forest = RandomForest(feature_name, X_train, y_train, X_dev, y_dev)
                     random_forest.run()
                     y_pred_train, y_pred_dev = random_forest.evaluate()
-                    get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature_name, 'single', baseline=False, train_set=True)
-                    get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single', baseline=False)
+                    get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature_name, 'single', train_set=True)
+                    get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single')
 
     def DNN(self):
         fv_gmm = FisherVectorGMM(n_kernels=32)

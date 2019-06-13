@@ -117,3 +117,6 @@ venv.bak/
 
 # pre-trained models
 /pre-trained
+
+# facial image
+/images/facial

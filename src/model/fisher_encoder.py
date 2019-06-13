@@ -208,7 +208,7 @@ class FisherVectorGMM:
 
     def save_vector(self, fisher_vector, partition, dynamics=False, label=False):
         if not label:
-            filename = 'vector_%s' % partition if dynamics else 'fisher_vector_%s' % partition
+            filename = 'vector_%s_%d' % (partition, self.n_kernels) if dynamics else 'fisher_vector_%s_%d' % (partition, self.n_kernels)
             np.save(os.path.join(self.data_dir, filename), fisher_vector)
         else:
             filename = 'label_%s' % partition
@@ -216,7 +216,7 @@ class FisherVectorGMM:
 
     def load_vector(self, partition, dynamics=False, label=False):
         if not label:
-            filename = 'vector_%s.npy' % partition if dynamics else 'fisher_vector_%s.npy' % partition
+            filename = 'vector_%s_%d.npy' % (partition, self.n_kernels) if dynamics else 'fisher_vector_%s_%d.npy' % (partition, self.n_kernels)
             fisher_vector = np.load(os.path.join(self.data_dir, filename), allow_pickle=True)
             return fisher_vector
         else:

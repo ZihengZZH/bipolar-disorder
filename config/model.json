@@ -1,9 +1,9 @@
 {
     "baseline": {
         "random_forest": {
-            "n_estimators": [100, 200, 400, 800],
+            "n_estimators": [100, 200, 400],
             "max_features": [0.1, 0.2, 0.4],
-            "max_depth": [2, 4, 6, 8],
+            "max_depth": [2, 4, 8],
             "criterion": ["entropy"]
         },
         "SVM": {
@@ -11,7 +11,7 @@
         }
     },
     "autoencoder": {
-        "hidden_ratio": 0.4,
+        "hidden_ratio": 1.0,
         "learning_rate": 0.01,
         "batch_size": 512,
         "epochs": 30,

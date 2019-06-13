@@ -48,7 +48,7 @@ class AutoEncoderBimodal(AutoEncoder):
         self.decoder_V = None
 
     def build_model(self):
-        """build bimodal deep deep autoencoder
+        """build bimodal deep deep denoising autoencoder
         """
         if not os.path.isdir(os.path.join(self.save_dir, self.name)):
             os.mkdir(os.path.join(self.save_dir, self.name))
@@ -56,16 +56,23 @@ class AutoEncoderBimodal(AutoEncoder):
         else:
             self.fitted = True
         
-        hidden_dim = int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4)
+        if self.hidden_ratio != 1.0:
+            hidden_dim_A = int(self.dimension_A * self.hidden_ratio)
+            hidden_dim_V = int(self.dimension_V * self.hidden_ratio)
+            hidden_dim = int((self.dimension_A + self.dimension_V) * self.hidden_ratio / 4)
+        else:
+            hidden_dim_A = int(self.dimension_A * 0.75)
+            hidden_dim_V = int(self.dimension_V * 0.75)
+            hidden_dim = int((self.dimension_A + self.dimension_V) * 0.5)
 
         input_data_A = Input(shape=(self.dimension_A, ), name='audio_input')
         input_data_V = Input(shape=(self.dimension_V, ), name='video_input')
         encoded_input = Input(shape=(hidden_dim, ))
         
-        encoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
+        encoded_A = Dense(hidden_dim_A, 
                         activation='relu', kernel_initializer='he_uniform', 
                         name='audio_encoded')(input_data_A)
-        encoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
+        encoded_V = Dense(hidden_dim_V, 
                         activation='relu', kernel_initializer='he_uniform', 
                         name='video_encoded')(input_data_V)
 
@@ -82,10 +89,10 @@ class AutoEncoderBimodal(AutoEncoder):
                         kernel_initializer='he_uniform', 
                         name='shared_repres')(shared)
         
-        decoded_A = Dense(int(self.dimension_A * self.hidden_ratio), 
+        decoded_A = Dense(hidden_dim_A, 
                         activation='relu', kernel_initializer='he_uniform', 
                         name='audio_decoded')(encoded)
-        decoded_V = Dense(int(self.dimension_V * self.hidden_ratio), 
+        decoded_V = Dense(hidden_dim_V, 
                         activation='relu', kernel_initializer='he_uniform', 
                         name='video_decoded')(encoded)
 
@@ -124,7 +131,7 @@ class AutoEncoderBimodal(AutoEncoder):
         plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'bimodal_DDAE.png'))
 
     def train_model(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
-        """train bimodal deep deep autoencoder
+        """train bimodal deep denoising autoencoder
         """
         if self.fitted:
             print("\nmodel already trained ---", self.name)

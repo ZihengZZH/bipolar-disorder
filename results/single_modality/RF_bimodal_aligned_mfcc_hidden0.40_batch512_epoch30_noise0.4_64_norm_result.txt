@@ -1,0 +1,10 @@
+UAR on frame-level: 0.000 
+UAR on session-level: 0.328 
+Precision on session-level: 0.447 
+F1 score on session-level: 0.312 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.331 
+Precision on session-level: 0.500 
+F1 score on session-level: 0.332 
+
