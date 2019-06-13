@@ -4,7 +4,6 @@ import datetime
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn.preprocessing import minmax_scale
 from keras import regularizers
 from keras import backend as K
 from keras.models import Model
@@ -126,7 +125,7 @@ class AutoEncoder():
     def separate_V(self, X):
         """separate visual features to FLK, HP, EG, FAU
         """
-        X1 = X.iloc[:, :136] / 1000 # facial 
+        X1 = X.iloc[:, :136]        # facial 
         X2 = X.iloc[:, 136:142]     # gaze
         X3 = X.iloc[:, 142:148]     # pose
         X4 = X.iloc[:, 148:]        # action
@@ -151,7 +150,7 @@ class AutoEncoder():
         encoded = Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform', activity_regularizer=self.sparse_regularizer)(encoded) if self.sparse else Dense(self.dimension[2], activation='relu', kernel_initializer='he_uniform')(encoded)
         # decoder part
         decoded = Dense(self.dimension[3], activation='relu', kernel_initializer='he_uniform')(encoded)
-        decoded = Dense(self.dimension[4], activation='sigmoid')(decoded)
+        decoded = Dense(self.dimension[4], activation='linear')(decoded)
 
         # maps input to reconstruction
         self.autoencoder = Model(input_data, decoded)
@@ -165,7 +164,7 @@ class AutoEncoder():
         self.decoder = Model(encoded_input, decoder_2(decoder_1(encoded_input)))
 
         # configure model
-        self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+        self.autoencoder.compile(optimizer='adam', loss='mse')
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
@@ -189,52 +188,46 @@ class AutoEncoder():
         if self.visual:
             X_train, _, _, _ = self.separate_V(X_train)
             X_dev, _, _, _ = self.separate_V(X_dev)
-        else:
-            X_train = minmax_scale(X_train)
-            X_dev = minmax_scale(X_dev)
         
+        X_train = np.vstack((X_train, X_dev))
+
         if self.noisy:
             X_train_noisy = self.add_noise(X_train, self.noise)
-            X_dev_noisy = self.add_noise(X_dev, self.noise)
         else:
             X_train_noisy = X_train
-            X_dev_noisy = X_dev
 
         assert X_train_noisy.shape == X_train.shape
-        assert X_dev_noisy.shape == X_dev.shape
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
-        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{loss:.2f}.hdf5"), monitor='loss', verbose=1, save_best_only=True, mode='max')
         callbacks_list = [csv_logger, checkpoint]
 
         self.autoencoder.fit(X_train_noisy, X_train, 
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=(X_dev_noisy, X_dev),
                             callbacks=callbacks_list)
         print("\nmodel trained and saved ---", self.name)
         self.save_model()
     
-    def encode(self, X_1, X_2):
+    def encode(self, X_train, X_dev):
         """encode raw input to latent representation
         """
         if self.visual:
-            X_1, _, _, _ = self.separate_V(X_1)
-            X_2, _, _, _ = self.separate_V(X_2)
-        else:
-            X_1 = minmax_scale(X_1)
-            X_2 = minmax_scale(X_2)
+            X_train, _, _, _ = self.separate_V(X_train)
+            X_dev, _, _, _ = self.separate_V(X_dev)
         
-        encoded_train = self.encoder.predict(X_1)
-        encoded_dev = self.encoder.predict(X_2)
+        encoded_train = self.encoder.predict(X_train)
+        encoded_dev = self.encoder.predict(X_dev)
         self.save_representation(encoded_train, encoded_dev)
+        self.decode(encoded_train, encoded_dev)
 
-    def decode(self, encoded_pre):
+    def decode(self, encoded_train, encoded_dev):
         """decode latent representation to raw input
         """
-        decoded_input = self.decoder.predict(encoded_pre)
-        return decoded_input
+        decoded_train = self.decoder.predict(encoded_train)
+        decoded_dev = self.decoder.predict(encoded_dev)
+        self.save_reconstruction(decoded_train, decoded_dev)
     
     def save_model(self):
         """save deep denoising autoencoder model to external file
@@ -263,9 +256,13 @@ class AutoEncoder():
         encoded_dev = np.load(os.path.join(encoded_dir, 'encoded_dev.npy'))
         return encoded_train, encoded_dev
 
-    def save_reconstruction(self, decoded_input_A, decoded_input_V):
+    def save_reconstruction(self, decoded_train, decoded_dev, modality=False, no_modality=0):
         """save reconstructed input
         """
         decoded_dir = os.path.join(self.save_dir, self.name)
-        np.save(os.path.join(decoded_dir, 'decoded_A'), decoded_input_A)
-        np.save(os.path.join(decoded_dir, 'decoded_V'), decoded_input_V)
+        if not modality:
+            np.save(os.path.join(decoded_dir, 'decoded_train'), decoded_train)
+            np.save(os.path.join(decoded_dir, 'decoded_dev'), decoded_dev)
+        else:
+            np.save(os.path.join(decoded_dir, 'decoded_train_%d' % no_modality), decoded_train)
+            np.save(os.path.join(decoded_dir, 'decoded_dev_%d' % no_modality), decoded_dev)

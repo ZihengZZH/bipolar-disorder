@@ -1,7 +1,6 @@
 import os
-import json
-from sklearn.preprocessing import minmax_scale
-from keras import regularizers
+import numpy as np
+from keras import metrics
 from keras import backend as K
 from keras.models import Model
 from keras.layers import Input, Dense, Concatenate
@@ -121,15 +120,15 @@ class AutoEncoderMultimodal(AutoEncoder):
         decoded_V4 = Dense(hidden_dim_V4, 
                         activation='relu', name='action_decoded')(encoded)
 
-        decoded_A = Dense(self.dimension_A, activation='sigmoid',
+        decoded_A = Dense(self.dimension_A, activation='linear',
                         name='audio_recon')(decoded_A)
-        decoded_V1 = Dense(self.dimension_V1, activation='sigmoid',
+        decoded_V1 = Dense(self.dimension_V1, activation='linear',
                         name='facial_recon')(decoded_V1)
-        decoded_V2 = Dense(self.dimension_V2, activation='sigmoid',
+        decoded_V2 = Dense(self.dimension_V2, activation='linear',
                         name='gaze_recon')(decoded_V2)
-        decoded_V3 = Dense(self.dimension_V3, activation='sigmoid',
+        decoded_V3 = Dense(self.dimension_V3, activation='linear',
                         name='pose_recon')(decoded_V3)
-        decoded_V4 = Dense(self.dimension_V4, activation='sigmoid',
+        decoded_V4 = Dense(self.dimension_V4, activation='linear',
                         name='action_recon')(decoded_V4)
 
         self.autoencoder = Model(inputs=[input_data_A, 
@@ -162,7 +161,12 @@ class AutoEncoderMultimodal(AutoEncoder):
 
         # configure model
         # two combo ['adam' + 'mse] ['adadelta', 'binary_crossentropy']
-        self.autoencoder.compile(optimizer='adam', loss='mse')
+        self.autoencoder.compile(optimizer='adam', 
+                                loss='mse',
+                                metrics=[metrics.mse, metrics.mse,
+                                        metrics.mse, metrics.mse,
+                                        metrics.mse],
+                                loss_weights=[0.35, 0.35, 0.1, 0.1, 0.1])
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
@@ -174,7 +178,7 @@ class AutoEncoderMultimodal(AutoEncoder):
         print(self.decoder_A.summary())
         print("--" * 20)
 
-        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'bimodalV_SDAE.png'))
+        plot_model(self.autoencoder, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'multimodal_DDAE.png'))
 
     def train_model(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
         if self.fitted:
@@ -185,15 +189,11 @@ class AutoEncoderMultimodal(AutoEncoder):
         X_train_V1, X_train_V2, X_train_V3, X_train_V4 = self.separate_V(X_train_V)
         X_dev_V1, X_dev_V2, X_dev_V3, X_dev_V4 = self.separate_V(X_dev_V)
 
-        # normalization to [0,1] for sigmoid
-        X_train_A = minmax_scale(X_train_A)
-        X_train_V2 = minmax_scale(X_train_V2)
-        X_train_V3 = minmax_scale(X_train_V3)
-        X_train_V4 = minmax_scale(X_train_V4)
-        X_dev_A = minmax_scale(X_dev_A)
-        X_dev_V2 = minmax_scale(X_dev_V2)
-        X_dev_V3 = minmax_scale(X_dev_V3)
-        X_dev_V4 = minmax_scale(X_dev_V4)
+        X_train_A = np.vstack((X_train_A, X_dev_A))
+        X_train_V1 = np.vstack((X_train_V1, X_dev_V1))
+        X_train_V2 = np.vstack((X_train_V2, X_dev_V2))
+        X_train_V3 = np.vstack((X_train_V3, X_dev_V3))
+        X_train_V4 = np.vstack((X_train_V4, X_dev_V4))
 
         if self.noisy:
             X_train_A_noisy = self.add_noise(X_train_A, self.noise)
@@ -201,36 +201,21 @@ class AutoEncoderMultimodal(AutoEncoder):
             X_train_V2_noisy = self.add_noise(X_train_V2, self.noise)
             X_train_V3_noisy = self.add_noise(X_train_V3, self.noise)
             X_train_V4_noisy = self.add_noise(X_train_V4, self.noise)
-            X_dev_A_noisy = self.add_noise(X_dev_A, self.noise)
-            X_dev_V1_noisy = self.add_noise(X_dev_V1, self.noise)
-            X_dev_V2_noisy = self.add_noise(X_dev_V2, self.noise)
-            X_dev_V3_noisy = self.add_noise(X_dev_V3, self.noise)
-            X_dev_V4_noisy = self.add_noise(X_dev_V4, self.noise)
         else:
             X_train_A_noisy = X_train_A
             X_train_V1_noisy = X_train_V1
             X_train_V2_noisy = X_train_V2
             X_train_V3_noisy = X_train_V3
             X_train_V4_noisy = X_train_V4
-            X_dev_A_noisy = X_dev_A
-            X_dev_V1_noisy = X_dev_V1
-            X_dev_V2_noisy = X_dev_V2
-            X_dev_V3_noisy = X_dev_V3
-            X_dev_V4_noisy = X_dev_V4
 
         assert X_train_A_noisy.shape == X_train_A.shape
         assert X_train_V1_noisy.shape == X_train_V1.shape
         assert X_train_V2_noisy.shape == X_train_V2.shape
         assert X_train_V3_noisy.shape == X_train_V3.shape
         assert X_train_V4_noisy.shape == X_train_V4.shape
-        assert X_dev_A_noisy.shape == X_dev_A.shape
-        assert X_dev_V1_noisy.shape == X_dev_V1.shape
-        assert X_dev_V2_noisy.shape == X_dev_V2.shape
-        assert X_dev_V3_noisy.shape == X_dev_V3.shape
-        assert X_dev_V4_noisy.shape == X_dev_V4.shape
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
-        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{loss:.2f}.hdf5"), monitor='loss', verbose=1, save_best_only=True, mode='max')
         callbacks_list = [csv_logger, checkpoint]
 
         self.autoencoder.fit([X_train_A_noisy, 
@@ -241,30 +226,35 @@ class AutoEncoderMultimodal(AutoEncoder):
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=([X_dev_A_noisy, 
-                                        X_dev_V1_noisy, X_dev_V2_noisy, 
-                                        X_dev_V3_noisy, X_dev_V4_noisy],
-                                        [X_dev_A, X_dev_V1, X_dev_V2, 
-                                        X_dev_V3, X_dev_V4]),
                             callbacks=callbacks_list)
         print("\nmodel trained and saved ---", self.name)
         self.save_model()
 
-    def encode(self, X_1_A, X_1_V, X_2_A, X_2_V):
+    def encode(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
         """encode bimodal input to latent representation
         """
-        X_1_V1, X_1_V2, X_1_V3, X_1_V4 = self.separate_V(X_1_V)
-        X_2_V1, X_2_V2, X_2_V3, X_2_V4 = self.separate_V(X_1_V)
-        encoded_train = self.encoder.predict([X_1_A, X_1_V1, X_1_V2, X_1_V3, X_1_V4])
-        encoded_dev = self.encoder.predict([X_2_A, X_2_V1, X_2_V2, X_2_V3, X_2_V4])
+        X_1_V1, X_1_V2, X_1_V3, X_1_V4 = self.separate_V(X_train_V)
+        X_2_V1, X_2_V2, X_2_V3, X_2_V4 = self.separate_V(X_dev_V)
+        encoded_train = self.encoder.predict([X_train_A, X_1_V1, X_1_V2, X_1_V3, X_1_V4])
+        encoded_dev = self.encoder.predict([X_dev_A, X_2_V1, X_2_V2, X_2_V3, X_2_V4])
         self.save_representation(encoded_train, encoded_dev)
+        self.decode(encoded_train, encoded_dev)
     
-    def decode(self, encoded_pre):
+    def decode(self, encoded_train, encoded_dev):
         """decode latent representation to bimodal input
         """
-        decoded_input_A = self.decoder_A.predict(encoded_pre)
-        decoded_input_V1 = self.decoder_V1.predict(encoded_pre)
-        decoded_input_V2 = self.decoder_V2.predict(encoded_pre)
-        decoded_input_V3 = self.decoder_V3.predict(encoded_pre)
-        decoded_input_V4 = self.decoder_V4.predict(encoded_pre)
-        return decoded_input_A, decoded_input_V1, decoded_input_V2, decoded_input_V3, decoded_input_V4
+        decoded_train_A = self.decoder_A.predict(encoded_train)
+        decoded_dev_A = self.decoder_A.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_A, decoded_dev_A, modality=True, no_modality=0)
+        decoded_train_V1 = self.decoder_V1.predict(encoded_train)
+        decoded_dev_V1 = self.decoder_V1.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_V1, decoded_dev_V1, modality=True, no_modality=1)
+        decoded_train_V2 = self.decoder_V2.predict(encoded_train)
+        decoded_dev_V2 = self.decoder_V2.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_V2, decoded_dev_V2, modality=True, no_modality=2)
+        decoded_train_V3 = self.decoder_V3.predict(encoded_train)
+        decoded_dev_V3 = self.decoder_V3.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_V3, decoded_dev_V3, modality=True, no_modality=3)
+        decoded_train_V4 = self.decoder_V4.predict(encoded_train)
+        decoded_dev_V4 = self.decoder_V4.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_V1, decoded_dev_V1, modality=True, no_modality=4)

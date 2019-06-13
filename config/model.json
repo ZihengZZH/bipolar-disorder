@@ -18,7 +18,7 @@
         "noise": 0.1,
         "p": 0.01,
         "beta": 3,
-        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE"
+        "save_dir": "./pre-trained/DDAE"
     },
     "doc2vec": {
         "dm": 1,

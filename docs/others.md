@@ -15,7 +15,7 @@ scp user@remote_host:<remote_file> <local_file>
 ```
 e.g.
 ```
-scp zz362@dev-gpu-0.cl.cam.ac.uk:~/workspace/bipolar-disorder/pre-trained/SDAE/xxx.zip ~/Downloads/
+scp zz362@dev-gpu-0.cl.cam.ac.uk:~/workspace/bipolar-disorder/pre-trained/DDAE/xxx.zip ~/Downloads/
 ```
 
 ### upload/download a folder

@@ -2,7 +2,6 @@ import unittest
 import numpy as np
 import pandas as pd
 from src.model.autoencoder import AutoEncoder
-from src.model.autoencoder_lstm import AutoEncoderLSTM
 from src.model.autoencoder_bimodal import AutoEncoderBimodal
 from src.model.autoencoder_multimodal import AutoEncoderMultimodal
 from src.utils.io import load_bags_of_words
@@ -33,9 +32,13 @@ class TestAutoEncoder(unittest.TestCase):
         bae.encode(X_train_A, X_train_V, X_dev_A, X_dev_V)
         encoded_train, encoded_dev = bae.load_presentation()
 
-    def test_bimodal_autoencoderV(self):
-        baeV = AutoEncoderMultimodal('test', 118, 136, 6, 6, 35)
-        baeV.build_model()
+    def test_multimodal_autoencoder(self):
+        ae = AutoEncoder('test', 118)
+        ae.build_model()
+        bae = AutoEncoderBimodal('test', 120, 118)
+        bae.build_model()
+        mae = AutoEncoderMultimodal('test', 118, 136, 6, 6, 35)
+        mae.build_model()
 
 if __name__ == "__main__":
     unittest.main()

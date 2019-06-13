@@ -1,5 +1,6 @@
 import os
-from sklearn.preprocessing import minmax_scale
+import numpy as np
+from keras import metrics
 from keras import regularizers
 from keras import backend as K
 from keras.models import Model
@@ -96,9 +97,9 @@ class AutoEncoderBimodal(AutoEncoder):
                         activation='relu', kernel_initializer='he_uniform', 
                         name='video_decoded')(encoded)
 
-        decoded_A = Dense(self.dimension_A, activation='sigmoid',
+        decoded_A = Dense(self.dimension_A, activation='linear',
                         name='audio_recon')(decoded_A)
-        decoded_V = Dense(self.dimension_V, activation='sigmoid',
+        decoded_V = Dense(self.dimension_V, activation='linear',
                         name='video_recon')(decoded_V)
 
         self.autoencoder = Model(inputs=[input_data_A, input_data_V], outputs=[decoded_A, decoded_V])
@@ -113,7 +114,10 @@ class AutoEncoderBimodal(AutoEncoder):
                                 encoded_input)))
 
         # configure model
-        self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+        self.autoencoder.compile(optimizer='adam', 
+                                loss='mse',
+                                metrics=[metrics.mse, metrics.mse],
+                                loss_weights=[0.5, 0.5])
         print("--" * 20)
         print("autoencoder")
         print(self.autoencoder.summary())
@@ -138,30 +142,24 @@ class AutoEncoderBimodal(AutoEncoder):
             self.load_model()
             return 
         
-        # normalization to [0,1]
-        X_train_A = minmax_scale(X_train_A)
-        X_dev_A = minmax_scale(X_dev_A)
         X_train_V, _, _, _ = self.separate_V(X_train_V)
         X_dev_V, _, _, _ = self.separate_V(X_dev_V)
+        
+        X_train_A = np.vstack((X_train_A, X_dev_A))
+        X_train_V = np.vstack((X_train_V, X_dev_V))
         
         if self.noisy:
             X_train_A_noisy = self.add_noise(X_train_A, self.noise)
             X_train_V_noisy = self.add_noise(X_train_V, self.noise)
-            X_dev_A_noisy = self.add_noise(X_dev_A, self.noise)
-            X_dev_V_noisy = self.add_noise(X_dev_V, self.noise)
         else:
             X_train_A_noisy = X_train_A
             X_train_V_noisy = X_train_V
-            X_dev_A_noisy = X_dev_A
-            X_dev_V_noisy = X_dev_V
 
         assert X_train_A_noisy.shape == X_train_A.shape
         assert X_train_V_noisy.shape == X_train_V.shape
-        assert X_dev_A_noisy.shape == X_dev_A.shape
-        assert X_dev_V_noisy.shape == X_dev_V.shape
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
-        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"), monitor='loss', verbose=1, save_best_only=True, mode='max')
         callbacks_list = [csv_logger, checkpoint]
 
         self.autoencoder.fit([X_train_A_noisy, X_train_V_noisy],
@@ -169,27 +167,27 @@ class AutoEncoderBimodal(AutoEncoder):
                             epochs=self.epochs,
                             batch_size=self.batch_size,
                             shuffle=True,
-                            validation_data=([X_dev_A_noisy, X_dev_V_noisy],
-                                            [X_dev_A, X_dev_V]),
                             callbacks=callbacks_list)
         print("\nmodel trained and saved ---", self.name)
         self.save_model()
 
-    def encode(self, X_1_A, X_1_V, X_2_A, X_2_V):
+    def encode(self, X_train_A, X_train_V, X_dev_A, X_dev_V):
         """encode bimodal input to latent representation
         """
-        X_1_A = minmax_scale(X_1_A)
-        X_2_A = minmax_scale(X_2_A)
-        X_1_V, _, _, _ = self.separate_V(X_1_V)
-        X_2_V, _, _, _ = self.separate_V(X_2_V)
+        X_train_V, _, _, _ = self.separate_V(X_train_V)
+        X_dev_A, _, _, _ = self.separate_V(X_dev_A)
         
-        encoded_train = self.encoder.predict([X_1_A, X_1_V])
-        encoded_dev = self.encoder.predict([X_2_A, X_2_V])
+        encoded_train = self.encoder.predict([X_train_A, X_train_V])
+        encoded_dev = self.encoder.predict([X_dev_A, X_dev_V])
         self.save_representation(encoded_train, encoded_dev)
+        self.decode(encoded_train, encoded_dev)
     
-    def decode(self, encoded_pre):
+    def decode(self, encoded_train, encoded_dev):
         """decode latent representation to bimodal input
         """
-        decoded_input_A = self.decoder_A.predict(encoded_pre)
-        decoded_input_V = self.decoder_V.predict(encoded_pre)
-        return decoded_input_A, decoded_input_V
+        decoded_train_A = self.decoder_A.predict(encoded_train)
+        decoded_dev_A = self.decoder_A.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_A, decoded_dev_A, modality=True, no_modality=0)
+        decoded_train_V = self.decoder_V.predict(encoded_train)
+        decoded_dev_V = self.decoder_V.predict(encoded_dev)
+        self.save_reconstruction(decoded_train_V, decoded_dev_V, modality=True, no_modality=1)
