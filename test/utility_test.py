@@ -11,6 +11,7 @@ from src.utils.preprocess import preprocess_BOXW
 from src.utils.preprocess import preprocess_align
 from src.utils.preprocess import upsample
 from src.utils.preprocess import frame2session
+from src.utils.preprocess import k_fold_cv
 from src.utils.vis import visualize_landmarks
 
 
@@ -80,6 +81,11 @@ class TestUtility(unittest.TestCase):
         inst = np.hstack((np.ones(5,), np.ones(25,)*2, np.ones(30,)*3))
         X_sess, y_sess = frame2session(X, y, inst, verbose=True)
         print(type(X_sess), type(y_sess))
+
+    def test_k_fold_cv(self):
+        ids = k_fold_cv(20)
+        for (ids_train, ids_dev) in ids:
+            print(ids_train, ids_dev)
 
 
 if __name__ == "__main__":

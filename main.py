@@ -18,7 +18,7 @@ def display_help():
 
 def run_baseline_system():
     from src.baseline import BaseLine
-    models = ['SVM', 'RF']
+    models = ['SVM', 'RF', 'RF_cv']
     features = ['ALL', 'MFCC', 'eGeMAPS', 'BoAW', 'AU', 'BoVW']
     print("--" * 20)
     print("Available models:")

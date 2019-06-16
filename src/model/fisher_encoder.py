@@ -46,7 +46,8 @@ class FisherVectorGMM:
         # para convars_type:
         # para use_bayesian:
         assert convars_type in ['diag', 'full']
-        assert n_kernels > 0
+        assert n_kernels >= 0
+        # == 0 dummy instance
 
         self.name = 'kernels%d_convars%s_bayes%d' % (n_kernels, convars_type, use_bayesian)
         self.n_kernels = n_kernels
@@ -214,9 +215,12 @@ class FisherVectorGMM:
             filename = 'label_%s' % partition
             np.save(os.path.join(self.data_dir, filename), fisher_vector)
 
-    def load_vector(self, partition, dynamics=False, label=False):
+    def load_vector(self, partition, dynamics=False, label=False, bic=False):
         if not label:
-            filename = 'vector_%s_%d.npy' % (partition, self.n_kernels) if dynamics else 'fisher_vector_%s_%d.npy' % (partition, self.n_kernels)
+            if not bic:
+                filename = 'vector_%s_%d.npy' % (partition, self.n_kernels) if dynamics else 'fisher_vector_%s_%d.npy' % (partition, self.n_kernels)
+            else:
+                filename = 'vector_%s_0.npy' % partition if dynamics else 'fisher_vector_%s_0.npy' % partition
             fisher_vector = np.load(os.path.join(self.data_dir, filename), allow_pickle=True)
             return fisher_vector
         else:
@@ -230,7 +234,7 @@ class FisherVectorGMM_BIC():
         self.config = json.load(open('./config/model.json', 'r'))['fisher_vector']
     
     def prepare_data(self, data_train, data_dev):
-        fv_gmm = FisherVectorGMM()
+        fv_gmm = FisherVectorGMM(n_kernels=0)
         fv_gmm.save_vector(data_train, 'train', dynamics=True)
         fv_gmm.save_vector(data_dev, 'dev', dynamics=True)
     
@@ -240,8 +244,8 @@ class FisherVectorGMM_BIC():
         output = open(os.path.join(self.config['save_dir'], 'best_kernel.txt'), 'w+')
         for kernel in kernels:
             fv_gmm = FisherVectorGMM(n_kernels=kernel)
-            X_train = fv_gmm.load_vector('train', dynamics=True)
-            X_dev = fv_gmm.load_vector('dev', dynamics=True)
+            X_train = fv_gmm.load_vector('train', dynamics=True, bic=True)
+            X_dev = fv_gmm.load_vector('dev', dynamics=True, bic=True)
             X = np.vstack((np.vstack(X_train), np.vstack(X_dev)))
             fv_gmm.fit(X)
 

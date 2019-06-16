@@ -49,7 +49,7 @@
     },
     "fisher_vector":{
         "kernels": [4, 8, 16, 32, 64],
-        "data_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/FV_GMM/shared",
-        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/FV_GMM"
+        "data_dir": "./pre-trained/FV_GMM/shared",
+        "save_dir": "./pre-trained/FV_GMM"
     }
 }

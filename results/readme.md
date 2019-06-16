@@ -95,4 +95,4 @@ epochs: {30}
 | Xing2018      | Hierarchical      | **0.868** / **0.574** | NA / NA          |
 | Syed2018      | V                 | NA / **0.574**        | NA / NA          |
 | Syed2018      | A+V               | NA / 0.518            | NA / NA          |
-| **Zhang2019** | SDAE+FV+DNN       | 0.55 / NA             | 0.53 / NA        |
+| **Zhang2019** | DDAE+FV+DNN       |  / NA             | / NA        |

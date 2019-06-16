@@ -436,7 +436,13 @@ def upsample(X_train, y_train, train_inst, regression=False, verbose=False):
                     X_train = np.vstack((X_train, X_train[diff_index, :]))
                     y_train = np.hstack((y_train, y_train[diff_index]))
                     train_inst = np.hstack((train_inst, train_inst[diff_index]))
+                else:
+                    X_train = np.vstack((X_train, X_train[diff_index, :]))
+                    y_train = np.hstack((y_train, y_train[diff_index]))
                 diff -= stats[c]
+            if verbose:
+                print("X train shape", X_train.shape)
+                print("y train shape", y_train.shape)
     
     return X_train, y_train, train_inst
 
@@ -454,7 +460,7 @@ def get_dynamics(X_0th, time=0.1):
 
 
 def frame2session(X, y, inst, verbose=False):
-    """transfer frame-level data/label/inst to session-level
+    """transfer frame-level data/label/inst to session-level data/label
     """
     # para X: data
     # para y: label
@@ -480,3 +486,46 @@ def frame2session(X, y, inst, verbose=False):
             print("instance %d data shape" % i, X_temp.shape)
     assert max_inst == len(X_sess) == len(y_sess)
     return np.array(X_sess), np.array(y_sess)
+
+
+def k_fold_cv(length):
+    length_cv = length // 10
+    all_ids = list(range(length))
+    cv_ids = []
+    for i in range(10):
+        ids_train = all_ids[:length_cv*i] + all_ids[length_cv*(i+1):]
+        ids_dev = all_ids[length_cv*i:length_cv*(i+1)]
+        cv_ids.append((ids_train, ids_dev))
+    return cv_ids
+
+
+def preprocess_metadata_tensorboard(path, n_kernel):
+    X_train = np.load(os.path.join(path, 'fisher_vector_train_%d.npy' % n_kernel))
+    y_train = np.load(os.path.join(path, 'label_train.npy'))
+    X_dev = np.load(os.path.join(path, 'fisher_vector_dev_%d.npy' % n_kernel))
+    y_dev = np.load(os.path.join(path, 'label_dev.npy'))
+
+    if X_train.ndim == X_dev.ndim == 3:
+        X_train = np.reshape(X_train, (-1, np.prod(X_train.shape[1:])))
+        X_dev = np.reshape(X_dev, (-1, np.prod(X_dev.shape[1:])))
+    X_train = np.nan_to_num(X_train)
+    X_dev = np.nan_to_num(X_dev)
+
+    print("\nsaving FV to metadata file for tensorboard projector visualization")
+    with smart_open(os.path.join(path, 'label.tsv'), 'wb', encoding='utf-8') as label_f:
+        label_f.write("Index\tLabel\n")
+        for i in range(len(y_train)):
+            label_f.write("train_%d\t%d\n" % (i+1, y_train[i]))
+        for j in range(len(y_dev)):
+            label_f.write("dev_%d\t%d\n" % (j+1, y_dev[j]))
+    
+    with smart_open(os.path.join(path, 'metadata.tsv'), 'wb', encoding='utf-8') as data_f:
+        for a in range(len(X_train)):
+            for b in range(len(X_train[a])):
+                data_f.write("%f\t" % X_train[a][b])
+            data_f.write("\n")
+        for c in range(len(X_dev)):
+            for d in range(len(X_dev[c])):
+                data_f.write("%f\t" % X_dev[c][d])
+            data_f.write("\n")
+    print("\nmetadata processing done\nplease upload the .tsv onto projector.tensorflow.org for visualization")

@@ -1,6 +1,7 @@
 import os
 import json
 import numpy as np
+import itertools as it
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
@@ -81,12 +82,19 @@ class RandomForest():
         
         if not self.parameters['n_estimators'] or not self.parameters['max_features'] or not self.parameters['max_depth'] or not self.parameters['criterion']:
             print("\nhyperparameters are not tuned yet")
-            self.tune()
+            if self.baseline:
+                self.tune()
+            else:
+                self.tune_dev()
         
         # build RF model
         self.model = RandomForestClassifier(
-            n_estimators=self.parameters['n_estimators'], max_features=self.parameters['max_features'], max_depth=self.parameters['max_depth'], criterion=self.parameters['criterion'], 
-            verbose=1, n_jobs=-1)
+            n_estimators=self.parameters['n_estimators'], 
+            max_features=self.parameters['max_features'], 
+            max_depth=self.parameters['max_depth'], 
+            criterion=self.parameters['criterion'], 
+            verbose=1, n_jobs=-1,
+            class_weight="balanced")
         self.train()
 
     def train(self):
@@ -106,10 +114,59 @@ class RandomForest():
         print("\naccuracy on development set: %.3f" % metrics.accuracy_score(y_pred_dev, self.y_dev))
         return y_pred_train, y_pred_dev
 
+    def tune_dev(self):
+        """fine tune hyperparameters for the model with given dev set
+        """
+        parameters = {
+            "n_estimators": self.config['baseline']['random_forest']['n_estimators'],
+            "max_features": self.config['baseline']['random_forest']['max_features'],
+            "max_depth": self.config['baseline']['random_forest']['max_depth'],
+            "criterion": ["entropy"]
+        }
+        print("\nrunning the validation on development set ...")
+        allnames = sorted(parameters)
+        parameters_set = list(it.product(*(parameters[name] for name in allnames)))
+        results = np.zeros((len(parameters_set), 1))
+
+        for i in range(len(parameters_set)):
+            para = parameters_set[i]
+            clf = RandomForestClassifier(
+                    n_estimators=para[3],
+                    max_features=para[2], 
+                    max_depth=para[1], 
+                    criterion=para[0], 
+                    verbose=1, n_jobs=-1,
+                    class_weight="balanced")
+            
+            for j in range(1):
+                clf.fit(self.X_train, self.y_train)
+                y_pred_dev = clf.predict(self.X_dev)
+                recall = metrics.recall_score(self.y_dev, y_pred_dev, average='macro')
+                print("\nrecall for this hyparameter setting is %.3f\n" % recall)
+                results[i,j] = recall
+        print(results)
+        results_avg = [np.mean(res) for res in results]
+        parameters_id = np.argmax(results_avg)
+
+        self.parameters['n_estimators'] = parameters_set[parameters_id][3]
+        self.parameters['max_features'] = parameters_set[parameters_id][2]
+        self.parameters['max_depth'] = parameters_set[parameters_id][1]
+        self.parameters['criterion'] = parameters_set[parameters_id][0]
+
+        if self.baseline:
+            filename = os.path.join('config', 'baseline', '%s_%s_params.json' % (self.model_name, self.feature_name))
+        else:
+            filename = os.path.join('config', '%s_%s_params.json' % (self.model_name, self.feature_name))
+        
+        # write to model json file
+        with open(filename, 'w') as output:
+            json.dump(self.parameters, output)
+            output.write("\n")
+        output.close()
+
     def tune(self):
         """fine tune hyperparameters for the model
         """
-        import scipy.stats as stats
         parameters = {
             "n_estimators": self.config['baseline']['random_forest']['n_estimators'],
             "max_features": self.config['baseline']['random_forest']['max_features'],

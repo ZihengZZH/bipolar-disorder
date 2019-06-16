@@ -8,7 +8,9 @@ from src.model.random_forest import RandomForest
 from src.metric.uar import get_UAR, get_post_probability, get_late_fusion_UAR
 from src.utils.io import load_proc_baseline_feature, save_UAR_results
 from src.utils.io import save_post_probability, load_post_probability
+from src.utils.io import save_cv_results
 from src.utils.preprocess import upsample
+from src.utils.preprocess import k_fold_cv
 
 
 '''
@@ -81,6 +83,29 @@ class BaseLine():
         print("\nbuilding a classifier on MFCC features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('MFCC', verbose=True)
 
+        if self.model_name == 'RF_cv':
+            y_train, y_dev = np.ravel(y_train), np.ravel(y_dev)
+            train_inst, dev_inst = np.ravel(train_inst), np.ravel(dev_inst)
+            
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+            inst = np.hstack((train_inst, dev_inst))
+            assert len(X) == len(y) == len(inst)
+            cv_ids = k_fold_cv(len(X))
+            cv_res = []
+            for (ids_train, ids_dev) in cv_ids:
+                X_train = X[ids_train]
+                y_train = y[ids_train]
+                X_dev = X[ids_dev]
+                y_dev = y[ids_dev]
+                dev_inst = inst[ids_dev]
+                RF_MFCC = RandomForest(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
+                RF_MFCC.run()
+                y_pred_train, y_pred_dev = RF_MFCC.evaluate()
+                _, session_res = get_UAR(y_pred_dev, y_dev, dev_inst, self.model_name, self.feature_name, 'baseline', baseline=True, test=True)
+                cv_res.append(session_res)
+            save_cv_results(cv_res, self.model_name, self.feature_name, 'baseline')
+
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
@@ -108,6 +133,24 @@ class BaseLine():
         """
         print("\nbuilding a classifier on eGeMAPS features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('eGeMAPS', verbose=True)
+
+        if self.model_name == 'RF_cv':
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+            assert len(X) == len(y)
+            cv_ids = k_fold_cv(len(X))
+            cv_res = []
+            for (ids_train, ids_dev) in cv_ids:
+                X_train = X[ids_train]
+                y_train = y[ids_train]
+                X_dev = X[ids_dev]
+                y_dev = y[ids_dev]
+                RF_MFCC = RandomForest(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
+                RF_MFCC.run()
+                y_pred_train, y_pred_dev = RF_MFCC.evaluate()
+                _, session_res = get_UAR(y_pred_dev, y_dev, dev_inst, self.model_name, self.feature_name, 'baseline', baseline=True, test=True)
+                cv_res.append(session_res)
+            save_cv_results(cv_res, self.model_name, self.feature_name, 'baseline')
         
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
@@ -137,6 +180,24 @@ class BaseLine():
         print("\nbuilding a classifier on Deep features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('Deep', verbose=True)
 
+        if self.model_name == 'RF_cv':
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+            assert len(X) == len(y)
+            cv_ids = k_fold_cv(len(X))
+            cv_res = []
+            for (ids_train, ids_dev) in cv_ids:
+                X_train = X[ids_train]
+                y_train = y[ids_train]
+                X_dev = X[ids_dev]
+                y_dev = y[ids_dev]
+                RF_MFCC = RandomForest(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
+                RF_MFCC.run()
+                y_pred_train, y_pred_dev = RF_MFCC.evaluate()
+                _, session_res = get_UAR(y_pred_dev, y_dev, dev_inst, self.model_name, self.feature_name, 'baseline', baseline=True, test=True)
+                cv_res.append(session_res)
+            save_cv_results(cv_res, self.model_name, self.feature_name, 'baseline')
+
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
         print("\nobtaining sparse matrix for better classification")
@@ -164,6 +225,26 @@ class BaseLine():
         """
         print("\nbuilding a classifier on BoAW features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoAW', verbose=True)
+
+        if self.model_name == 'RF_cv':
+            y_train, y_dev = np.ravel(y_train), np.ravel(y_dev)
+
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+            assert len(X) == len(y)
+            cv_ids = k_fold_cv(len(X))
+            cv_res = []
+            for (ids_train, ids_dev) in cv_ids:
+                X_train = X[ids_train]
+                y_train = y[ids_train]
+                X_dev = X[ids_dev]
+                y_dev = y[ids_dev]
+                RF_MFCC = RandomForest(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
+                RF_MFCC.run()
+                y_pred_train, y_pred_dev = RF_MFCC.evaluate()
+                _, session_res = get_UAR(y_pred_dev, y_dev, dev_inst, self.model_name, self.feature_name, 'baseline', baseline=True, test=True)
+                cv_res.append(session_res)
+            save_cv_results(cv_res, self.model_name, self.feature_name, 'baseline')
 
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
@@ -193,6 +274,24 @@ class BaseLine():
         print("\nbuilding a classifier on AU features (already session-level)")
         X_train, y_train, _, X_dev, y_dev, _ = load_proc_baseline_feature('AU', verbose=True)
 
+        if self.model_name == 'RF_cv':
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+            assert len(X) == len(y)
+            cv_ids = k_fold_cv(len(X))
+            cv_res = []
+            for (ids_train, ids_dev) in cv_ids:
+                X_train = X[ids_train]
+                y_train = y[ids_train]
+                X_dev = X[ids_dev]
+                y_dev = y[ids_dev]
+                RF_MFCC = RandomForest(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
+                RF_MFCC.run()
+                y_pred_train, y_pred_dev = RF_MFCC.evaluate()
+                _, session_res = get_UAR(y_pred_dev, y_dev, np.array([]), self.model_name, self.feature_name, 'baseline', baseline=True, test=True)
+                cv_res.append(session_res)
+            save_cv_results(cv_res, self.model_name, self.feature_name, 'baseline')
+
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, _ = upsample(X_train, y_train, np.array([]))
         print("\nobtaining sparse matrix for better classification")
@@ -220,6 +319,24 @@ class BaseLine():
         """
         print("\nbuilding a classifier on BoVW features (both frame-level and session-level)")
         X_train, y_train, train_inst, X_dev, y_dev, dev_inst = load_proc_baseline_feature('BoVW', verbose=True)
+
+        if self.model_name == 'RF_cv':
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+            assert len(X) == len(y)
+            cv_ids = k_fold_cv(len(X))
+            cv_res = []
+            for (ids_train, ids_dev) in cv_ids:
+                X_train = X[ids_train]
+                y_train = y[ids_train]
+                X_dev = X[ids_dev]
+                y_dev = y[ids_dev]
+                RF_MFCC = RandomForest(self.feature_name, X_train, y_train, X_dev, y_dev, baseline=True, test=self.test)
+                RF_MFCC.run()
+                y_pred_train, y_pred_dev = RF_MFCC.evaluate()
+                _, session_res = get_UAR(y_pred_dev, y_dev, dev_inst, self.model_name, self.feature_name, 'baseline', baseline=True, test=True)
+                cv_res.append(session_res)
+            save_cv_results(cv_res, self.model_name, self.feature_name, 'baseline')
 
         print("\nupsampling training data to address class imbalance")
         X_train, y_train, train_inst = upsample(X_train, y_train, train_inst)
