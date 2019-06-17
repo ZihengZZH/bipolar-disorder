@@ -7,6 +7,7 @@ from src.model.text2vec import Text2Vec
 from src.model.random_forest import RandomForest
 from src.model.dnn_classifier import SingleTaskDNN
 from src.model.dnn_classifier import MultiTaskDNN
+from src.model.dnn_classifier import MultiLossDNN
 from src.utils.io import load_proc_baseline_feature
 from src.utils.io import load_aligned_features
 from src.utils.io import load_bags_of_words
@@ -36,9 +37,10 @@ class Experiment():
                     'MultiDDAE on aligned A/V',
                     'Dynamics on latent repres',
                     'FV using GMM on latent repres', 
-                    'BIC on GMM', 'RF on FV',
-                    'DNN as classifier', 'doc2vec on text',
-                    'RF on doc2vec']
+                    'feature selection on FVs', 'RF on FVs only',
+                    'DNN as classifier (audio-visual-textual)', 
+                    'RF as classifier (audio-visual-textual)',
+                    'doc2vec on text', 'RF on doc2vec']
         print("--" * 20)
         print("Experiment")
         print("--" * 20)
@@ -63,14 +65,16 @@ class Experiment():
         elif choice == 5:
             self.FV_GMM()
         elif choice == 6:
-            self.FV_BIC()
+            self.FV_tree()
         elif choice == 7:
             self.FV_RF()
         elif choice == 8:
             self.DNN()
         elif choice == 9:
-            self.TEXT()
+            self.RF()
         elif choice == 10:
+            self.TEXT()
+        elif choice == 11:
             self.TEXT_RF()
     
     def main_system(self):
@@ -162,8 +166,9 @@ class Experiment():
 
     def DYNAMICS(self):
         print("\nrunning computation of dynamics of latent representation learned by DDAEs")
+        ae = AutoEncoder('dynamics', 0)
 
-        with smart_open('./pre-trained/DDAE/model_list.txt', 'rb', encoding='utf-8') as model_path:
+        with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
                 print(line_no, '\t', line)
@@ -190,32 +195,6 @@ class Experiment():
                 print("\ncomputing dynamics done\n")
                 del X_train, X_train_frame, X_dev, X_dev_frame
     
-    def DYNAMICS_RF(self):
-        print("\nrunning Random Forest on learnt representations with dynamics")
-
-        y_train_frame, inst_train, y_dev_frame, inst_dev = load_aligned_features(no_data=True, verbose=True)
-        y_train_frame, y_dev_frame = np.ravel(y_train_frame[2:,:]), np.ravel(y_dev_frame[2:,:])
-        inst_train, inst_dev = np.ravel(inst_train[2:,:]), np.ravel(inst_dev[2:,:])
-
-        ae = AutoEncoder('fv_gmm', 0)
-
-        with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
-            for line_no, line in enumerate(model_path):
-                line = str(line).replace('\n', '')
-                print(line_no, '\t', line[65:])
-
-                X_train_frame = np.load(os.path.join(line, 'encoded_train_dynamics.npy'))
-                X_dev_frame = np.load(os.path.join(line, 'encoded_dev_dynamics.npy'))
-
-                print(X_train_frame.shape, X_dev_frame.shape)
-                print(y_train_frame.shape, y_dev_frame.shape)
-
-                random_forest = RandomForest('test', X_train_frame, y_train_frame, X_dev_frame, y_dev_frame, test=True)
-                random_forest.run()
-                y_pred_train, y_pred_dev = random_forest.evaluate()
-                get_UAR(y_pred_train, y_train_frame, inst_train, 'RF', 'test', 'single', train_set=True, test=True)
-                get_UAR(y_pred_dev, y_dev_frame, inst_dev, 'RF', 'test', 'single', test=True)
-    
     def FV_BIC(self):
         print("\nrunning Fisher Encoder using BIC selections on learnt representations with dynamics")
         fv_gmm_bic = FisherVectorGMM_BIC()
@@ -240,7 +219,7 @@ class Experiment():
         with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
-                print(line_no, '\t', line[19:])
+                print(line_no, '\t', line[65:])
 
                 if os.path.isfile(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_%d.npy' % self.kernel)):
                     preprocess_metadata_tensorboard(line, self.kernel)
@@ -274,7 +253,7 @@ class Experiment():
                 fv_gmm.save_vector(fv_dev, 'dev')
                 fv_gmm.save_vector(y_train_session, 'train', label=True)
                 fv_gmm.save_vector(y_dev_session, 'dev', label=True)
-                print("\nFV encoding for %s, done" % line[19:])
+                print("\nFV encoding for %s, done" % line[65:])
     
     def FV_mRMR(self):
         print("\nrunning mRMR algorithm for feature selection")
@@ -283,8 +262,7 @@ class Experiment():
         with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
-                print(line_no, '\t', line[19:])
-                feature_name = line[19:] + '_%d' % self.kernel
+                print(line_no, '\t', line[65:])
 
                 if os.path.isfile(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_%d.npy' % self.kernel)):
                     X_train = np.load(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel))
@@ -303,7 +281,6 @@ class Experiment():
 
                     feature_list = pymrmr.mRMR(df, 'MIQ', 50)
                     np.save(os.path.join(line, 'feature_list'), feature_list)
-                    # feature_list = np.load(os.path.join(line, 'feature_list.npy'))
 
                     X_train_df = pd.DataFrame(X_train)
                     X_train_df.columns = ['feature_%d' % i for i in range(len(X_train[0]))]
@@ -316,8 +293,69 @@ class Experiment():
                     print(X_train.head())
                     print(X_dev.head())
 
-                    np.save(os.path.join(line, 'X_train'), X_train)
-                    np.save(os.path.join(line, 'X_dev'), X_dev)
+                    np.save(os.path.join(line, 'X_train_mrmr'), X_train)
+                    np.save(os.path.join(line, 'X_dev_mrmr'), X_dev)
+                    print("\nfeature selection done and data saved.")
+
+    def FV_tree(self):
+        print("\nrunning Random Forest algorithm for feature selection")
+        ae = AutoEncoder('fv_gmm', 0)
+
+        with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
+            for line_no, line in enumerate(model_path):
+                line = str(line).replace('\n', '')
+                print(line_no, '\t', line[65:])
+
+                if os.path.isfile(os.path.join(line, 'X_train_tree_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'X_dev_tree_%d.npy' % self.kernel)):
+                    continue
+
+                if os.path.isfile(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_%d.npy' % self.kernel)):
+                    X_train = np.load(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel))
+                    X_dev = np.load(os.path.join(line, 'fisher_vector_dev_%d.npy' % self.kernel))
+                    y_train = np.load(os.path.join(line, 'label_train.npy'))
+                    y_dev = np.load(os.path.join(line, 'label_dev.npy'))
+                    X_train = np.reshape(X_train, (-1, np.prod(X_train.shape[1:])))
+                    X_dev = np.reshape(X_dev, (-1, np.prod(X_dev.shape[1:])))
+                    X_train = np.nan_to_num(X_train)
+                    X_dev = np.nan_to_num(X_dev)
+
+                    from sklearn.ensemble import RandomForestClassifier
+
+                    if not os.path.isfile(os.path.join(line, 'feature_list_%d.npy' % self.kernel)):
+                        model = RandomForestClassifier(
+                                n_estimators=800,
+                                criterion='entropy')
+
+                        df = pd.DataFrame(np.vstack((X_train, X_dev)))
+                        feature_names = ['feature_%d' % i for i in range(len(X_train[0]))]
+                        df.columns = feature_names
+                        y = np.hstack((y_train, y_dev))
+                        print(df.head())
+                        
+                        model.fit(df, y)
+                        importances = model.feature_importances_
+                        print("\nfeature importance ranking")
+                        indices = np.argsort(importances)[::-1]
+                        for f in range(100):
+                            print("%d. feature %d %s (%f)" % (f+1, indices[f], feature_names[indices[f]], importances[indices[f]]))
+
+                        indices = indices[:100]
+                        np.save(os.path.join(line, 'feature_list_%d' % self.kernel), indices)
+                    else:
+                        indices = np.load(os.path.join(line, 'feature_list_%d.npy' % self.kernel))
+
+                    X_train_df = pd.DataFrame(X_train)
+                    X_train_df.columns = ['feature_%d' % i for i in range(len(X_train[0]))]
+                    X_train_tree = X_train_df.iloc[:, indices]
+
+                    X_dev_df = pd.DataFrame(X_dev)
+                    X_dev_df.columns = ['feature_%d' % i for i in range(len(X_dev[0]))]
+                    X_dev_tree = X_dev_df.iloc[:, indices]
+
+                    print(X_train_tree.shape, X_dev_tree.shape)
+                    
+                    np.save(os.path.join(line, 'X_train_tree_%d' % self.kernel), X_train_tree)
+                    np.save(os.path.join(line, 'X_dev_tree_%d' % self.kernel), X_dev_tree)
                     print("\nfeature selection done and data saved.")
 
     def FV_RF(self):
@@ -327,14 +365,16 @@ class Experiment():
         with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
-                print(line_no, '\t', line[19:])
-                feature_name = line[19:] + '_%d' % self.kernel
+                print(line_no, '\t', line[65:])
+                feature_name = line[65:] + '_%d' % self.kernel
 
-                if os.path.isfile(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_%d.npy' % self.kernel)):
-                    X_train = np.load(os.path.join(line, 'X_train.npy'))
-                    X_dev = np.load(os.path.join(line, 'X_dev.npy'))
+                if os.path.isfile(os.path.join(line, 'X_train_tree_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'X_dev_tree_%d.npy' % self.kernel)):
+                    X_train = np.load(os.path.join(line, 'X_train_tree_%d.npy' % self.kernel))
+                    X_dev = np.load(os.path.join(line, 'X_dev_tree_%d.npy' % self.kernel))
                     y_train = np.load(os.path.join(line, 'label_train.npy'))
                     y_dev = np.load(os.path.join(line, 'label_dev.npy'))
+
+                    print(X_train.shape, X_dev.shape)
 
                     random_forest = RandomForest(feature_name, X_train, y_train, X_dev, y_dev, test=False)
                     random_forest.run()
@@ -343,29 +383,98 @@ class Experiment():
                     get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature_name, 'single', test=False)
 
     def DNN(self):
-        fv_gmm = FisherVectorGMM(n_kernels=self.kernel)
-        fv_gmm.load()
+        print("\nrunning Multi-Task DNN on features selected with RF with doc2vec embeddings")
+        
+        model_path = '/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE/bimodal_aligned_mfcc_hidden0.40_batch1024_epoch100_noise0.1'
+        self.kernel = 32
+        X_train_AV = np.load(os.path.join(model_path, 'X_train_tree_%d.npy' % self.kernel))
+        X_dev_AV = np.load(os.path.join(model_path, 'X_dev_tree_%d.npy' % self.kernel))
 
-        X_train = fv_gmm.load_vector('train', dynamics=False)
-        X_dev = fv_gmm.load_vector('dev', dynamics=False)
-        print(X_train.shape, X_dev.shape)
-        X_train = X_train.reshape((X_train.shape[0], np.prod(X_train.shape[1:])))
-        X_dev = X_dev.reshape((X_dev.shape[0], np.prod(X_dev.shape[1:])))
-        print(X_train.shape, X_dev.shape)
+        text_path = '/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/doc2vec/Doc2Vec(dbow,d50,n5,mc2,t8)'
+        X_train_txt = np.load(os.path.join(text_path, 'vectors_train.npy'))
+        X_dev_txt = np.load(os.path.join(text_path, 'vectors_dev.npy'))
 
         y_dev_r, y_train_r, y_dev, y_train = load_label()
         y_train = y_train.astype('int')
         y_dev = y_dev.astype('int')
         num_classes = 3
 
-        test_dnn = MultiTaskDNN('fv_gmm', X_train.shape[1], num_classes)
+        assert X_train_AV.shape[0] == X_train_txt.shape[0]
+        assert X_dev_AV.shape[0] == X_dev_txt.shape[0]
+
+        X_train = np.hstack((X_train_AV, X_train_txt))
+        X_dev = np.hstack((X_dev_AV, X_dev_txt))
         
         assert len(y_train) == len(y_train_r) == X_train.shape[0]
         assert len(y_dev) == len(y_dev_r) == X_dev.shape[0]
         
+        test_dnn = MultiTaskDNN('DDAE_DOC2VEC', X_train.shape[1], num_classes)
         test_dnn.build_model()
         test_dnn.train_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
         test_dnn.evaluate_model(X_train, y_train, y_train_r, X_dev, y_dev, y_dev_r)
+    
+    def RF(self):
+        print("\nrunning RF on features selected with RF with doc2vec embeddings")
+        
+        model_path = '/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE/bimodal_aligned_mfcc_hidden0.40_batch1024_epoch100_noise0.1'
+        self.kernel = 32
+        X_train_AV = np.load(os.path.join(model_path, 'X_train_tree_%d.npy' % self.kernel))
+        X_dev_AV = np.load(os.path.join(model_path, 'X_dev_tree_%d.npy' % self.kernel))
+
+        text_path = '/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/doc2vec/Doc2Vec(dbow,d50,n5,mc2,t8)'
+        X_train_txt = np.load(os.path.join(text_path, 'vectors_train.npy'))
+        X_dev_txt = np.load(os.path.join(text_path, 'vectors_dev.npy'))
+
+        y_dev_r, y_train_r, y_dev, y_train = load_label()
+        y_train = y_train.astype('int')
+        y_dev = y_dev.astype('int')
+        num_classes = 3
+
+        assert X_train_AV.shape[0] == X_train_txt.shape[0]
+        assert X_dev_AV.shape[0] == X_dev_txt.shape[0]
+
+        X_train = np.hstack((X_train_AV, X_train_txt))
+        X_dev = np.hstack((X_dev_AV, X_dev_txt))
+        
+        assert len(y_train) == len(y_train_r) == X_train.shape[0]
+        assert len(y_dev) == len(y_dev_r) == X_dev.shape[0]
+
+        print("\nwith early fusion dimension for data is", X_train.shape[1])
+        
+        from sklearn.ensemble import RandomForestClassifier
+
+        model = RandomForestClassifier(
+                n_estimators=800,
+                criterion='entropy')
+
+        df = pd.DataFrame(np.vstack((X_train, X_dev)))
+        feature_names = ['feature_%d' % i for i in range(len(X_train[0]))]
+        df.columns = feature_names
+        y = np.hstack((y_train, y_dev))
+        print(df.head())
+        
+        model.fit(df, y)
+        importances = model.feature_importances_
+        print("\nfeature importance ranking")
+        indices = np.argsort(importances)[::-1]
+        for f in range(100):
+            print("%d. feature %d %s (%f)" % (f+1, indices[f], feature_names[indices[f]], importances[indices[f]]))
+
+        indices = indices[:50]
+
+        X_train_df = pd.DataFrame(X_train)
+        X_train_df.columns = ['feature_%d' % i for i in range(len(X_train[0]))]
+        X_train_tree = X_train_df.iloc[:, indices]
+
+        X_dev_df = pd.DataFrame(X_dev)
+        X_dev_df.columns = ['feature_%d' % i for i in range(len(X_dev[0]))]
+        X_dev_tree = X_dev_df.iloc[:, indices]
+
+        random_forest = RandomForest('bimodal_dbow', X_train_tree, y_train, X_dev_tree, y_dev, test=False)
+        random_forest.run()
+        y_pred_train, y_pred_dev = random_forest.evaluate()
+        get_UAR(y_pred_train, y_train, np.array([]), 'RF', 'bimodal_dbow', 'multiple', train_set=True, test=False)
+        get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', 'bimodal_dbow', 'multiple', test=False)
 
     def TEXT(self):
         print("\nrunning doc2vec embeddings on text modality")

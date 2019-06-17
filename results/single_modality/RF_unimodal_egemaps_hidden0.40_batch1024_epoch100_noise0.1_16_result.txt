@@ -1,0 +1,45 @@
+UAR on frame-level: 0.000 
+UAR on session-level: 0.561 
+Precision on session-level: 0.616 
+F1 score on session-level: 0.553 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.561 
+Precision on session-level: 0.591 
+F1 score on session-level: 0.550 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.561 
+Precision on session-level: 0.591 
+F1 score on session-level: 0.550 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.548 
+Precision on session-level: 0.577 
+F1 score on session-level: 0.540 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.529 
+Precision on session-level: 0.542 
+F1 score on session-level: 0.510 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.529 
+Precision on session-level: 0.542 
+F1 score on session-level: 0.510 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.529 
+Precision on session-level: 0.542 
+F1 score on session-level: 0.510 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.529 
+Precision on session-level: 0.542 
+F1 score on session-level: 0.510 
+
+UAR on frame-level: 0.000 
+UAR on session-level: 0.529 
+Precision on session-level: 0.542 
+F1 score on session-level: 0.510 
+

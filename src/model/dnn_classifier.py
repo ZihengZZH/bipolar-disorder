@@ -9,7 +9,8 @@ from itertools import product
 from functools import partial
 from keras.metrics import categorical_accuracy
 from keras.models import Model, Sequential
-from keras.layers import Input, Dense, Dropout, Activation
+from keras.layers import Input, Dense, Dropout, Activation, Layer
+from keras.initializers import Constant
 from keras.callbacks import CSVLogger, ModelCheckpoint
 from keras.optimizers import SGD
 from keras.utils import np_utils
@@ -35,9 +36,8 @@ class SingleTaskDNN():
         self.dropout = self.config['dropout']
         self.epochs = self.config['epochs']
         self.save_dir = self.config['save_dir']
-        self.hidden_dim = [int(self.input_dim / self.hidden_ratio), 
-                            int(self.input_dim / (self.hidden_ratio * 2)),
-                            int(self.input_dim / (self.hidden_ratio * 4))]
+        self.hidden_dim = [int(self.input_dim / self.hidden_ratio),
+                            int(self.input_dim / (self.hidden_ratio * 2))]
         self.output_dim = int(self.input_dim  / (self.hidden_ratio * 8))
         print("\nDNN classifier initialized and configuration loaded")
 
@@ -60,9 +60,6 @@ class SingleTaskDNN():
         self.model.add(Activation('relu'))
         self.model.add(Dropout(self.dropout))
         self.model.add(Dense(self.hidden_dim[1]))
-        self.model.add(Activation('relu'))
-        self.model.add(Dropout(self.dropout))
-        self.model.add(Dense(self.hidden_dim[2]))
         self.model.add(Activation('relu'))
         self.model.add(Dense(self.output_dim))
         self.model.add(Activation('relu'))
@@ -148,12 +145,9 @@ class MultiTaskDNN(SingleTaskDNN):
         input_layer = Input(shape=(self.input_dim, ))
         dense_layer = Dense(self.hidden_dim[0])(input_layer)
         dense_layer = Activation('relu')(dense_layer)
-        dense_layer = Dropout(self.dropout)(dense_layer)
         dense_layer = Dense(self.hidden_dim[1])(dense_layer)
         dense_layer = Activation('relu')(dense_layer)
         dense_layer = Dropout(self.dropout)(dense_layer)
-        dense_layer = Dense(self.hidden_dim[2])(dense_layer)
-        dense_layer = Activation('relu')(dense_layer)
         dense_layer = Dense(self.output_dim)(dense_layer)
         dense_layer = Activation('relu')(dense_layer)
 
@@ -169,7 +163,7 @@ class MultiTaskDNN(SingleTaskDNN):
                                 'output_r':'mean_squared_error'}, 
                             optimizer='adam',
                             loss_weights={'output_c': 1.0,
-                                        'output_r': 0.1}, 
+                                        'output_r': 0.2}, 
                             metrics={'output_c': km.recall(),
                                     'output_r': 'mse'})
         plot_model(self.model, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'multiTaskDNN.png'))
@@ -195,7 +189,8 @@ class MultiTaskDNN(SingleTaskDNN):
                     batch_size=self.batch_size,
                     shuffle=True,
                     verbose=1,
-                    validation_data=(X_dev, [y_dev_c, y_dev_r]),
+                    validation_data=(X_dev, {'output_c': y_dev_c, 
+                                            'output_r': y_dev_r}),
                     callbacks=callbacks_list)
         print("\nmodel trained and saved ---", self.name)
         self.save_model()
@@ -229,3 +224,82 @@ class MultiTaskDNN(SingleTaskDNN):
         print(classification_report(y_dev_c, y_pred_dev))
         print("mean squared error of regression")
         print(mean_squared_error(y_dev_r, y_pred_dev_r))
+
+
+class CustomMultiLossLayer(Layer):
+    def __init__(self, nb_outputs=2, **kwargs):
+        self.nb_outputs = nb_outputs
+        self.is_placeholder = True
+        super(CustomMultiLossLayer, self).__init__(**kwargs)
+        
+    def build(self, input_shape=None):
+        # initialise log_vars
+        self.log_vars = []
+        for i in range(self.nb_outputs):
+            self.log_vars += [self.add_weight(name='log_var' + str(i), shape=(1,),
+            initializer=Constant(0.), trainable=True)]
+        super(CustomMultiLossLayer, self).build(input_shape)
+
+    def multi_loss(self, ys_true, ys_pred):
+        assert len(ys_true) == self.nb_outputs and len(ys_pred) == self.nb_outputs
+        loss = 0
+        for y_true, y_pred, log_var in zip(ys_true, ys_pred, self.log_vars):
+            precision = K.exp(-log_var[0])
+            loss += K.sum(precision * (y_true - y_pred)**2. + log_var[0], -1)
+        return K.mean(loss)
+
+    def call(self, inputs):
+        ys_true = inputs[:self.nb_outputs]
+        ys_pred = inputs[self.nb_outputs:]
+        loss = self.multi_loss(ys_true, ys_pred)
+        self.add_loss(loss, inputs=inputs)
+        # We won't actually use the output.
+        return K.concatenate(inputs, -1)
+
+class MultiLossDNN(SingleTaskDNN):
+    def __init__(self, name, input_dim, num_class):
+        SingleTaskDNN.__init__(self, name, input_dim, num_class)
+        self.config = json.load(open('./config/model.json', 'r'))['multiDNN']
+        self.load_basics()
+        self.name = '%s_hidden%.1f_batch%d_epoch%d_drop%.2f_multiloss' % (name, self.hidden_ratio, self.batch_size, self.epochs, self.dropout)
+
+    def run(self, X_train, y_train_c, y_train_r, X_dev, y_dev_c, y_dev_r):
+        if not os.path.isdir(os.path.join(self.save_dir, self.name)):
+            os.mkdir(os.path.join(self.save_dir, self.name))
+            self.fitted = False
+        else:
+            self.fitted = True
+        
+        y_train_c = self.prepare_label(y_train_c, self.num_class)
+        y_dev_c = self.prepare_label(y_dev_c, self.num_class)
+
+        input_layer = Input(shape=(self.input_dim, ))
+        dense_layer = Dense(self.hidden_dim[1])(input_layer)
+        dense_layer = Activation('relu')(dense_layer)
+
+        # output layer for classification
+        output_layer_c = Dense(3, activation='softmax', name='output_c')(dense_layer)
+        # output layer for regression
+        output_layer_r = Dense(1, activation='linear', name='output_r')(dense_layer)
+
+        true_layer_c = Input(shape=(3, ), name='true_c')
+        true_layer_r = Input(shape=(1, ), name='true_r')
+        out = CustomMultiLossLayer(nb_outputs=2)([true_layer_c, true_layer_r, output_layer_c, output_layer_r])
+
+        self.prediction_model = Model(input=input_layer, outputs=[output_layer_c, output_layer_r])
+        self.trainable_model = Model(inputs=[input_layer, true_layer_c, true_layer_r], outputs=out)
+
+        print(self.prediction_model.summary())
+        print(self.trainable_model.summary())
+
+        self.trainable_model.compile(loss=None, optimizer='adam')
+        plot_model(self.trainable_model, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'multiTaskDNN.png'))
+        hist = self.trainable_model.fit(X_train, y_train_c, y_train_r,
+                                        nb_epoch=self.epochs,
+                                        batch_size=self.batch_size,
+                                        verbose=1,
+                                        validation_data=(X_dev, y_dev_c, y_dev_r))
+        
+        import pylab
+        pylab.plot(hist.history['loss'])
+        pylab.plot(hist.history['val_loss'])

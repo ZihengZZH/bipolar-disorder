@@ -192,7 +192,7 @@ class Text2Vec():
         """evaluate doc2vec model by finding similar words
         """
         given_word = 'iyi'
-        given_doc_id = 0
+        given_doc_id = 9
         output = smart_open(os.path.join(self.save_dir, 'evaluation.txt'), 'w', encoding='utf-8')
 
         similar_words = self.model.wv.most_similar(given_word, topn=20)

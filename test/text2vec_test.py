@@ -20,15 +20,15 @@ class TestText2Vec(unittest.TestCase):
     
     def test_most_similar(self):
         text2vec = Text2Vec()
-        text2vec.dm = 0
+        text2vec.dm = 1
         text2vec.vector_size = 50
-        # text2vec.window_size = 10
+        text2vec.window_size = 10
         text2vec.negative = 5
         text2vec.hs = 0
         text2vec.build_model()
         text2vec.load_model()
-        # text2vec.evaluate_model()
-        text2vec.process_metadata_tensorboard()
+        text2vec.evaluate_model()
+        # text2vec.process_metadata_tensorboard()
 
 
 if __name__ == "__main__":

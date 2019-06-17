@@ -5,8 +5,8 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
-from src.utility.io import load_audio_file
-from src.utility.io import save_transcript
+from src.utils.io import load_audio_file
+from src.utils.io import save_transcript
 
 
 class Speech2Text():

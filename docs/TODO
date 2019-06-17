@@ -48,6 +48,7 @@ project:
       ✔ temporary information @done(19-05-29 23:50)
       ✔ dimensionality @done(19-05-29 23:50)
       ✔ variable length @done(19-05-29 23:50)
+      ✔ feature selection @done(19-06-16 23:12)
     ☐ dnn_classifier.py
       ✔ label & YMRS score @done(19-05-23 22:37)
       ☐ overfitting
