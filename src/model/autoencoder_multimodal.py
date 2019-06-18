@@ -215,7 +215,7 @@ class AutoEncoderMultimodal(AutoEncoder):
         assert X_train_V4_noisy.shape == X_train_V4.shape
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
-        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{loss:.2f}.hdf5"), monitor='loss', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{loss:.2f}.hdf5"), monitor='loss', verbose=1, save_best_only=True, mode='min')
         callbacks_list = [csv_logger, checkpoint]
 
         self.autoencoder.fit([X_train_A_noisy, 

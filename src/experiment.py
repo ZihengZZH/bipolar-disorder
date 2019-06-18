@@ -28,7 +28,7 @@ from smart_open import smart_open
 
 class Experiment():
     def __init__(self):
-        self.kernel = 16
+        self.kernel = 32
         self.display_help()
 
     def display_help(self):

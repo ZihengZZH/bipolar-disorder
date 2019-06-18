@@ -37,15 +37,15 @@
         "batch_size": 16,
         "dropout": 0.2,
         "epochs": 30,
-        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DNN_single"
+        "save_dir": "./pre-trained/DNN_single"
     },
     "multiDNN": {
-        "hidden_ratio": 1.2,
+        "hidden_ratio": 1.5,
         "learning_rate": 0.01,
         "batch_size": 104,
-        "dropout": 0.5,
+        "dropout": 0.2,
         "epochs": 1000,
-        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DNN_multitask"
+        "save_dir": "./pre-trained/DNN_multitask"
     },
     "fisher_vector":{
         "kernels": [4, 8, 16, 32, 64],

@@ -11,7 +11,7 @@ from keras.metrics import categorical_accuracy
 from keras.models import Model, Sequential
 from keras.layers import Input, Dense, Dropout, Activation, Layer
 from keras.initializers import Constant
-from keras.callbacks import CSVLogger, ModelCheckpoint
+from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
 from keras.optimizers import SGD
 from keras.utils import np_utils
 from keras.utils import plot_model
@@ -37,7 +37,8 @@ class SingleTaskDNN():
         self.epochs = self.config['epochs']
         self.save_dir = self.config['save_dir']
         self.hidden_dim = [int(self.input_dim / self.hidden_ratio),
-                            int(self.input_dim / (self.hidden_ratio * 2))]
+                            int(self.input_dim / (self.hidden_ratio * 2)),
+                            int(self.input_dim / (self.hidden_ratio * 4))]
         self.output_dim = int(self.input_dim  / (self.hidden_ratio * 8))
         print("\nDNN classifier initialized and configuration loaded")
 
@@ -148,6 +149,8 @@ class MultiTaskDNN(SingleTaskDNN):
         dense_layer = Dense(self.hidden_dim[1])(dense_layer)
         dense_layer = Activation('relu')(dense_layer)
         dense_layer = Dropout(self.dropout)(dense_layer)
+        dense_layer = Dense(self.hidden_dim[2])(dense_layer)
+        dense_layer = Activation('relu')(dense_layer)
         dense_layer = Dense(self.output_dim)(dense_layer)
         dense_layer = Activation('relu')(dense_layer)
 
@@ -180,8 +183,9 @@ class MultiTaskDNN(SingleTaskDNN):
         y_dev_c = self.prepare_label(y_dev_c, self.num_class)
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
-        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:04f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
-        callbacks_list = [csv_logger, checkpoint]
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:04f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+        early = EarlyStopping(monitor='val_loss',  mode='min', patience=0, verbose=1)
+        callbacks_list = [csv_logger, checkpoint, early]
 
         self.model.fit(X_train, {'output_c': y_train_c, 
                                 'output_r': y_train_r},
@@ -278,7 +282,7 @@ class MultiLossDNN(SingleTaskDNN):
         dense_layer = Activation('relu')(dense_layer)
 
         # output layer for classification
-        output_layer_c = Dense(3, activation='softmax', name='output_c')(dense_layer)
+        output_layer_c = Dense(3, activation='sigmoid', name='output_c')(dense_layer)
         # output layer for regression
         output_layer_r = Dense(1, activation='linear', name='output_r')(dense_layer)
 
@@ -296,7 +300,6 @@ class MultiLossDNN(SingleTaskDNN):
         plot_model(self.trainable_model, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'multiTaskDNN.png'))
         hist = self.trainable_model.fit(X_train, y_train_c, y_train_r,
                                         nb_epoch=self.epochs,
-                                        batch_size=self.batch_size,
                                         verbose=1,
                                         validation_data=(X_dev, y_dev_c, y_dev_r))
         

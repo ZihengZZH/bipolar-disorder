@@ -14,7 +14,6 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
         if 'unimodal' in line[65:]:
             loss = df['loss'].tolist()
             plt.plot(loss[1:])
-            plt.title('model loss')
             plt.ylabel('loss')
             plt.xlabel('epoch')
             plt.legend(['recon loss'], loc='upper right')
@@ -23,10 +22,9 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
             loss = df['loss'].tolist()
             loss_A = df['audio_recon_loss'].tolist()
             loss_V = df['video_recon_loss'].tolist()
-            plt.plot(loss[1:])
-            plt.plot(loss_A[1:])
-            plt.plot(loss_V[1:])
-            plt.title('model loss')
+            plt.plot(loss[5:])
+            plt.plot(loss_A[5:])
+            plt.plot(loss_V[5:])
             plt.ylabel('loss')
             plt.xlabel('epoch')
             plt.legend(['recon loss', 'audio recon loss', 'video recon loss'], loc='upper right')
@@ -39,7 +37,7 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
             loss_V3 = df['pose_recon_loss'].tolist()
             loss_V4 = df['action_recon_loss'].tolist()
 
-            threshold = 10
+            threshold = 5
 
             plt.plot(loss[threshold:])
             plt.plot(loss_A[threshold:])
@@ -47,7 +45,6 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
             plt.plot(loss_V2[threshold:])
             plt.plot(loss_V3[threshold:])
             plt.plot(loss_V4[threshold:])
-            plt.title('model loss')
             plt.ylabel('loss')
             plt.xlabel('epoch')
             plt.legend(['recon loss', 'audio recon loss', 'facial recon loss', 'gaze recon loss', 'pose recon loss', 'action recon loss'], loc='upper right') 
