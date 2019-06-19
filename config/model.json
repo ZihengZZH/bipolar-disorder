@@ -18,7 +18,7 @@
         "noise": 0.1,
         "p": 0.01,
         "beta": 3,
-        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/DDAE"
+        "save_dir": "./pre-trained/DDAE"
     },
     "doc2vec": {
         "dm": 1,
@@ -29,23 +29,23 @@
         "min_count": 2,
         "sample": 0,
         "epochs": 30,
-        "save_dir": "/media/zzh/Ziheng-700G/Dataset/bipolar-disorder/pre-trained/doc2vec"
+        "save_dir": "./pre-trained/doc2vec"
     },
     "singleDNN": {
         "hidden_ratio": 1.5,
         "learning_rate": 0.01,
-        "batch_size": 16,
-        "dropout": 0.2,
-        "epochs": 30,
-        "save_dir": "./pre-trained/DNN_single"
+        "batch_size": 64,
+        "dropout": 0.0,
+        "epochs": 1000,
+        "save_dir": "./pre-trained/DNN"
     },
     "multiDNN": {
         "hidden_ratio": 1.5,
         "learning_rate": 0.01,
-        "batch_size": 104,
-        "dropout": 0.2,
+        "batch_size": 64,
+        "dropout": 0.0,
         "epochs": 1000,
-        "save_dir": "./pre-trained/DNN_multitask"
+        "save_dir": "./pre-trained/DNN"
     },
     "fisher_vector":{
         "kernels": [4, 8, 16, 32, 64],

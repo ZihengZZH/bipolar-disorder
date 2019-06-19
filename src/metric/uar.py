@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from sklearn.metrics import recall_score, classification_report
 from sklearn.metrics import precision_recall_fscore_support
@@ -46,6 +47,7 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
             index_pred, = np.where(y_pred[index] == (i+1))
             recall[i] = len(index_pred) / len(index) # TP / (TP + FN)
         session_res = np.mean(recall)
+        np.save(os.path.join('pre-trained', 'baseline', '%s_%s_results.npy' % (model_name, feature_name)), y_pred)
         if not fusion:
             if train_set:
                 print("\nUAR (mean of recalls) using %s feature based on session-level (training set) is %.3f and %.3f (sklearn)" % (feature_name, session_res, recall_score(y_dev, y_pred, average='macro')))
@@ -91,6 +93,8 @@ def get_UAR(y_pred, y_dev, inst, model_name, feature_name, modality, frame=True,
                     index_pred, = np.where(y_pred[index] == (k+1))
                     count[k] = len(index_pred)
                 decision[j] = np.argmax(count) + 1
+            
+            np.save(os.path.join('pre-trained', 'baseline', '%s_%s_results.npy' % (model_name, feature_name)), decision)
 
             # get recalls for three classes
             recall = [0] * 3

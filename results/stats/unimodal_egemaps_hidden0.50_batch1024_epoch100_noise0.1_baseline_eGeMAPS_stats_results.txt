@@ -1,0 +1,3 @@
+unimodal_egemaps_hidden0.50_batch1024_epoch100_noise0.1
+baseline_eGeMAPS
+0.445910

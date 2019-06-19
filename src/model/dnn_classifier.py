@@ -59,9 +59,11 @@ class SingleTaskDNN():
         self.model = Sequential()
         self.model.add(Dense(self.hidden_dim[0], input_shape=(self.input_dim,)))
         self.model.add(Activation('relu'))
-        self.model.add(Dropout(self.dropout))
         self.model.add(Dense(self.hidden_dim[1]))
         self.model.add(Activation('relu'))
+        # self.model.add(Dropout(self.dropout))
+        # self.model.add(Dense(self.hidden_dim[2]))
+        # self.model.add(Activation('relu'))
         self.model.add(Dense(self.output_dim))
         self.model.add(Activation('relu'))
         self.model.add(Dense(self.num_class))
@@ -85,7 +87,7 @@ class SingleTaskDNN():
         ncce = lambda y_true, y_pred: w_categorical_crossentropy(y_true, y_pred, weights=w)
         ncce.__name__ ='w_categorical_crossentropy'
 
-        self.model.compile(loss=ncce, optimizer='sgd', metrics=[km.recall()])
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_crossentropy', 'accuracy'])
         plot_model(self.model, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'singleTaskDNN.png'))
     
     def train_model(self, X_train, y_train, X_dev, y_dev):
@@ -98,8 +100,9 @@ class SingleTaskDNN():
         y_dev = self.prepare_label(y_dev, self.num_class)
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
-        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:04f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='max')
-        callbacks_list = [csv_logger, checkpoint]
+        checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:04f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+        early = EarlyStopping(monitor='val_acc', mode='max')
+        callbacks_list = [csv_logger, checkpoint, early]
 
         self.model.fit(X_train, y_train,
                     epochs=self.epochs,
@@ -148,7 +151,7 @@ class MultiTaskDNN(SingleTaskDNN):
         dense_layer = Activation('relu')(dense_layer)
         dense_layer = Dense(self.hidden_dim[1])(dense_layer)
         dense_layer = Activation('relu')(dense_layer)
-        dense_layer = Dropout(self.dropout)(dense_layer)
+        # dense_layer = Dropout(self.dropout)(dense_layer)
         dense_layer = Dense(self.hidden_dim[2])(dense_layer)
         dense_layer = Activation('relu')(dense_layer)
         dense_layer = Dense(self.output_dim)(dense_layer)
@@ -167,8 +170,8 @@ class MultiTaskDNN(SingleTaskDNN):
                             optimizer='adam',
                             loss_weights={'output_c': 1.0,
                                         'output_r': 0.2}, 
-                            metrics={'output_c': km.recall(),
-                                    'output_r': 'mse'})
+                            metrics={'output_c': 'accuracy',
+                                    'output_r': 'mean_squared_error'})
         plot_model(self.model, show_shapes=True, to_file=os.path.join(self.save_dir, self.name, 'multiTaskDNN.png'))
     
     def train_model(self, X_train, y_train_c, y_train_r, X_dev, y_dev_c, y_dev_r):
@@ -184,8 +187,7 @@ class MultiTaskDNN(SingleTaskDNN):
 
         csv_logger = CSVLogger(os.path.join(self.save_dir, self.name, "logger.csv"))
         checkpoint = ModelCheckpoint(os.path.join(self.save_dir, self.name, "weights-improvement-{epoch:02d}-{val_loss:04f}.hdf5"), monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-        early = EarlyStopping(monitor='val_loss',  mode='min', patience=0, verbose=1)
-        callbacks_list = [csv_logger, checkpoint, early]
+        callbacks_list = [csv_logger, checkpoint]
 
         self.model.fit(X_train, {'output_c': y_train_c, 
                                 'output_r': y_train_r},
