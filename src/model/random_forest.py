@@ -126,7 +126,7 @@ class RandomForest():
         print("\nrunning the validation on development set ...")
         allnames = sorted(parameters)
         parameters_set = list(it.product(*(parameters[name] for name in allnames)))
-        results = np.zeros((len(parameters_set), 3))
+        results = np.zeros((len(parameters_set), 5))
 
         for i in range(len(parameters_set)):
             para = parameters_set[i]
@@ -138,7 +138,7 @@ class RandomForest():
                     verbose=1, n_jobs=-1,
                     class_weight="balanced")
             
-            for j in range(3):
+            for j in range(5):
                 clf.fit(self.X_train, self.y_train)
                 y_pred_dev = clf.predict(self.X_dev)
                 recall = metrics.recall_score(self.y_dev, y_pred_dev, average='macro')

@@ -12,6 +12,7 @@ from src.utils.io import load_proc_baseline_feature
 from src.utils.io import load_aligned_features
 from src.utils.io import load_bags_of_words
 from src.utils.io import load_label
+from src.utils.preprocess import k_fold_cv
 from src.utils.preprocess import upsample
 from src.utils.preprocess import get_dynamics
 from src.utils.preprocess import frame2session
@@ -20,6 +21,7 @@ from src.metric.uar import get_UAR
 from src.stats import PermutationTest
 
 import os
+import json
 import pymrmr
 import numpy as np
 import pandas as pd
@@ -40,6 +42,7 @@ class Experiment():
                     'feature selection on FVs', 'RF on FVs only',
                     'DNN as classifier (audio-visual-textual)', 
                     'RF as classifier (audio-visual-textual)',
+                    'RF as classifier CV (audio-visual-textual)',
                     'doc2vec on text', 'RF on doc2vec',
                     'permutation test']
         print("--" * 20)
@@ -74,10 +77,12 @@ class Experiment():
         elif choice == 9:
             self.RF()
         elif choice == 10:
-            self.TEXT()
+            self.RF_CV()
         elif choice == 11:
-            self.TEXT_RF()
+            self.TEXT()
         elif choice == 12:
+            self.TEXT_RF()
+        elif choice == 13:
             self.PERMUTATION()
     
     def main_system(self):
@@ -495,7 +500,7 @@ class Experiment():
         
         for _ in range(3):
             for feature in feature_list:
-                y_dev_r, y_train_r, y_dev, y_train = load_label()
+                _, _, y_dev, y_train = load_label()
                 y_train = y_train.astype('int')
                 y_dev = y_dev.astype('int')
 
@@ -507,6 +512,58 @@ class Experiment():
                 y_pred_train, y_pred_dev = random_forest.evaluate()
                 get_UAR(y_pred_train, y_train, np.array([]), 'RF', feature, 'multiple', train_set=True, test=False)
                 get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', feature, 'multiple', test=False)
+        
+    def RF_CV(self):
+        print("\nrunning RF on features selected with RF with doc2vec embeddings")
+        
+        feature_path = smart_open('./pre-trained/fusion/feature_list.txt', 'rb', encoding='utf-8')
+        feature_list = []
+        for _, line in enumerate(feature_path):
+            feature_list.append(str(line).replace('\n', ''))
+        
+
+        from sklearn.metrics import precision_recall_fscore_support
+
+        cv_results_UAR = dict()
+        cv_results_UAP = dict()
+        
+        for feature in feature_list:
+            cv_results_UAR[feature] = []
+            cv_results_UAP[feature] = []
+
+            _, _, y_dev, y_train = load_label()
+            y_train = y_train.astype('int')
+            y_dev = y_dev.astype('int')
+
+            X_train = np.load(os.path.join('pre-trained', 'fusion', feature, 'X_train.npy'))
+            X_dev = np.load(os.path.join('pre-trained', 'fusion', feature, 'X_dev.npy'))
+
+            X = np.vstack((X_train, X_dev))
+            y = np.hstack((y_train, y_dev))
+
+            cv_ids = k_fold_cv(len(X))
+
+            for cv_id in cv_ids:
+                X_train = X[cv_id[0]]
+                y_train = y[cv_id[0]]
+                X_dev = X[cv_id[1]]
+                y_dev = y[cv_id[1]]
+
+                print('train on %d test on %d' % (len(y_train), len(y_dev)))
+
+                random_forest = RandomForest(feature, X_train, y_train, X_dev, y_dev, test=False)
+                random_forest.run()
+                _, y_pred = random_forest.evaluate()
+                precision, recall, _, _ = precision_recall_fscore_support(y_dev, y_pred, average='macro')
+                cv_results_UAR[feature].append(recall)
+                cv_results_UAP[feature].append(precision)
+            
+            assert len(cv_results_UAR[feature]) == len(cv_results_UAP[feature]) == 10
+
+        with open(os.path.join('results', 'cross-validation.json'), 'a+', encoding='utf-8') as outfile:
+            json.dump(cv_results_UAR, outfile)
+            json.dump(cv_results_UAP, outfile)
+
 
     def TEXT(self):
         print("\nrunning doc2vec embeddings on text modality")
@@ -538,5 +595,5 @@ class Experiment():
                 get_UAR(y_pred_dev, y_dev, np.array([]), 'RF', line[68:], 'single', baseline=False)
 
     def PERMUTATION(self):
-        test = PermutationTest(1,2, R=5000, baseline=True)
+        test = PermutationTest(6,4, R=5000, baseline=False)
         test.run()

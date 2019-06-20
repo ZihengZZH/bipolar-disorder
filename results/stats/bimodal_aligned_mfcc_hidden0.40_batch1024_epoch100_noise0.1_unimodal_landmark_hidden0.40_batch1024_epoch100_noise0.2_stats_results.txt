@@ -1,0 +1,3 @@
+bimodal_aligned_mfcc_hidden0.40_batch1024_epoch100_noise0.1
+unimodal_landmark_hidden0.40_batch1024_epoch100_noise0.2
+1.000000

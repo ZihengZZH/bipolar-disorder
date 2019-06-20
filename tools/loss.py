@@ -12,6 +12,7 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
         print(line_no, '\t', line[65:])
         df = pd.read_csv(os.path.join(line, 'logger.csv'))
         if 'unimodal' in line[65:]:
+            continue
             loss = df['loss'].tolist()
             plt.plot(loss[1:])
             plt.ylabel('loss')
@@ -19,6 +20,7 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
             plt.legend(['recon loss'], loc='upper right')
 
         elif 'bimodal' in line[65:]:
+            continue
             loss = df['loss'].tolist()
             loss_A = df['audio_recon_loss'].tolist()
             loss_V = df['video_recon_loss'].tolist()
@@ -37,7 +39,15 @@ with smart_open(os.path.join(save_dir, 'model_list.txt'), 'rb', encoding='utf-8'
             loss_V3 = df['pose_recon_loss'].tolist()
             loss_V4 = df['action_recon_loss'].tolist()
 
-            threshold = 5
+            threshold = 25
+
+            # loss_A = np.log(loss_A)
+            # loss_V1 = np.log(loss_V1)
+            # loss_V2 = np.log(loss_V2)
+            # loss_V3 = np.log(loss_V3)
+            # loss_V4 = np.log(loss_V4)
+
+            loss_V3 = np.zeros(100)
 
             plt.plot(loss[threshold:])
             plt.plot(loss_A[threshold:])
