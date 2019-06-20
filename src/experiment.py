@@ -312,9 +312,11 @@ class Experiment():
         with smart_open(os.path.join(ae.save_dir, 'model_list.txt'), 'rb', encoding='utf-8') as model_path:
             for line_no, line in enumerate(model_path):
                 line = str(line).replace('\n', '')
-                print(line_no, '\t', line[65:])
+                line = line[:-2]
+                print(line_no, '\t', line[19:])
 
                 if os.path.isfile(os.path.join(line, 'X_train_tree_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'X_dev_tree_%d.npy' % self.kernel)):
+                    preprocess_metadata_tensorboard(line, self.kernel)
                     continue
 
                 if os.path.isfile(os.path.join(line, 'fisher_vector_train_%d.npy' % self.kernel)) and os.path.isfile(os.path.join(line, 'fisher_vector_dev_%d.npy' % self.kernel)):

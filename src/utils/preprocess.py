@@ -500,9 +500,9 @@ def k_fold_cv(length):
 
 
 def preprocess_metadata_tensorboard(path, n_kernel):
-    X_train = np.load(os.path.join(path, 'fisher_vector_train_%d.npy' % n_kernel))
+    X_train = np.load(os.path.join(path, 'X_train_tree_%d.npy' % n_kernel))
     y_train = np.load(os.path.join(path, 'label_train.npy'))
-    X_dev = np.load(os.path.join(path, 'fisher_vector_dev_%d.npy' % n_kernel))
+    X_dev = np.load(os.path.join(path, 'X_dev_tree_%d.npy' % n_kernel))
     y_dev = np.load(os.path.join(path, 'label_dev.npy'))
 
     if X_train.ndim == X_dev.ndim == 3:
@@ -529,3 +529,33 @@ def preprocess_metadata_tensorboard(path, n_kernel):
                 data_f.write("%f\t" % X_dev[c][d])
             data_f.write("\n")
     print("\nmetadata processing done\nplease upload the .tsv onto projector.tensorflow.org for visualization")
+
+
+def preprocess_reconstruction():
+    model_path_AV = smart_open('./pre-trained/DDAE/model_list.txt', 'rb', encoding='utf-8')
+    model_list_AV = []
+
+    for _, line_AV in enumerate(model_path_AV):
+        line_AV = str(line_AV).replace('\n', '')
+        model_list_AV.append(line_AV[:-2])
+
+    from src.utils.io import load_aligned_features
+
+    model_path = model_list_AV[6]
+    
+    landmarks_recon = np.load(os.path.join(model_path, 'decoded_train_1.npy'))
+    pose_recon = np.load(os.path.join(model_path, 'decoded_train_3.npy'))
+    print(landmarks_recon.shape)
+    print(pose_recon.shape)
+    y_train, inst_train, _, _ = load_aligned_features(no_data=True, verbose=True)
+    assert len(landmarks_recon) == len(pose_recon) == len(y_train) == len(inst_train)
+    index, _ = np.where(inst_train == inst_train[0])
+    
+    landmarks_recon_train01 = landmarks_recon[index]
+    pose_recon_train01 = pose_recon[index]
+    print(landmarks_recon_train01.shape)
+    print(pose_recon_train01.shape)
+
+    np.save(os.path.join(model_path, 'recon_1_train01.npy'), landmarks_recon_train01)
+    np.save(os.path.join(model_path, 'recon_3_train01.npy'), pose_recon_train01)
+
