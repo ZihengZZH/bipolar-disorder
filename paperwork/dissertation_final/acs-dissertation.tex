@@ -1,0 +1,109 @@
+%% 
+%% ACS project dissertation template. 
+%% 
+%% Currently designed for printing two-sided, but if you prefer to 
+%% print single-sided just remove ",twoside,openright" from the 
+%% \documentclass[] line below. 
+%%
+%%
+%%   SMH, May 2010. 
+
+
+\documentclass[a4paper,12pt,twoside,openright]{report}
+
+
+%%
+%% EDIT THE BELOW TO CUSTOMIZE
+%%
+
+\def\authorname{Ziheng Zhang\xspace}
+\def\authorcollege{Darwin College\xspace}
+\def\authoremail{zz362@cam.ac.uk}
+\def\dissertationtitle{Automatic Recognition of Bipolar Disorder from Multimodal Data}
+\def\wordcount{11004}
+
+
+\usepackage{epsfig,graphicx,parskip,setspace,tabularx,xspace} 
+\usepackage{makecell,enumerate,hyperref, ifthen, rotating, amsmath}
+\usepackage[toc,page]{appendix}
+\usepackage[utf8]{inputenc}
+
+\DeclareMathOperator{\sign}{sign}
+
+\usepackage{caption} 
+\captionsetup[table]{skip=5pt}
+
+%% START OF DOCUMENT
+\begin{document}
+
+
+%% FRONTMATTER (TITLE PAGE, DECLARATION, ABSTRACT, ETC) 
+\pagestyle{empty}
+\singlespacing
+\input{preambles/titlepage}
+\onehalfspacing
+\input{preambles/declaration}
+\singlespacing
+\input{preambles/abstract}
+
+\pagenumbering{roman}
+\setcounter{page}{0}
+\pagestyle{plain}
+\tableofcontents
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoftables
+\addcontentsline{toc}{chapter}{List of tables}
+
+\onehalfspacing
+
+%% START OF MAIN TEXT 
+
+\chapter{Introduction}
+\label{ch:introduction}
+\pagenumbering{arabic} 
+\setcounter{page}{1} 
+
+\input{mainSections/1-introduction}
+
+\chapter{Background} 
+\label{ch:background}
+
+\input{mainSections/2-background}
+
+\chapter{Related Work}
+\label{ch:literature}
+
+\input{mainSections/3-literature}
+
+\chapter{Design and Implementation} 
+\label{ch:design}
+
+\input{mainSections/4-design}
+
+\chapter{Evaluation}
+\label{ch:evaluation}
+
+\input{mainSections/5-evaluation}
+
+\chapter{Summary and Conclusion}
+\label{ch:summary}
+
+\input{mainSections/6-conclusion}
+
+\let\svaddcontentsline\addcontentsline
+\renewcommand\addcontentsline[3]{%
+  \ifthenelse{\equal{#1}{lof}}{}%
+  {\ifthenelse{\equal{#1}{lot}}{}{\svaddcontentsline{#1}{#2}{#3}}}}
+
+\appendix
+\addcontentsline{toc}{chapter}{Appendix}
+\chapter{Complete Experimental Results}
+\label{ch:appendix}
+\input{mainSections/appendix.tex}
+\singlespacing
+
+\bibliographystyle{unsrt} 
+\bibliography{reference} 
+
+\end{document}

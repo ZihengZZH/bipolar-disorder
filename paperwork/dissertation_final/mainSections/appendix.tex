@@ -1,0 +1,202 @@
+\section{Deep Denoising Autoencoders}
+\label{sec:DDAE_full}
+
+In the following Table \ref{tab:unimodal_res_full}, \ref{tab:bimodal_res_full} and \ref{tab:multimodal_res_full}, the complete experimental results are provided for the Deep Denoising Autoencoders in the feature learning of the audio-visual modality. The evaluation metrics are Unweighted Average Recall (UAR), Unweighted Average Precision (UAP) and F1 score. The metrics in \textbf{bold} indicate the best-performing hyperparameter setting within one DDAE architectures. For instance, (4) in Table \ref{tab:unimodal_res_full} outperforms other architectures within the uni-DDAEs using facial landmarks ((1) to (12)).
+
+\begin{table}[htb]
+    \centering
+    \small
+    \caption{Complete list of the experimental results for the proposed Unimodal Deep Denoising Autoencoders. The best-performing results are in \textbf{bold} and the baseline results are attached at the end.}
+    \begin{tabular}{l|l|p{1.25cm}|l|p{1.2cm}|l|l|l}
+        \Xhline{2\arrayrulewidth}
+        Index & Features & Hidden ratio & Noise & GMM kernel & UAR & UAP & F1 \\
+        \hline
+        (1) & Landmarks & 0.4 & 0.1 & 16 & 0.582 & 0.590 & 0.586 \\
+        (2) & Landmarks & 0.4 & 0.1 & 32 & 0.563 & 0.575 & 0.569 \\
+        (3) & Landmarks & 0.4 & 0.2 & 16 & 0.532 & 0.584 & 0.557 \\
+        (4) & Landmarks & 0.4 & 0.2 & 32 & \textbf{0.624} & \textbf{0.692} & \textbf{0.656} \\
+        (5) & Landmarks & 0.4 & 0.4 & 16 & 0.437 & 0.421 & 0.429 \\
+        (6) & Landmarks & 0.4 & 0.4 & 32 & 0.614 & 0.622 & 0.618 \\
+        (7) & Landmarks & 0.5 & 0.1 & 16 & 0.585 & 0.628 & 0.606 \\
+        (8) & Landmarks & 0.5 & 0.1 & 32 & 0.579 & 0.577 & 0.578 \\
+        (9) & Landmarks & 0.5 & 0.2 & 16 & 0.556 & 0.556 & 0.556 \\
+        (10) & Landmarks & 0.5 & 0.2 & 32 & 0.606 & 0.635 & 0.620 \\
+        (11) & Landmarks & 0.5 & 0.4 & 16 & 0.481 & 0.489 & 0.485 \\
+        (12) & Landmarks & 0.5 & 0.4 & 32 & 0.611 & 0.620 & 0.615 \\
+        \hline
+        (13) & MFCC & 0.4 & 0.1 & 16 & 0.582 & 0.590 & 0.586 \\
+        (14) & MFCC & 0.4 & 0.1 & 32 & \textbf{0.587} & \textbf{0.611} & \textbf{0.599} \\
+        (15) & MFCC & 0.4 & 0.2 & 16 & 0.442 & 0.493 & 0.466 \\
+        (16) & MFCC & 0.4 & 0.2 & 32 & 0.542 & 0.562 & 0.552 \\
+        (17) & MFCC & 0.4 & 0.4 & 16 & 0.521 & 0.562 & 0.541 \\
+        (18) & MFCC & 0.4 & 0.4 & 32 & 0.463 & 0.476 & 0.469 \\
+        (19) & MFCC & 0.5 & 0.1 & 16 & 0.550 & 0.575 & 0.562 \\
+        (20) & MFCC & 0.5 & 0.1 & 32 & 0.481 & 0.506 & 0.493 \\
+        (21) & MFCC & 0.5 & 0.2 & 16 & 0.492 & 0.494 & 0.493 \\
+        (22) & MFCC & 0.5 & 0.2 & 32 & 0.561 & 0.607 & 0.583 \\
+        (23) & MFCC & 0.5 & 0.4 & 16 & 0.545 & 0.585 & 0.564 \\
+        (24) & MFCC & 0.5 & 0.4 & 32 & 0.487 & 0.493 & 0.490 \\
+        \hline
+        (25) & eGeMAPS & 0.4 & 0.1 & 16 & 0.561 & 0.591 & 0.576 \\
+        (26) & eGeMAPS & 0.4 & 0.1 & 32 & 0.426 & 0.423 & 0.424 \\
+        (27) & eGeMAPS & 0.4 & 0.2 & 16 & 0.508 & 0.546 & 0.516  \\
+        (28) & eGeMAPS & 0.4 & 0.2 & 32 & 0.524 & 0.532 & 0.528 \\
+        (29) & eGeMAPS & 0.4 & 0.4 & 16 & 0.407 & 0.432 & 0.419 \\
+        (30) & eGeMAPS & 0.4 & 0.4 & 32 & 0.511 & 0.563 & 0.536 \\
+        (31) & eGeMAPS & 0.5 & 0.1 & 16 & 0.444 & 0.358 & 0.396 \\
+        (32) & eGeMAPS & 0.5 & 0.1 & 32 & \textbf{0.632} & \textbf{0.654} & \textbf{0.637} \\
+        (33) & eGeMAPS & 0.5 & 0.2 & 16 & 0.529 & 0.604 & 0.564 \\
+        (34) & eGeMAPS & 0.5 & 0.2 & 32 & 0.590 & 0.619 & 0.604 \\
+        (35) & eGeMAPS & 0.5 & 0.4 & 16 & 0.474 & 0.459 & 0.466 \\
+        (36) & eGeMAPS & 0.5 & 0.4 & 32 & 0.563 & 0.585 & 0.574 \\
+        \hline
+        & \multicolumn{4}{l|}{Baseline (BoAW)} & 0.489 & 0.439 & 0.463 \\
+        & \multicolumn{4}{l|}{Baseline (FAU)} & 0.481 & 0.528 & 0.503 \\
+    \Xhline{2\arrayrulewidth}
+    \end{tabular}
+    \label{tab:unimodal_res_full}
+\end{table}
+
+
+\begin{table}[htb]
+    \centering
+    \small
+    \caption{Complete list of the experimental results for the proposed Bimodal Deep Denoising Autoencoders. The best-performing results are in \textbf{bold}, and the baseline results and best results from Unimodal Deep Denoising Autoencoders are attached at the end.}
+    \begin{tabular}{l|p{1.8cm}|p{1.25cm}|l|p{1.2cm}|l|l|l}
+        \Xhline{2\arrayrulewidth}
+        Index & Acoustic feature & Hidden ratio & Noise & GMM kernel & UAR & UAP & F1 \\
+        \hline
+        (1) & MFCC  & 0.4 & 0.1 & 16 & 0.492 & 0.455 & 0.473 \\
+        (2) & MFCC  & 0.4 & 0.1 & 32 & \textbf{0.656} & \textbf{0.677} & \textbf{0.666} \\
+        (3) & MFCC  & 0.4 & 0.2 & 16 & 0.632 & 0.644 & 0.638 \\
+        (4) & MFCC  & 0.4 & 0.2 & 32 & 0.521 & 0.558 & 0.539 \\
+        (5) & MFCC  & 0.4 & 0.4 & 16 & 0.413 & 0.490 & 0.448 \\
+        (6) & MFCC  & 0.4 & 0.4 & 32 & 0.447 & 0.462 & 0.454 \\
+        (7) & MFCC  & 0.5 & 0.1 & 16 & 0.487 & 0.472 & 0.479 \\
+        (8) & MFCC  & 0.5 & 0.1 & 32 & 0.505 & 0.524 & 0.514 \\
+        (9) & MFCC  & 0.5 & 0.2 & 16 & 0.471 & 0.522 & 0.495 \\
+        (10) & MFCC  & 0.5 & 0.2 & 32 & 0.489 & 0.586 & 0.533 \\
+        (11) & MFCC  & 0.5 & 0.4 & 16 & 0.444 & 0.449 & 0.446 \\
+        (12) & MFCC  & 0.5 & 0.4 & 32 & 0.545 & 0.561 & 0.553 \\
+        \hline
+        (13) & eGeMAPS & 0.4 & 0.1 & 16 & 0.450 & 0.447 & 0.448 \\
+        (14) & eGeMAPS & 0.4 & 0.1 & 32 & 0.566 & 0.569 & 0.567 \\
+        (15) & eGeMAPS & 0.4 & 0.2 & 16 & 0.447 & 0.640 & 0.526 \\
+        (16) & eGeMAPS & 0.4 & 0.2 & 32 & 0.516 & 0.600 & 0.555 \\
+        (17) & eGeMAPS & 0.4 & 0.4 & 16 & 0.455 & 0.447 & 0.451 \\
+        (18) & eGeMAPS & 0.4 & 0.4 & 32 & 0.511 & 0.538 & 0.524 \\
+        (19) & eGeMAPS & 0.5 & 0.1 & 16 & \textbf{0.566} & \textbf{0.611} & \textbf{0.587} \\
+        (20) & eGeMAPS & 0.5 & 0.1 & 32 & 0.495 & 0.506 & 0.500 \\
+        (21) & eGeMAPS & 0.5 & 0.2 & 16 & 0.479 & 0.497 & 0.488 \\
+        (22) & eGeMAPS & 0.5 & 0.2 & 32 & 0.458 & 0.459 & 0.458  \\
+        (23) & eGeMAPS & 0.5 & 0.4 & 16 & 0.511 & 0.601 & 0.552 \\
+        (24) & eGeMAPS & 0.5 & 0.4 & 32 & 0.519 & 0.607 & 0.560 \\
+        \hline
+        & \multicolumn{4}{l|}{Baseline (BoAW)} & 0.489 & 0.439 & 0.463 \\
+        & \multicolumn{4}{l|}{Baseline (FAU)} & 0.481 & 0.528 & 0.503 \\
+        \hline
+        & \multicolumn{4}{l|}{Best Unimodal DDAE (Landmarks)} & 0.624 & 0.692 & 0.656 \\
+        & \multicolumn{4}{l|}{Best Unimodal DDAE (MFCC)} & 0.587 & 0.611 & 0.599 \\
+        & \multicolumn{4}{l|}{Best Unimodal DDAE (eGeMAPS)} & 0.632 & 0.654 & 0.637 \\
+    \Xhline{2\arrayrulewidth}
+    \end{tabular}
+    \label{tab:bimodal_res_full}
+\end{table}
+
+
+\begin{table}[htb]
+    \centering
+    \small
+    \caption{Complete list of the experimental results for the proposed Multimodal Deep Denoising Autoencoders. The best-performing results are in \textbf{bold}, and the baseline results and the best results from previous Deep Denoising Autoencoders are attached at the end.}
+    \begin{tabular}{l|p{1.8cm}|p{1.25cm}|l|p{1.2cm}|l|l|l}
+        \Xhline{2\arrayrulewidth}
+        Index & Acoustic Feature & Hidden ratio & Noise & GMM kernel & UAR & UAP & F1 \\
+        \hline
+        (1) & MFCC  & 0.4 & 0.1 & 16 & 0.603 & 0.648 & 0.624 \\
+        (2) & MFCC  & 0.4 & 0.1 & 32 & \textbf{0.656} & \textbf{0.678} & \textbf{0.667} \\
+        (3) & MFCC  & 0.4 & 0.2 & 16 & 0.561 & 0.597 & 0.578  \\
+        (4) & MFCC  & 0.4 & 0.2 & 32 & 0.566 & 0.573 & 0.569 \\
+        (5) & MFCC  & 0.4 & 0.4 & 16 & 0.569 & 0.593 & 0.581 \\
+        (6) & MFCC  & 0.4 & 0.4 & 32 & 0.459 & 0.475 & 0.467 \\
+        (7) & MFCC  & 0.5 & 0.1 & 16 & 0.597 & 0.596 & 0.596 \\
+        (8) & MFCC  & 0.5 & 0.1 & 32 & 0.582 & 0.605 & 0.593 \\
+        (9) & MFCC  & 0.5 & 0.2 & 16 & 0.524 & 0.623 & 0.569 \\
+        (10) & MFCC  & 0.5 & 0.2 & 32 & 0.569 & 0.578 & 0.573 \\
+        (11) & MFCC  & 0.5 & 0.4 & 16 & 0.569 & 0.697 & 0.627 \\
+        (12) & MFCC  & 0.5 & 0.4 & 32 & 0.529 & 0.528 & 0.528 \\
+        \hline
+        (13) & eGeMAPS & 0.4 & 0.1 & 16 & 0.603 & 0.717 & 0.655 \\
+        (14) & eGeMAPS & 0.4 & 0.1 & 32 & 0.540 & 0.595 & 0.566 \\
+        (15) & eGeMAPS & 0.4 & 0.2 & 16 & 0.495 & 0.504 & 0.499 \\
+        (16) & eGeMAPS & 0.4 & 0.2 & 32 & 0.585 & 0.590 & 0.587 \\
+        (17) & eGeMAPS & 0.4 & 0.4 & 16 & 0.489 & 0.514 & 0.501 \\
+        (18) & eGeMAPS & 0.4 & 0.4 & 32 & 0.471 & 0.613 & 0.540 \\
+        (19) & eGeMAPS & 0.5 & 0.1 & 16 & 0.442 & 0.462 & 0.452 \\
+        (20) & eGeMAPS & 0.5 & 0.1 & 32 & \textbf{0.622} & \textbf{0.665} & \textbf{0.642} \\
+        (21) & eGeMAPS & 0.5 & 0.2 & 16 & 0.574 & 0.570 & 0.572 \\
+        (22) & eGeMAPS & 0.5 & 0.2 & 32 & 0.571 & 0.621 & 0.595 \\
+        (23) & eGeMAPS & 0.5 & 0.4 & 16 & 0.484 & 0.536 & 0.507 \\
+        (24) & eGeMAPS & 0.5 & 0.4 & 32 & 0.466 & 0.467 & 0.466 \\
+        \hline
+        & \multicolumn{4}{l|}{Baseline (BoAW)} & 0.489 & 0.439 & 0.463 \\
+        & \multicolumn{4}{l|}{Baseline (FAU)} & 0.481 & 0.528 & 0.503 \\
+        \hline
+        & \multicolumn{4}{l|}{Best Unimodal DDAE (Landmarks)} & 0.624 & 0.692 & 0.656 \\
+        & \multicolumn{4}{l|}{Best Unimodal DDAE (MFCC)} & 0.587 & 0.611 & 0.599 \\
+        & \multicolumn{4}{l|}{Best Unimodal DDAE (eGeMAPS)} & 0.632 & 0.654 & 0.637 \\
+        \hline
+        & \multicolumn{4}{l|}{Best Bimodal DDAE (MFCC)} & 0.656 & 0.677 & 0.666 \\
+        & \multicolumn{4}{l|}{Best Bimodal DDAE (eGeMAPS)} & 0.566 & 0.611 & 0.587 \\
+    \Xhline{2\arrayrulewidth}
+    \end{tabular}
+    \label{tab:multimodal_res_full}
+\end{table}
+
+
+\section{Document Embedding}
+
+This section includes the complete experimental results (Table \ref{tab:doc2vec_results}) for the document embedding models under different hyperparameter settings. The evaluation metrics are Unweighted Average Recall (UAR), Unweighted Average Precision (UAP) and F1 score. It is worthy noting that the window size is not defined in PV-DBOW architecture and the hierarchical softmax, as an alternative to softmax used in doc2vec models, is denoted as ``hs" in Table \ref{tab:doc2vec_results} ``Negative words" column. 
+
+\begin{table}[ht]
+    \small
+    \centering
+    \caption{Complete list of the experimental results for the proposed document embedding models. The best-performing results are in \textbf{bold} and the baseline results are attached at the end.}
+    \begin{tabular}{l|l|p{1.2cm}|p{1.5cm}|p{1.6cm}|l|l|l}
+         \Xhline{2\arrayrulewidth}
+         Index & Model & Vector size & Window size & Negative words & UAR & UAP & F1 \\
+         \hline
+         (1) & PV-DM & 25 & 5 & 5 & 0.357 & 0.348 & 0.352 \\
+         (2) & PV-DM & 25 & 5 & 10 & 0.392 & 0.406 & 0.394 \\
+         (3) & PV-DM & 25 & 5 & hs & 0.399 & 0.402 & 0.400 \\
+         (4) & PV-DM & 25 & 10 & 5 & 0.452 & 0.442 & 0.447 \\
+         (5) & PV-DM & 25 & 10 & 10 & 0.291 & 0.290 & 0.279 \\
+         (6) & PV-DM & 25 & 10 & hs & 0.307 & 0.295 & 0.290 \\
+         (7) & PV-DM & 50 & 5 & 5 & 0.429 & 0.496 & 0.460 \\
+         (8) & PV-DM & 50 & 5 & 10 & 0.384 & 0.405 & 0.394 \\
+         (9) & PV-DM & 50 & 5 & hs & 0.373 & 0.376 & 0.374 \\
+         (10) & PV-DM & 50 & 10 & 5 & \textbf{0.492} & \textbf{0.481} & \textbf{0.486} \\
+         (11) & PV-DM & 50 & 10 & 10 & 0.426 & 0.455 & 0.440 \\
+         (12) & PV-DM & 50 & 10 & hs & 0.402 & 0.598 & 0.480 \\
+         (13) & PV-DM & 100 & 5 & 5 & 0.429 & 0.480 & 0.453 \\
+         (14) & PV-DM & 100 & 5 & 10 & 0.439 & 0.513 & 0.473 \\
+         (15) & PV-DM & 100 & 5 & hs & 0.373 & 0.379 & 0.375 \\
+         (16) & PV-DM & 100 & 10 & 5 & 0.415 & 0.431 & 0.422\\
+         (17) & PV-DM & 100 & 10 & 10 & 0.452 & 0.453 & 0.452 \\
+         (18) & PV-DM & 100 & 10 & hs & 0.294 & 0.292 & 0.292 \\
+         \hline
+         (19) & PV-DBOW & 25 & - & 5 & 0.373 & 0.391 & 0.381 \\
+         (20) & PV-DBOW & 25 & - & 10 & 0.378 & 0.397 & 0.387 \\
+         (21) & PV-DBOW & 25 & - & hs & 0.370 & 0.383 & 0.376 \\
+         (22) & PV-DBOW & 50 & - & 5 & \textbf{0.505} & \textbf{0.544} & \textbf{0.524} \\
+         (23) & PV-DBOW & 50 & - & 10 & 0.439 & 0.461 & 0.450 \\
+         (24) & PV-DBOW & 50 & - & hs & 0.399 & 0.435 & 0.416 \\
+         (25) & PV-DBOW & 100 & - & 5 & 0.463 & 0.418 & 0.439 \\
+         (26) & PV-DBOW & 100 & - & 10 & 0.437 & 0.454 & 0.445 \\
+         (27) & PV-DBOW & 100 & - & hs & 0.315 & 0.330 & 0.315 \\
+         \hline
+         & \multicolumn{4}{l|}{Baseline (BoAW)} & 0.489 & 0.439 & 0.463 \\
+         & \multicolumn{4}{l|}{Baseline (FAU)} & 0.481 & 0.528 & 0.503 \\
+         \Xhline{2\arrayrulewidth}
+    \end{tabular}
+    \label{tab:doc2vec_results}
+\end{table}

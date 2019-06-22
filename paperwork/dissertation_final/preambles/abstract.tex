@@ -1,0 +1,13 @@
+\newpage
+{\Huge \bf Abstract}
+\vspace{24pt} 
+
+
+Bipolar Disorder (BD) is a serious mental health problem. BD patients tend to suffer from mood oscillations on a daily basis and they have a higher probability to attempt or even complete suicide. To reduce the treatment resistance and help the early detection of BD symptoms, an automatic recognition system on multimodal data is proposed in this work. Based on the audio-visual recordings in the BD corpus, different architectures are designed and implemented to encode different modalities, and the final decision is obtained via an early fusion strategy to fuse the learnt features from different modalities. 
+
+Specifically, for audio-visual modality, Deep Denoising Autoencoders (DDAEs) are presented to learn the shared representations across a total of five modalities (four of which are visual features but considered as different modalities), including acoustic features, facial landmarks, eye gaze, head pose and facial action units. Along with the computed dynamics (1st and 2nd order time derivatives), the representations are later encoded into Fisher Vectors (FVs), which capture the distributed representations and the temporary information within each recording session. This work also utilises the textual modality transcribed from the recordings, and Document Embedding models are proposed to infer the embeddings. After fusing the FVs and document embeddings, a Multi-Task Neural Network is implemented for the classification task while addressing the overfitting issues caused by the limited size of BD corpus. 
+
+Under the restriction of AVEC2018 BD challenge, the experimental results, demonstrate the effectiveness of the learnt representations and the proposed framework achieves the state-of-the-art performance of 0.709 in unweighted average recall and 0.717 in accuracy.
+
+\newpage
+\vspace*{\fill}
