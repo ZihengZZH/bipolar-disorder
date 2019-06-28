@@ -13,7 +13,7 @@ class AutoEncoderMultimodal(AutoEncoder):
     """
     Multimodal Deep Denoising Autoencoder (DDAE) to encode audio-visual data
     ---
-    Attributes:
+    Attributes
     -----------
     name: str
         model name

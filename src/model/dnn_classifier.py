@@ -20,6 +20,37 @@ from sklearn.metrics import classification_report, mean_squared_error
 
 
 class SingleTaskDNN():
+    """
+    Single-Task Deep Neural Nets
+    ---
+    Attributes
+    -----------
+    name: str
+        model name
+    input_dim: int
+        dimension of input data (fused feature)
+    num_class: int
+        3 classes: mania / hypomania / depressive
+    model: keras.models.Model
+        keras Model as Deep Neural Net
+    ---------------------------------------
+    Functions
+    -----------
+    load_basics(): public
+        load basic configuration
+    prepare_label(): public
+        transform 1-size 3-class labels to fit model
+    build_model(): public
+        build & compile the keras model
+    train_model(): public
+        train the model with provided data
+    evaluate_model(): public
+        evaluate the model on training/dev sets
+    save_model(): public
+        save model to external files
+    load_model(): public
+        load model from external files
+    """
     def __init__(self, name, input_dim, num_class):
         self.fitted = False
         self.input_dim = input_dim
@@ -129,6 +160,31 @@ class SingleTaskDNN():
 
 
 class MultiTaskDNN(SingleTaskDNN):
+    """
+    Multi-Task Deep Neural Nets (built on SingleTaskDNN)
+    ---
+    Attributes
+    -----------
+    name: str
+        model name
+    input_dim: int
+        dimension of input data (fused feature)
+    num_class: int
+        3 classes: mania / hypomania / depressive
+    model: keras.models.Model
+        keras Model as Deep Neural Net
+    ---------------------------------------
+    Functions
+    -----------
+    prepare_regression_label(): public
+        transform 1-size 3-class labels to fit model
+    build_model(): public
+        build & compile the keras model
+    train_model(): public
+        train the model with provided data
+    evaluate_model(): public
+        evaluate the model on training/dev sets
+    """
     def __init__(self, name, input_dim, num_class):
         SingleTaskDNN.__init__(self, name, input_dim, num_class)
         self.config = json.load(open('./config/model.json', 'r'))['multiDNN']

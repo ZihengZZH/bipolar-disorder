@@ -28,6 +28,23 @@ import pandas as pd
 from smart_open import smart_open
 
 
+"""
+EXPERIMENT or PROPOSED FRAMEWORK
+----------
+0. pre-align A/V features
+1. uni-DDAE / bi-DDAE / multi-DDAE
+2. dynamics (1st & 2nd derivatives)
+3. GMM fitting (16/32 kernels)
+4. improved Fisher Vector
+5. Feature Selection (tree-based)
+6. doc2vec training (addition Turkish corpus)
+7. document embeddings (PV-DBOW / PV-DM)
+8. early fusion 
+9. RF / multi-task DNN (as classifiers)
+10. Monte Carol permutation test (optional)
+"""
+
+
 class Experiment():
     def __init__(self):
         self.kernel = 32
@@ -523,7 +540,6 @@ class Experiment():
         for _, line in enumerate(feature_path):
             feature_list.append(str(line).replace('\n', ''))
         
-
         from sklearn.metrics import precision_recall_fscore_support
 
         cv_results_UAR = dict()
@@ -565,7 +581,6 @@ class Experiment():
         with open(os.path.join('results', 'cross-validation.json'), 'a+', encoding='utf-8') as outfile:
             json.dump(cv_results_UAR, outfile)
             json.dump(cv_results_UAP, outfile)
-
 
     def TEXT(self):
         print("\nrunning doc2vec embeddings on text modality")
