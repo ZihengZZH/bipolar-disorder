@@ -65,13 +65,15 @@ def main(argv):
             print("--" * 20)
             run_experiment_system()
         elif opt in ('-v', '--visualize'):
-            from src.utils.vis import visualize_landmarks
-            from src.utils.vis import visualize_reconstrcution
             print("Visualize facial landmarks on videos")
             print("--" * 20)
-            # visualize_landmarks(arg, no_frame=False)
-            visualize_reconstrcution(no_frame=False)
-
+            if arg == 'recon':
+                from src.utils.vis import visualize_reconstrcution
+                visualize_reconstrcution(no_frame=False)
+            else:
+                from src.utils.vis import visualize_landmarks
+                visualize_landmarks(arg, no_frame=False)
+    
 
 if __name__ == "__main__":
     main(sys.argv[1:])
