@@ -1,3 +1,0 @@
-unimodal_mfcc_hidden0.40_batch1024_epoch100_noise0.1
-baseline_MFCC
-0.000200

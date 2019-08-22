@@ -1,3 +1,0 @@
-multimodal_aligned_egemaps_hidden0.50_batch1024_epoch100_noise0.1
-bimodal_aligned_egemaps_hidden0.50_batch1024_epoch100_noise0.1
-0.053590

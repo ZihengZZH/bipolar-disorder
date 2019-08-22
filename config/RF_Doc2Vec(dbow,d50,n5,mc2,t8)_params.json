@@ -1,1 +1,0 @@
-{"criterion": "entropy", "max_depth": 6, "max_features": 0.1, "n_estimators": 400}

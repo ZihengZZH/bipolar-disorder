@@ -1,4 +1,4 @@
-npy## GPU_VM
+## GPU_VM
 
 ### upload: local -> remote
 ```

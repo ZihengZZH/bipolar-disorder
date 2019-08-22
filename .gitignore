@@ -120,3 +120,12 @@ venv.bak/
 
 # facial image
 /images/facial
+
+# config
+/config/*
+!/config/data.json
+!/config/model.json
+
+# results
+/results/*
+!/results/readme.md
