@@ -153,4 +153,9 @@ def draw_bar_chart():
     plt.show()
 
 if __name__ == '__main__':
+    print(np.mean(multi_MFCC_DM))
+    print(np.mean(multi_MFCC_DBOW))
+    print(np.mean(multi_eGeMAPS_DM))
+    print(np.mean(multi_eGeMAPS_DBOW))
+    
     draw_bar_chart_cv()

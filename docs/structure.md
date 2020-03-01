@@ -8,8 +8,20 @@ Tree structure of Bipolar Disorder project
 |   |__ baseline
 |__ dataset
 |__ docs
+|   |__ AVEC2018.md
+|   |__ AVEC2019.md
+|   |__ dataset.md
+|   |__ literature.md
+|   |__ others.md
+|   |__ structure.md
 |__ images
+|   |__ barchart_cv.png
+|   |__ doc2vec.png
+|   |__ framework.png
 |__ materials
+|__ paperwork
+|   |__ dissertation_zz362.pdf
+|   |__ presentation_zz362.pdf
 |__ pre-trained
 |__ results
 |   |__ baseline
