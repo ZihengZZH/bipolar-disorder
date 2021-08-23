@@ -1,6 +1,6 @@
 gensim==3.4.0
 jupyter==1.0.0
-jupyterlab==0.35.4
+jupyterlab==1.2.21
 Keras==2.2.4
 Keras-Applications==1.0.7
 keras-metrics==1.1.0
