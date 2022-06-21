@@ -6,7 +6,7 @@ Keras-Applications==1.0.7
 keras-metrics==1.1.0
 Keras-Preprocessing==1.0.9
 matplotlib==3.0.3
-numpy==1.16.2
+numpy==1.22.0
 opencv-python==2.4.9
 pandas==0.24.2
 plotly==4.0.0
